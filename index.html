@@ -1392,6 +1392,36 @@ const questionBank = [
   {id:660, module:"SMS", moduleName:"SMS & Báo cáo an toàn", question:"Báo cáo an toàn bắt buộc theo Quy định báo cáo an toàn của Tổng công ty Quản lý bay Việt Nam được phân thành những nhóm nào sau đây:", options:["Báo cáo tai nạn, sự cố; Báo cáo sơ bộ", "Báo cáo tai nạn, sự cố; Báo cáo định kỳ", "Báo cáo sơ bộ; Báo cáo ban đầu", "Báo cáo ban đầu; Báo cáo định kỳ"], correctAnswer:"Báo cáo tai nạn, sự cố; Báo cáo định kỳ", refDoc:"Ngan-hang-cau-hoi-SMS.xlsx"},
   {id:661, module:"SMS", moduleName:"SMS & Báo cáo an toàn", question:"Báo cáo tai nạn, sự cố theo Quy định báo cáo an toàn của Tổng công ty Quản lý bay Việt Nam gồm những báo cáo nào sau đây:", options:["Báo cáo sơ bộ, Báo cáo ban đầu, Báo cáo năm", "Báo cáo sơ bộ, Báo cáo ban đầu, Báo cáo giảng bình", "Báo cáo ban đầu, Báo cáo giảng bình, Báo cáo năm", "Báo cáo sơ bộ, Báo cáo giảng bình, Báo cáo năm"], correctAnswer:"Báo cáo sơ bộ, Báo cáo ban đầu, Báo cáo giảng bình", refDoc:"Ngan-hang-cau-hoi-SMS.xlsx"},
   {id:662, module:"SMS", moduleName:"SMS & Báo cáo an toàn", question:"Báo cáo định kỳ theo Quy định báo cáo an toàn của Tổng công ty Quản lý bay Việt Nam gồm những báo cáo nào sau đây:", options:["Báo cáo tổng hợp tình hình hoạt động trong ngày, Báo cáo tháng, Báo cáo quý, Báo cáo LHD, Báo cáo năm", "Báo cáo tổng hợp tình hình hoạt động trong ngày, Báo cáo tháng, Báo cáo quý, Báo cáo sơ bộ, Báo cáo năm", "Báo cáo tổng hợp tình hình hoạt động trong ngày, Báo cáo tháng, Báo cáo quý, Báo cáo giảng bình, Báo cáo năm", "Báo cáo tổng hợp tình hình hoạt động trong ngày, Báo cáo tháng, Báo cáo quý, Báo cáo ban đầu, Báo cáo năm"], correctAnswer:"Báo cáo tổng hợp tình hình hoạt động trong ngày, Báo cáo tháng, Báo cáo quý, Báo cáo LHD, Báo cáo năm", refDoc:"Ngan-hang-cau-hoi-SMS.xlsx"},
+
+  // ══════════════════════════════════════════════════════════════════════════════
+  // MODULE A-SGMCS — Ngân hàng câu hỏi (Hệ thống giám sát mặt đất)
+  // ──────────────────────────────────────────────────────────────────────────────
+  // HƯỚNG DẪN NẠP CÂU HỎI:
+  //   Thêm các object câu hỏi A-SGMCS theo cấu trúc mẫu dưới đây.
+  //   Lưu ý: module PHẢI là "A-SGMCS" (đúng chính xác, phân biệt chữ hoa/thường).
+  //
+  //   Cấu trúc mỗi câu hỏi:
+  //   {
+  //     id: <số thứ tự, tiếp theo sau 662>,
+  //     module: "A-SGMCS",
+  //     moduleName: "A-SGMCS (Hệ thống giám sát mặt đất)",
+  //     question: "<nội dung câu hỏi>",
+  //     options: ["<đáp án A>", "<đáp án B>", "<đáp án C>", "<đáp án D>"],
+  //     correctAnswer: "<đáp án đúng, phải khớp chính xác với một trong các options>",
+  //     refDoc: "Ngan-hang-cau-hoi-SGMCS.xlsx"
+  //   },
+  //
+  //   Ví dụ:
+  //   {id:663, module:"A-SGMCS", moduleName:"A-SGMCS (Hệ thống giám sát mặt đất)",
+  //    question:"...", options:["...","...","...","..."], correctAnswer:"...",
+  //    refDoc:"Ngan-hang-cau-hoi-SGMCS.xlsx"},
+  //
+  //   Hệ thống sẽ TỰ ĐỘNG:
+  //     • Nếu < 50 câu → lấy toàn bộ và trộn ngẫu nhiên
+  //     • Nếu >= 50 câu → bốc ngẫu nhiên đúng 50 câu không trùng lặp
+  // ══════════════════════════════════════════════════════════════════════════════
+  // [THÊM CÁC CÂU HỎI SGMCS VÀO ĐÂY — BẮT ĐẦU TỪ id:663]
+
 ];
 
 const MODULE_CONFIG = [
@@ -1402,6 +1432,7 @@ const MODULE_CONFIG = [
   { id:"Radar",   icon:"📻",  label:"Radar",   name:"Radar (PSR/SSR Sơ cấp & Thứ cấp)",    draw:50, color:"#f87171", bg:"rgba(239,68,68,0.18)",  grd:"linear-gradient(135deg,#7f1d1d,#dc2626)" },
   { id:"VCCS",    icon:"☎",  label:"VCCS",    name:"VCCS (Điều khiển thoại không địa)",    draw:50, color:"#f472b6", bg:"rgba(236,72,153,0.18)", grd:"linear-gradient(135deg,#831843,#db2777)" },
   { id:"SMS",     icon:"🛡",  label:"SMS",     name:"SMS & Báo cáo an toàn hàng không",     draw:17, color:"#fb923c", bg:"rgba(249,115,22,0.18)", grd:"linear-gradient(135deg,#7c2d12,#ea580c)" },
+  { id:"A-SGMCS", icon:"⚙",  label:"A-SGMCS", name:"A-SGMCS (Hệ thống giám sát mặt đất)", draw:50, color:"#22d3ee", bg:"rgba(6,182,212,0.18)",  grd:"linear-gradient(135deg,#164e63,#0891b2)" },
 ];
 
 // State
@@ -1434,11 +1465,25 @@ function renderBubbles() {
 }
 
 // ── START EXAM (direct — no modal) ──
+// SECURITY: chỉ lấy câu từ questionBank đã nạp sẵn — không tạo câu mới.
+// Nếu pool < 50 → lấy toàn bộ; nếu pool >= 50 → bốc ngẫu nhiên đúng 50 câu.
 function startExam(moduleId) {
   selectedModule = moduleId;
-  const mc = getMC(moduleId);
-  const pool = shuffle(questionBank.filter(q => q.module === moduleId));
-  examQuestions = pool.slice(0, mc.draw).map(q => ({ ...q, options: shuffle(q.options) }));
+  const mc       = getMC(moduleId);
+
+  // --- STRICT POOL: chỉ câu thuộc đúng module này ---
+  const rawPool  = questionBank.filter(q => q.module === moduleId);
+
+  if (rawPool.length === 0) {
+    alert(`⚠ Module "${mc.label}" chưa có câu hỏi trong ngân hàng đề.\nVui lòng bổ sung dữ liệu vào questionBank trước khi thi.`);
+    return;
+  }
+
+  // Trộn ngẫu nhiên (Fisher-Yates), sau đó bốc tối đa 50 câu
+  const MAX_DRAW = 50;
+  const pool     = shuffle(rawPool);          // toàn bộ pool đã trộn
+  const count    = Math.min(MAX_DRAW, pool.length);   // <= 50, không bao giờ vượt pool
+  examQuestions  = pool.slice(0, count).map(q => ({ ...q, options: shuffle(q.options) }));
 
   userAnswers  = {};
   currentIdx   = 0;
@@ -1698,4 +1743,4 @@ function retakeModule() {
 renderBubbles();
 </script>
 </body>
-</html>
+</html
