@@ -6,110 +6,358 @@
 <title>Ôn tập CNS (Communication · Navigation · Surveillance)</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-* { box-sizing: border-box; }
+:root {
+  --bg: #0b1f3a;
+  --sky: #2d7ab5;
+  --sky2: #56b4e9;
+  --glass: rgba(255,255,255,0.11);
+  --glass-border: rgba(255,255,255,0.22);
+  --card: rgba(255,255,255,0.11);
+  --border-dim: rgba(255,255,255,0.22);
+  --text-dim: rgba(255,255,255,0.6);
+}
+* { box-sizing:border-box; }
 body { margin:0; padding:0; font-family:"Segoe UI",system-ui,-apple-system,sans-serif; overflow-x:hidden; }
 
-/* ===== SKY BACKGROUND ===== */
-.sky-bg {
-  background: linear-gradient(180deg,
-    #0d2b5e 0%,
-    #1a4a8a 12%,
-    #1e6db5 28%,
-    #2e8fd4 45%,
-    #60b8e8 62%,
-    #90d0f0 78%,
-    #bde6f7 90%,
-    #d8f2fb 100%);
-  min-height: 100vh;
-  position: relative;
-  overflow: hidden;
+/* ═══════════════════════════════════════════════
+   START / WELCOME SCREEN — Sky Blue Glassmorphism
+═══════════════════════════════════════════════ */
+.start-screen {
+  position:relative; min-height:100vh;
+  background:linear-gradient(145deg,#0b1f3a 0%,#143d6b 30%,#1f64a0 62%,#2d7ab5 100%);
+  display:flex; align-items:center; justify-content:center; overflow:hidden;
+}
+.start-screen::before {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 70% at 50% 45%,rgba(90,170,255,0.18) 0%,transparent 60%),
+    radial-gradient(ellipse 45% 50% at 80% 85%,rgba(50,120,200,0.12) 0%,transparent 55%);
 }
 
-/* Stars layer */
-.sky-bg::before {
-  content:'';
-  position:absolute;
-  inset:0;
+/* ── Flight paths background ── */
+.flight-paths {
+  position:absolute; inset:0; z-index:1; pointer-events:none; overflow:hidden;
+  width:100%; height:100%;
+}
+.fp {
+  fill:none; stroke-width:1.5; stroke:rgba(255,255,255,0.1);
+  stroke-dasharray:12 9;
+  animation:flightAnim 22s linear infinite;
+}
+.fp.f2 { stroke:rgba(180,220,255,0.08); stroke-width:1; animation-duration:32s; animation-delay:-10s; }
+.fp.f3 { stroke:rgba(255,255,255,0.07); stroke-dasharray:6 14; animation-duration:40s; animation-delay:-18s; }
+.fp.f4 { stroke:rgba(140,200,255,0.06); animation-duration:28s; animation-delay:-6s; }
+@keyframes flightAnim {
+  from { stroke-dashoffset:900; }
+  to   { stroke-dashoffset:-900; }
+}
+
+/* ── Grid overlay ── */
+.grid-overlay {
+  position:absolute; inset:0; pointer-events:none; z-index:1;
   background-image:
-    radial-gradient(1px 1px at 15% 8%, rgba(255,255,255,0.9) 0%, transparent 100%),
-    radial-gradient(1px 1px at 25% 5%, rgba(255,255,255,0.7) 0%, transparent 100%),
-    radial-gradient(1.5px 1.5px at 40% 3%, rgba(255,255,255,0.8) 0%, transparent 100%),
-    radial-gradient(1px 1px at 60% 7%, rgba(255,255,255,0.6) 0%, transparent 100%),
-    radial-gradient(1px 1px at 75% 4%, rgba(255,255,255,0.8) 0%, transparent 100%),
-    radial-gradient(1px 1px at 85% 9%, rgba(255,255,255,0.7) 0%, transparent 100%),
-    radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.5) 0%, transparent 100%),
-    radial-gradient(1.5px 1.5px at 90% 12%, rgba(255,255,255,0.6) 0%, transparent 100%);
+    linear-gradient(rgba(255,255,255,0.024) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.024) 1px, transparent 1px);
+  background-size:64px 64px;
+}
+
+/* ── Radar rings (subtle sky version) ── */
+.radar-ring-layer {
+  position:absolute; inset:0; z-index:2;
+  display:flex; align-items:center; justify-content:center;
+  pointer-events:none; overflow:hidden;
+}
+.ring {
+  position:absolute; border-radius:50%;
+  border:1px solid rgba(255,255,255,0.055);
+  animation:ringPulse 7s ease-in-out infinite;
+}
+.ring.r1 { width:130px; height:130px; border-color:rgba(255,255,255,0.1); }
+.ring.r2 { width:280px; height:280px; animation-delay:0.6s; }
+.ring.r3 { width:480px; height:480px; animation-delay:1.2s; }
+.ring.r4 { width:720px; height:720px; animation-delay:1.8s; }
+.ring.r5 { width:1000px;height:1000px;animation-delay:2.4s; }
+.ring.r6 { width:1340px;height:1340px;animation-delay:3.0s; border-color:rgba(255,255,255,0.03); }
+@keyframes ringPulse {
+  0%,100% { opacity:0.45; }
+  50%     { opacity:1; border-color:rgba(200,230,255,0.15); }
+}
+.radar-center {
+  position:absolute; width:6px; height:6px; border-radius:50%; z-index:3;
+  background:rgba(255,255,255,0.7); box-shadow:0 0 10px rgba(150,210,255,0.7);
+}
+.radar-cross-h { position:absolute; height:1px; width:100vw; z-index:2; pointer-events:none; background:rgba(255,255,255,0.05); }
+.radar-cross-v { position:absolute; width:1px; height:100vh; z-index:2; pointer-events:none; background:rgba(255,255,255,0.05); }
+.radar-sweep {
+  position:absolute; width:46%; height:1.5px;
+  left:50%; top:50%; transform-origin:0 50%;
+  background:linear-gradient(90deg,rgba(200,230,255,0.7),rgba(180,220,255,0.25),transparent);
+  animation:sweepRot 10s linear infinite; border-radius:0 3px 3px 0;
+}
+.radar-sweep::before {
+  content:''; position:absolute; left:0; top:-60px; width:100%; height:120px;
+  background:conic-gradient(from 178deg at 0% 50%,rgba(180,220,255,0.1),transparent 36%);
+}
+@keyframes sweepRot { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+
+/* ── Aircraft blips ── */
+.blip { position:absolute; z-index:5; pointer-events:none; }
+.blip-dot {
+  width:5px; height:5px; border-radius:50%;
+  background:rgba(200,240,255,0.9);
+  box-shadow:0 0 5px rgba(150,210,255,0.8), 0 0 10px rgba(150,210,255,0.4);
+  animation:blipFade 3.5s ease-in-out infinite; position:relative;
+}
+.blip-dot::after {
+  content:''; position:absolute; top:-4px; left:-4px; width:13px; height:13px;
+  border:1px solid rgba(200,230,255,0.35); border-radius:50%;
+  animation:blipExpand 3.5s ease-in-out infinite;
+}
+.blip-tag {
+  position:absolute; top:-24px; left:9px; white-space:nowrap;
+  font-family:'Courier New',monospace; font-size:9px; font-weight:700;
+  color:rgba(200,240,255,0.78); letter-spacing:0.05em; line-height:1.35;
+}
+@keyframes blipFade   { 0%,100%{opacity:1} 50%{opacity:0.3} }
+@keyframes blipExpand { 0%{transform:scale(1);opacity:0.6} 100%{transform:scale(3);opacity:0} }
+@keyframes blipFadeSlow { 0%,100%{opacity:0.7} 50%{opacity:0.15} }
+
+/* ── Tower silhouette ── */
+.tower-layer {
+  position:absolute; bottom:0; left:3%; z-index:3; pointer-events:none;
+  opacity:0.09; filter:blur(0.4px);
+}
+
+/* ── Welcome container & card (WHITE GLASS) ── */
+.welcome-container { position:relative; z-index:10; width:100%; max-width:430px; padding:16px; }
+.welcome-card {
+  background:rgba(255,255,255,0.11);
+  backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+  border:1px solid rgba(255,255,255,0.22);
+  border-radius:24px; padding:28px 28px 22px;
+  box-shadow:
+    0 20px 60px rgba(5,20,60,0.32),
+    0 1px 0 rgba(255,255,255,0.3) inset,
+    0 -1px 0 rgba(0,30,80,0.1) inset;
+  position:relative; overflow:hidden;
+}
+.welcome-card::before {
+  content:''; position:absolute; top:0; left:12%; right:12%; height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.5),rgba(180,225,255,0.6),rgba(255,255,255,0.5),transparent);
+}
+.welcome-card::after {
+  content:''; position:absolute; top:0; left:0; right:0; height:90px;
+  border-radius:24px 24px 0 0;
+  background:linear-gradient(180deg,rgba(255,255,255,0.07) 0%,transparent 100%);
   pointer-events:none;
-  opacity:0.7;
 }
 
-/* ===== CLOUDS ===== */
-.cloud { position:absolute; background:white; border-radius:50px; filter:blur(3px); }
-.c1 { width:220px;height:60px; top:22%;left:8%;  opacity:0.55; box-shadow:85px 0 0 22px white,170px -12px 0 12px white; }
-.c2 { width:150px;height:45px; top:18%;left:52%; opacity:0.4;  box-shadow:60px 0 0 16px white,120px -8px 0 8px white; }
-.c3 { width:100px;height:32px; top:14%;left:72%; opacity:0.45; box-shadow:44px -6px 0 10px white; }
-.c4 { width:180px;height:50px; top:28%;left:28%; opacity:0.35; box-shadow:70px 0 0 20px white; }
-.c5 { width:260px;height:70px; top:20%;left:-3%; opacity:0.5;  box-shadow:100px 5px 0 28px white,200px 0 0 18px white; }
-.c6 { width:130px;height:38px; top:32%;left:65%; opacity:0.3;  box-shadow:52px 0 0 14px white; }
+/* HUD corners */
+.hud-c { position:absolute; width:14px; height:14px; z-index:1; }
+.hud-c.tl { top:9px;left:9px;   border-top:1.5px solid rgba(255,255,255,0.4);border-left:1.5px solid rgba(255,255,255,0.4);border-radius:3px 0 0 0; }
+.hud-c.tr { top:9px;right:9px;  border-top:1.5px solid rgba(255,255,255,0.4);border-right:1.5px solid rgba(255,255,255,0.4);border-radius:0 3px 0 0; }
+.hud-c.bl { bottom:9px;left:9px; border-bottom:1.5px solid rgba(255,255,255,0.4);border-left:1.5px solid rgba(255,255,255,0.4);border-radius:0 0 0 3px; }
+.hud-c.br { bottom:9px;right:9px;border-bottom:1.5px solid rgba(255,255,255,0.4);border-right:1.5px solid rgba(255,255,255,0.4);border-radius:0 0 3px 0; }
 
-/* ===== CONTENT OVERLAY ===== */
-.content-overlay {
-  position:relative;
+/* Sys bar */
+.sys-bar {
+  display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;
+  padding:5px 10px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.14); border-radius:8px;
+}
+.sys-dot { width:6px;height:6px;border-radius:50%;background:#7ff0c4;box-shadow:0 0 6px #7ff0c4;animation:blipFade 2s ease-in-out infinite; }
+.sys-txt { font-family:monospace;font-size:9px;letter-spacing:0.16em;color:rgba(180,255,220,0.85);font-weight:700; }
+.sys-time { font-family:monospace;font-size:9px;letter-spacing:0.08em;color:rgba(200,230,255,0.65); }
+
+/* Logo ring */
+.logo-ring {
+  width:56px; height:56px; border-radius:16px; margin:0 auto 12px;
+  background:linear-gradient(135deg,rgba(255,255,255,0.18),rgba(100,180,255,0.15));
+  border:1px solid rgba(255,255,255,0.28);
+  box-shadow:0 8px 24px rgba(0,30,80,0.3),inset 0 1px 0 rgba(255,255,255,0.35);
+  display:flex;align-items:center;justify-content:center;position:relative;
+}
+.logo-ring::before { content:'';position:absolute;inset:-4px;border-radius:20px;border:1px solid rgba(255,255,255,0.1); }
+
+/* Header text */
+.header-badge { font-size:0.61rem;font-weight:800;letter-spacing:0.22em;text-transform:uppercase;color:rgba(255,255,255,0.68);text-align:center;margin-bottom:8px; }
+.main-title {
+  font-size:clamp(0.9rem,2.3vw,1.08rem); font-weight:900;
+  text-transform:uppercase; line-height:1.38; text-align:center; margin:0 0 6px;
+  color:white; text-shadow:0 2px 20px rgba(80,160,255,0.4);
+}
+.subtitle { font-size:0.82rem;font-weight:400;color:rgba(255,255,255,0.62);text-align:center;margin:0 0 10px; }
+.info-pills { display:flex;flex-wrap:wrap;gap:5px;justify-content:center; }
+.info-pill { font-size:0.64rem;padding:3px 10px;border-radius:20px;font-weight:600;border:1px solid;opacity:0.9; }
+
+/* Divider */
+.neon-divider { height:1px;margin:15px 0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent); }
+
+/* Form fields */
+.field-group { margin-bottom:11px;transition:opacity 0.25s ease,transform 0.25s ease; }
+.field-label { display:flex;align-items:center;gap:6px;font-size:0.63rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.55);margin-bottom:6px; }
+
+/* Select */
+.select-wrap { position:relative; }
+.select-wrap .select-chevron { position:absolute;right:13px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,0.45);font-size:11px;pointer-events:none;transition:color 0.2s; }
+.select-neon {
+  appearance:none; -webkit-appearance:none; width:100%;
+  padding:11px 40px 11px 14px;
+  background:rgba(255,255,255,0.09); border:1px solid rgba(255,255,255,0.2);
+  border-radius:10px; color:rgba(255,255,255,0.92);
+  font-size:0.88rem; font-family:inherit; cursor:pointer; outline:none;
+  transition:border-color 0.2s,background 0.2s,box-shadow 0.2s;
+}
+.select-neon option { background:#0d2d50; color:#e0f2fe; }
+.select-neon:focus { border-color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.14);box-shadow:0 0 0 3px rgba(255,255,255,0.08); }
+.select-wrap:focus-within .select-chevron { color:rgba(255,255,255,0.75); }
+.select-neon:disabled { opacity:0.35;cursor:not-allowed; }
+
+/* Locked */
+.field-group.locked .field-label { color:rgba(255,180,180,0.5); }
+.field-group.locked .select-neon { border-color:rgba(255,150,150,0.2);background:rgba(255,100,100,0.04); }
+.field-group.locked .select-chevron { color:rgba(255,150,150,0.4)!important; }
+
+/* ── CTA Button (sky gradient + pill shape) ── */
+.btn-neon {
+  position:relative; overflow:hidden; width:100%;
+  padding:14px 28px; margin-top:16px;
+  background:linear-gradient(135deg,#1a6fb8 0%,#2589d8 55%,#56b4e9 100%);
+  border:none; border-radius:50px; color:white;
+  font-weight:800; font-size:0.95rem; letter-spacing:0.1em; text-transform:uppercase;
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  cursor:pointer; outline:none;
+  box-shadow:0 8px 28px rgba(26,111,184,0.5),0 2px 8px rgba(0,0,0,0.15);
+  transition:all 0.22s cubic-bezier(0.34,1.56,0.64,1);
+}
+.btn-neon::before { content:'';position:absolute;inset:0;border-radius:50px;background:linear-gradient(135deg,rgba(255,255,255,0.18),transparent); }
+.btn-neon::after {
+  content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.22),transparent);
+  transform:skewX(-14deg);transition:left 0.45s ease;
+}
+.btn-neon:hover:not(:disabled)::after { left:160%; }
+.btn-neon:hover:not(:disabled) { transform:translateY(-2px) scale(1.015);box-shadow:0 12px 36px rgba(26,111,184,0.6); }
+.btn-neon:active:not(:disabled) { transform:scale(0.97); }
+.btn-neon:disabled { opacity:0.32;cursor:not-allowed;box-shadow:none;transform:none; }
+
+/* Animations */
+@keyframes slideUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+.slide-up { animation:slideUp 0.45s cubic-bezier(0.22,1,0.36,1) both; }
+.delay-1  { animation-delay:0.08s; }
+.delay-2  { animation-delay:0.16s; }
+.delay-3  { animation-delay:0.24s; }
+@keyframes cascadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.cascade-in { animation:cascadeIn 0.28s cubic-bezier(0.22,1,0.36,1) both; }
+
+/* Card footer */
+.card-footer { text-align:center;margin-top:12px;font-size:0.6rem;letter-spacing:0.1em;color:rgba(255,255,255,0.22); }
+
+/* ══════════════════════════════════════════
+   RESULT SCREEN — Sky Blue Glassmorphism
+══════════════════════════════════════════ */
+.result-bg {
   min-height:100vh;
-  display:flex;
-  flex-direction:column;
+  background:linear-gradient(145deg,#0b1f3a 0%,#143d6b 30%,#1f64a0 62%,#2d7ab5 100%);
+  display:flex; flex-direction:column; align-items:center;
+  padding:28px 16px 48px; position:relative; overflow-x:hidden;
 }
+.result-bg::before {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:radial-gradient(ellipse 75% 60% at 50% 30%,rgba(90,170,255,0.18) 0%,transparent 60%);
+}
+/* Result main card */
+.result-card {
+  width:100%; max-width:400px; margin:0 auto;
+  background:rgba(255,255,255,0.11);
+  backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+  border:1px solid rgba(255,255,255,0.22);
+  border-radius:24px; padding:28px 24px 22px;
+  box-shadow:0 20px 60px rgba(5,20,60,0.32),0 1px 0 rgba(255,255,255,0.3) inset;
+  position:relative; overflow:hidden; z-index:10;
+}
+.result-card::before {
+  content:''; position:absolute; top:0; left:12%; right:12%; height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.5),rgba(180,225,255,0.6),rgba(255,255,255,0.5),transparent);
+}
+/* Score display */
+.score-pct-num {
+  font-size:5.5rem; font-weight:900; line-height:1; letter-spacing:-0.03em;
+  color:white; text-shadow:0 4px 24px rgba(100,200,255,0.4);
+}
+/* Pass/fail tag */
+.result-tag {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:6px 20px; border-radius:50px;
+  font-size:0.78rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase;
+}
+.result-tag.pass { background:rgba(50,220,150,0.1);border:1px solid rgba(80,220,160,0.28);color:#90f0c8; }
+.result-tag.fail { background:rgba(255,80,80,0.09);border:1px solid rgba(255,130,130,0.25);color:#ffb3b3; }
+/* Score bar */
+.res-bar-bg { height:5px;border-radius:50px;background:rgba(255,255,255,0.1);overflow:hidden;margin-top:16px; }
+.res-bar-fill { height:100%;border-radius:50px;transition:width 0.65s cubic-bezier(0.22,1,0.36,1); }
+/* Action buttons */
+.btn-home {
+  flex:1; padding:12px 16px; border-radius:50px;
+  font-weight:700; font-size:0.85rem; letter-spacing:0.04em;
+  background:rgba(0,0,0,0.22); backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.85);
+  cursor:pointer; transition:all 0.18s ease;
+}
+.btn-home:hover { background:rgba(0,0,0,0.35);border-color:rgba(255,255,255,0.35); }
+.btn-retake {
+  flex:1; padding:12px 16px; border-radius:50px;
+  font-weight:700; font-size:0.85rem; letter-spacing:0.04em;
+  background:linear-gradient(135deg,#56b4e9 0%,#1a6fb8 100%);
+  border:none; color:white; cursor:pointer; transition:all 0.18s ease;
+  box-shadow:0 6px 18px rgba(26,111,184,0.4);
+}
+.btn-retake:hover { transform:translateY(-1px);box-shadow:0 10px 26px rgba(26,111,184,0.5); }
+/* Review section */
+.review-wrap {
+  width:100%; max-width:540px; margin:18px auto 0; z-index:10; position:relative;
+}
+.review-card-item {
+  border-radius:16px; padding:16px; margin-bottom:10px;
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.12);
+  backdrop-filter:blur(12px);
+}
+.review-card-item.correct { border-color:rgba(80,220,160,0.22); }
+.review-card-item.wrong   { border-color:rgba(255,130,130,0.2); }
+/* Filter tabs */
+.f-tab {
+  padding:6px 14px; border-radius:50px;
+  font-size:0.76rem; font-weight:700;
+  border:1px solid rgba(255,255,255,0.18); color:rgba(255,255,255,0.6);
+  cursor:pointer; transition:all 0.15s ease; background:transparent;
+}
+.f-tab.active { background:rgba(86,180,233,0.22);border-color:rgba(86,180,233,0.45);color:rgba(180,225,255,0.95); }
 
-/* ===== MODULE BUBBLES ===== */
-.module-bubble {
-  cursor:pointer;
-  transition:all 0.32s cubic-bezier(0.34,1.56,0.64,1);
-  user-select:none;
+/* ═══════════════════════════════════════════════
+   SCREEN TRANSITIONS
+═══════════════════════════════════════════════ */
+@keyframes screenFadeIn {
+  from { opacity:0; transform:translateY(22px) scale(0.97); }
+  to   { opacity:1; transform:translateY(0) scale(1); }
 }
-.module-bubble:hover { transform:translateY(-10px) scale(1.07); filter:drop-shadow(0 22px 32px rgba(0,0,0,0.32)); }
-.module-bubble:active { transform:scale(0.96); }
+@keyframes screenFadeOut {
+  from { opacity:1; transform:translateY(0) scale(1); }
+  to   { opacity:0; transform:translateY(-30px) scale(0.97); }
+}
+.screen-enter { animation:screenFadeIn  0.25s cubic-bezier(0.22,1,0.36,1) both; }
+.screen-exit  { animation:screenFadeOut 0.18s ease forwards; pointer-events:none; }
 
-.bubble-inner {
-  border-radius:22px;
-  padding:28px 18px 22px;
-  text-align:center;
-  border:2px solid rgba(255,255,255,0.55);
-  backdrop-filter:blur(18px);
-  -webkit-backdrop-filter:blur(18px);
-  position:relative;
-  overflow:hidden;
-  transition:border-color 0.2s;
-}
-.bubble-inner::before {
-  content:'';
-  position:absolute;
-  top:0;left:0;right:0;
-  height:45%;
-  background:rgba(255,255,255,0.18);
-  border-radius:20px 20px 60% 60%;
-  pointer-events:none;
-}
-.module-bubble:hover .bubble-inner {
-  border-color:rgba(255,255,255,0.85);
-}
+/* ═══════════════════════════════════════════════
+   EXAM SCREEN
+═══════════════════════════════════════════════ */
+.exam-bg { background:linear-gradient(135deg,#060d1a 0%,#0b1a30 50%,#060d1a 100%); min-height:100vh; }
 
-/* ===== EXAM SCREEN ===== */
-.exam-bg {
-  background:linear-gradient(135deg,#060d1a 0%,#0b1a30 50%,#060d1a 100%);
-  min-height:100vh;
-}
-
-/* ===== OPTIONS ===== */
+/* OPTIONS */
 .option-btn {
-  cursor:pointer;
-  transition:all 0.18s;
-  border:2px solid rgba(255,255,255,0.07);
-  border-radius:12px;
-  padding:12px 16px;
-  min-height:52px;
-  display:flex;
-  align-items:flex-start;
-  gap:12px;
+  cursor:pointer; transition:all 0.18s;
+  border:2px solid rgba(255,255,255,0.07); border-radius:12px;
+  padding:12px 16px; min-height:52px;
+  display:flex; align-items:flex-start; gap:12px;
   background:rgba(255,255,255,0.03);
 }
 .option-btn:hover  { border-color:rgba(14,165,233,0.55)!important; background:rgba(14,165,233,0.09)!important; transform:translateX(4px); }
@@ -117,7 +365,7 @@ body { margin:0; padding:0; font-family:"Segoe UI",system-ui,-apple-system,sans-
 .option-btn.correct  { border-color:#10b981!important; background:rgba(16,185,129,0.14)!important; }
 .option-btn.wrong    { border-color:#ef4444!important; background:rgba(239,68,68,0.14)!important; }
 
-/* ===== NAV GRID ===== */
+/* NAV GRID */
 .nav-btn {
   min-width:34px; min-height:34px; border-radius:7px;
   cursor:pointer; transition:all 0.12s; font-size:11px; font-weight:700;
@@ -140,8 +388,7 @@ body { margin:0; padding:0; font-family:"Segoe UI",system-ui,-apple-system,sans-
   max-height:65vh; overflow-y:auto;
   transform:translateY(100%); transition:transform 0.3s ease;
   background:rgba(6,13,26,0.97); backdrop-filter:blur(20px);
-  border-radius:20px 20px 0 0;
-  border-top:1px solid rgba(255,255,255,0.1);
+  border-radius:20px 20px 0 0; border-top:1px solid rgba(255,255,255,0.1);
 }
 .drawer.open { transform:translateY(0); }
 
@@ -151,542 +398,180 @@ body { margin:0; padding:0; font-family:"Segoe UI",system-ui,-apple-system,sans-
 
 @media(min-width:1024px) { .fab,.drawer { display:none!important; } .lg-sidebar { display:block; } }
 @media(max-width:1023px)  { .lg-sidebar { display:none; } }
-
-/* ===== SCREEN TRANSITIONS ===== */
-@keyframes screenFadeIn {
-  from { opacity:0; transform:translateY(20px) scale(0.98); }
-  to   { opacity:1; transform:translateY(0)    scale(1); }
-}
-@keyframes screenFadeOut {
-  from { opacity:1; transform:translateY(0)     scale(1); }
-  to   { opacity:0; transform:translateY(-14px) scale(0.98); }
-}
-.screen-enter { animation:screenFadeIn  0.45s cubic-bezier(0.22,1,0.36,1) both; }
-.screen-exit  { animation:screenFadeOut 0.3s  ease forwards; pointer-events:none; }
-
-/* ===== WELCOME CARD ===== */
-.welcome-card {
-  background: linear-gradient(160deg,rgba(6,20,50,0.88) 0%,rgba(4,12,30,0.92) 100%);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-  border: 1px solid rgba(255,255,255,0.13);
-  border-radius: 24px;
-  box-shadow:
-    0 32px 72px rgba(0,0,0,0.55),
-    0 0 0 1px rgba(14,165,233,0.12),
-    inset 0 1px 0 rgba(255,255,255,0.08);
-}
-
-/* ===== FORM GROUPS / CASCADE ANIMATION ===== */
-@keyframes cascadeIn {
-  from { opacity:0; transform:translateY(10px); }
-  to   { opacity:1; transform:translateY(0); }
-}
-.form-group { transition: opacity 0.28s ease; }
-.cascade-in { animation: cascadeIn 0.32s cubic-bezier(0.22,1,0.36,1) both; }
-
-/* ===== SELECT CUSTOM ===== */
-.select-wrapper { position:relative; }
-.select-wrapper .select-arrow {
-  position:absolute; right:14px; top:50%; transform:translateY(-50%);
-  color:rgba(148,163,184,0.8); font-size:12px; pointer-events:none;
-}
-.select-custom {
-  appearance:none; -webkit-appearance:none;
-  width:100%; padding:13px 44px 13px 16px;
-  background:rgba(255,255,255,0.06);
-  border:1px solid rgba(255,255,255,0.14);
-  border-radius:12px; color:white;
-  font-size:0.93rem; font-family:inherit;
-  cursor:pointer; outline:none;
-  transition:border-color 0.2s, background 0.2s, box-shadow 0.2s;
-}
-.select-custom option { background:#0d1b30; color:white; }
-.select-custom:focus {
-  border-color:rgba(14,165,233,0.65);
-  background:rgba(14,165,233,0.07);
-  box-shadow:0 0 0 3px rgba(14,165,233,0.18);
-}
-.select-custom:disabled { opacity:0.35; cursor:not-allowed; }
-
-/* ===== START BUTTON ===== */
-.btn-start {
-  display:flex; align-items:center; justify-content:center; gap:10px;
-  width:100%; padding:15px 32px;
-  background:linear-gradient(135deg,#0369a1 0%,#0ea5e9 60%,#38bdf8 100%);
-  border:none; border-radius:14px; color:white;
-  font-weight:900; font-size:1.05rem; letter-spacing:0.1em;
-  cursor:pointer; outline:none;
-  transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
-  box-shadow:0 8px 28px rgba(14,165,233,0.38), 0 2px 8px rgba(0,0,0,0.3);
-  position:relative; overflow:hidden;
-}
-.btn-start::after {
-  content:''; position:absolute; inset:0;
-  background:linear-gradient(135deg,rgba(255,255,255,0.18),transparent);
-  border-radius:14px;
-}
-.btn-start:hover:not(:disabled) {
-  transform:translateY(-3px) scale(1.015);
-  box-shadow:0 14px 38px rgba(14,165,233,0.52), 0 4px 12px rgba(0,0,0,0.35);
-}
-.btn-start:active:not(:disabled) { transform:scale(0.97); }
-.btn-start:disabled {
-  opacity:0.38; cursor:not-allowed;
-  box-shadow:0 4px 12px rgba(14,165,233,0.15);
-  transform:none;
-}
-
-/* ===== LABEL FIELD ===== */
-.field-label {
-  display:block; font-size:0.7rem; font-weight:800;
-  letter-spacing:0.12em; text-transform:uppercase;
-  color:rgba(148,163,184,0.75); margin-bottom:7px;
-}
-
-/* ===== WELCOME TITLE GRADIENT ===== */
-.title-glow {
-  background: linear-gradient(135deg,#e0f2fe,#bae6fd,#7dd3fc,#38bdf8);
-  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-  background-clip:text;
-  filter:drop-shadow(0 0 18px rgba(56,189,248,0.35));
-}
 </style>
 </head>
 <body>
 
 <!-- ======================================================
-     START SCREEN — LONG THANH ATC SCENE
+     START SCREEN — ATC RADAR COMMAND CENTER
      ====================================================== -->
-<div id="startScreen" class="sky-bg">
-  <!-- Clouds -->
-  <div class="cloud c1"></div><div class="cloud c2"></div>
-  <div class="cloud c3"></div><div class="cloud c4"></div>
-  <div class="cloud c5"></div><div class="cloud c6"></div>
+<div id="startScreen" class="start-screen">
 
-  <!-- ===== SVG SCENE ===== -->
-  <svg class="absolute bottom-0 left-0 right-0 w-full" viewBox="0 0 1440 480"
-       preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <!-- Sky horizon glow -->
-      <radialGradient id="sunGlow" cx="38%" cy="72%" r="30%">
-        <stop offset="0%"  stop-color="#ffe8a0" stop-opacity="0.35"/>
-        <stop offset="40%" stop-color="#ffb347" stop-opacity="0.12"/>
-        <stop offset="100%" stop-color="transparent" stop-opacity="0"/>
-      </radialGradient>
-      <!-- Mountains -->
-      <linearGradient id="mtnFar" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#3a7ca8" stop-opacity="0.55"/>
-        <stop offset="100%" stop-color="#2a5e80" stop-opacity="0.7"/>
-      </linearGradient>
-      <linearGradient id="mtnMid" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#2e6e90"/>
-        <stop offset="100%" stop-color="#1a4e6a"/>
-      </linearGradient>
-      <linearGradient id="mtnNear" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#1e5a70"/>
-        <stop offset="100%" stop-color="#0f3a50"/>
-      </linearGradient>
-      <!-- Ground -->
-      <linearGradient id="groundGrd" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%"  stop-color="#2d7a42"/>
-        <stop offset="100%" stop-color="#173e22"/>
-      </linearGradient>
-      <!-- Tower shaft -->
-      <linearGradient id="towerShaft" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%"   stop-color="#d0e8f4"/>
-        <stop offset="30%"  stop-color="#f0f8fc"/>
-        <stop offset="70%"  stop-color="#ffffff"/>
-        <stop offset="100%" stop-color="#bcd8ea"/>
-      </linearGradient>
-      <!-- Dome -->
-      <radialGradient id="domeGrd" cx="40%" cy="38%" r="60%">
-        <stop offset="0%"  stop-color="#f8fdff"/>
-        <stop offset="60%" stop-color="#e0f4fc"/>
-        <stop offset="100%" stop-color="#b8dff0"/>
-      </radialGradient>
-      <!-- Terminal -->
-      <linearGradient id="termGrd" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%"   stop-color="#c8e8f8"/>
-        <stop offset="100%" stop-color="#8ec8e0"/>
-      </linearGradient>
-      <!-- Runway -->
-      <linearGradient id="runwayGrd" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%"   stop-color="#1a2a3a" stop-opacity="0"/>
-        <stop offset="10%"  stop-color="#1a2a3a"/>
-        <stop offset="90%"  stop-color="#1a2a3a"/>
-        <stop offset="100%" stop-color="#1a2a3a" stop-opacity="0"/>
-      </linearGradient>
-      <!-- Shadow filter -->
-      <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%">
-        <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="rgba(0,30,60,0.45)"/>
-      </filter>
-      <filter id="shadowSm" x="-5%" y="-5%" width="110%" height="110%">
-        <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="rgba(0,30,60,0.35)"/>
-      </filter>
-    </defs>
+  <!-- Blue atmosphere -->
+  <div class="atc-atmos"></div>
+  <div class="atc-scanlines"></div>
+  <div class="grid-overlay"></div>
 
-    <!-- Horizon glow -->
-    <rect x="0" y="0" width="1440" height="480" fill="url(#sunGlow)"/>
+  <!-- Radar: rings + center + crosshair + sweep -->
+  <div class="radar-ring-layer">
+    <div class="ring r1"></div>
+    <div class="ring r2"></div>
+    <div class="ring r3"></div>
+    <div class="ring r4"></div>
+    <div class="ring r5"></div>
+    <div class="ring r6"></div>
+    <div class="radar-center"></div>
+    <div class="radar-cross-h"></div>
+    <div class="radar-cross-v"></div>
+    <div class="radar-sweep"></div>
+  </div>
 
-    <!-- ── FAR MOUNTAINS ── -->
-    <path d="M0,310 Q80,255 180,278 Q280,245 400,268 Q520,235 640,260
-             Q760,230 880,252 Q1000,222 1120,248 Q1240,218 1360,238 L1440,245
-             L1440,480 L0,480 Z" fill="url(#mtnFar)"/>
+  <!-- ATC Tower Long Thành silhouette -->
+  <div class="tower-layer">
+    <svg viewBox="0 0 160 520" fill="white" style="height:295px;width:auto">
+      <rect x="12" y="420" width="136" height="100" rx="2"/>
+      <rect x="20" y="432" width="18" height="26" rx="1" fill="rgba(0,0,0,0.3)"/>
+      <rect x="46" y="432" width="18" height="26" rx="1" fill="rgba(0,0,0,0.3)"/>
+      <rect x="72" y="432" width="16" height="26" rx="1" fill="rgba(0,0,0,0.3)"/>
+      <rect x="96" y="432" width="18" height="26" rx="1" fill="rgba(0,0,0,0.3)"/>
+      <rect x="122" y="432" width="16" height="26" rx="1" fill="rgba(0,0,0,0.3)"/>
+      <polygon points="55,272 105,272 97,420 63,420"/>
+      <rect x="64" y="166" width="32" height="109"/>
+      <polygon points="44,148 116,148 100,167 60,167"/>
+      <rect x="36" y="110" width="88" height="40" rx="5"/>
+      <rect x="42" y="115" width="76" height="28" rx="3" fill="rgba(0,80,180,0.35)"/>
+      <line x1="61" y1="115" x2="61" y2="143" stroke="rgba(0,0,0,0.4)" stroke-width="1.5"/>
+      <line x1="80" y1="115" x2="80" y2="143" stroke="rgba(0,0,0,0.4)" stroke-width="1.5"/>
+      <line x1="99" y1="115" x2="99" y2="143" stroke="rgba(0,0,0,0.4)" stroke-width="1.5"/>
+      <rect x="57" y="98" width="46" height="14" rx="3"/>
+      <rect x="76" y="68" width="8" height="32"/>
+      <rect x="78" y="18" width="4" height="52"/>
+      <polygon points="80,6 76,20 84,20"/>
+      <ellipse cx="80" cy="96" rx="14" ry="5"/>
+      <line x1="64" y1="166" x2="50" y2="272" stroke="white" stroke-width="1.5"/>
+      <line x1="96" y1="166" x2="110" y2="272" stroke="white" stroke-width="1.5"/>
+    </svg>
+  </div>
 
-    <!-- ── MID MOUNTAINS ── -->
-    <path d="M0,335 Q120,285 240,308 Q360,270 480,295 Q590,262 720,288
-             Q840,258 960,280 Q1080,255 1200,272 Q1320,248 1440,265
-             L1440,480 L0,480 Z" fill="url(#mtnMid)"/>
+  <!-- Aircraft blips -->
+  <div class="blip" style="top:11%;left:68%">
+    <div class="blip-dot"></div>
+    <div class="blip-tag">VN161<br>FL340 &#8599; 465kt</div>
+  </div>
+  <div class="blip" style="top:31%;left:83%">
+    <div class="blip-dot" style="animation-delay:1.3s"></div>
+    <div class="blip-tag">QH123<br>FL280 &#8600; 418kt</div>
+  </div>
+  <div class="blip" style="top:67%;left:77%">
+    <div class="blip-dot" style="animation-delay:0.7s"></div>
+    <div class="blip-tag">VJ456<br>FL190 &#8594; 382kt</div>
+  </div>
+  <div class="blip" style="top:74%;left:16%">
+    <div class="blip-dot" style="animation-delay:2.1s"></div>
+    <div class="blip-tag">BL789<br>FL120 &#8599; 315kt</div>
+  </div>
+  <div class="blip" style="top:17%;left:24%">
+    <div class="blip-dot" style="animation-delay:1.6s"></div>
+    <div class="blip-tag">VN234<br>FL350 &#8594; 472kt</div>
+  </div>
 
-    <!-- ── NEAR HILLS ── -->
-    <path d="M0,362 Q180,328 340,345 Q500,318 660,338 Q800,315 960,335
-             Q1100,318 1260,332 Q1360,320 1440,328
-             L1440,480 L0,480 Z" fill="url(#mtnNear)"/>
+  <!-- ── WELCOME CARD ── -->
+  <div class="welcome-container">
+    <div class="welcome-card screen-enter" id="welcomeCard">
 
-    <!-- ── GROUND BASE ── -->
-    <rect x="0" y="375" width="1440" height="105" fill="url(#groundGrd)"/>
+      <!-- HUD corners -->
+      <div class="hud-c tl"></div>
+      <div class="hud-c tr"></div>
+      <div class="hud-c bl"></div>
+      <div class="hud-c br"></div>
 
-    <!-- ── RUNWAY ── -->
-    <rect x="180" y="370" width="820" height="28" rx="2" fill="url(#runwayGrd)" opacity="0.88"/>
-    <!-- Runway centerline dashes -->
-    <g fill="none" stroke="rgba(255,255,240,0.6)" stroke-width="2.5" stroke-dasharray="28,18">
-      <line x1="200" y1="384" x2="980" y2="384"/>
-    </g>
-    <!-- Runway threshold markings -->
-    <g fill="rgba(255,255,240,0.55)" font-size="0">
-      <rect x="196" y="372" width="6" height="24" rx="1"/>
-      <rect x="206" y="372" width="6" height="24" rx="1"/>
-      <rect x="216" y="372" width="6" height="24" rx="1"/>
-      <rect x="974" y="372" width="6" height="24" rx="1"/>
-      <rect x="964" y="372" width="6" height="24" rx="1"/>
-      <rect x="954" y="372" width="6" height="24" rx="1"/>
-    </g>
-
-    <!-- ── TAXIWAY ── -->
-    <rect x="0" y="362" width="1440" height="14" fill="#1e3040" opacity="0.55" rx="1"/>
-    <!-- Yellow taxiway centerline -->
-    <line x1="0" y1="369" x2="1440" y2="369" stroke="rgba(255,200,0,0.45)" stroke-width="2" stroke-dasharray="32,16"/>
-
-    <!-- ══════════════════════════════════════════════════
-         ATC TOWER — Long Thanh Style (center-left)
-         Positioned at x=320 translate
-         ══════════════════════════════════════════════════ -->
-    <g filter="url(#shadow)" transform="translate(295,0)">
-
-      <!-- BASE BUILDING (broader foundation) -->
-      <rect x="44" y="320" width="112" height="58" rx="5" fill="#c8e2f0"/>
-      <rect x="50" y="314" width="100" height="12" rx="3" fill="#daeef8"/>
-      <!-- Base windows -->
-      <rect x="58" y="328" width="20" height="28" rx="2" fill="rgba(80,180,230,0.35)"/>
-      <rect x="84" y="328" width="20" height="28" rx="2" fill="rgba(80,180,230,0.35)"/>
-      <rect x="110" y="328" width="20" height="28" rx="2" fill="rgba(80,180,230,0.35)"/>
-      <!-- Base door -->
-      <rect x="86" y="343" width="28" height="35" rx="3" fill="rgba(60,160,210,0.3)"/>
-      <!-- Base shadow line -->
-      <rect x="44" y="370" width="112" height="5" rx="0" fill="rgba(0,40,70,0.18)"/>
-
-      <!-- SHAFT — elegant tapered column -->
-      <!-- Outer shadow shape -->
-      <path d="M72,186 L72,318 L128,318 L128,186 Q100,178 72,186 Z" fill="rgba(0,40,70,0.12)"/>
-      <!-- Main shaft -->
-      <path d="M74,182 L74,318 L126,318 L126,182 Q100,175 74,182 Z" fill="url(#towerShaft)"/>
-      <!-- Shaft side highlight -->
-      <rect x="78" y="185" width="10" height="128" rx="3" fill="rgba(200,240,255,0.35)"/>
-      <rect x="112" y="185" width="8" height="128" rx="3" fill="rgba(160,210,235,0.2)"/>
-      <!-- Shaft horizontal bands -->
-      <rect x="74" y="228" width="52" height="6" rx="0" fill="rgba(0,60,90,0.12)"/>
-      <rect x="74" y="264" width="52" height="6" rx="0" fill="rgba(0,60,90,0.12)"/>
-      <rect x="74" y="300" width="52" height="5" rx="0" fill="rgba(0,60,90,0.10)"/>
-
-      <!-- EQUIPMENT ROOM (mid-shaft bulge) -->
-      <rect x="68" y="240" width="64" height="22" rx="4" fill="#daeef8"/>
-      <rect x="72" y="243" width="56" height="16" rx="3" fill="rgba(255,255,255,0.4)"/>
-
-      <!-- NECK (transition to cab) -->
-      <rect x="82" y="148" width="36" height="38" rx="4" fill="url(#towerShaft)"/>
-      <rect x="86" y="150" width="9" height="34" rx="2" fill="rgba(200,240,255,0.3)"/>
-
-      <!-- CONTROL CAB FLOOR SLAB -->
-      <rect x="54" y="162" width="92" height="10" rx="3" fill="#daeef8"/>
-
-      <!-- CONTROL CAB — wraparound glass -->
-      <path d="M50,125 Q100,102 150,125 L150,164 Q100,158 50,164 Z" fill="#d8eef8"/>
-      <!-- CAB glass panels -->
-      <rect x="54" y="124" width="13" height="38" rx="1" fill="rgba(100,200,240,0.45)" opacity="0.9"/>
-      <rect x="70" y="119" width="14" height="42" rx="1" fill="rgba(120,210,245,0.5)" opacity="0.9"/>
-      <rect x="87" y="116" width="14" height="44" rx="1" fill="rgba(130,215,248,0.55)" opacity="0.9"/>
-      <rect x="104" y="117" width="13" height="44" rx="1" fill="rgba(120,210,245,0.5)" opacity="0.9"/>
-      <rect x="120" y="120" width="13" height="41" rx="1" fill="rgba(110,205,242,0.45)" opacity="0.9"/>
-      <rect x="136" y="126" width="11" height="37" rx="1" fill="rgba(100,200,240,0.4)" opacity="0.9"/>
-      <!-- CAB glass tint overlay -->
-      <path d="M50,125 Q100,102 150,125 L150,164 Q100,158 50,164 Z"
-            fill="rgba(80,170,220,0.12)"/>
-      <!-- CAB top cornice -->
-      <path d="M46,122 Q100,98 154,122 L154,128 Q100,104 46,128 Z" fill="#e8f4fc"/>
-      <!-- CAB bottom trim -->
-      <rect x="50" y="162" width="100" height="5" rx="1" fill="#c8e0f0"/>
-
-      <!-- UPPER NECK -->
-      <rect x="87" y="94" width="26" height="30" rx="3" fill="url(#towerShaft)"/>
-
-      <!-- DOME SUPPORT COLLAR -->
-      <ellipse cx="100" cy="95" rx="38" ry="8" fill="#c8e4f2"/>
-      <ellipse cx="100" cy="92" rx="34" ry="6" fill="#daeef8"/>
-
-      <!-- MAIN RADOME (SSR dome) -->
-      <!-- Outer shell -->
-      <circle cx="100" cy="65" r="36" fill="url(#domeGrd)" stroke="#b8d8ea" stroke-width="2"/>
-      <!-- Dome panel seam lines -->
-      <path d="M68,65 Q100,38 132,65" stroke="#c8e4f0" stroke-width="1.2" fill="none" opacity="0.7"/>
-      <path d="M64,72 Q100,82 136,72" stroke="#c8e4f0" stroke-width="1.2" fill="none" opacity="0.7"/>
-      <path d="M70,52 Q100,45 130,52" stroke="#c8e4f0" stroke-width="1" fill="none" opacity="0.5"/>
-      <ellipse cx="100" cy="65" rx="36" ry="14" stroke="#c8e4f0" stroke-width="1" fill="none" opacity="0.6"/>
-      <ellipse cx="100" cy="65" rx="36" ry="6"  stroke="#d0eaf4" stroke-width="0.8" fill="none" opacity="0.4"/>
-      <!-- Dome highlight -->
-      <ellipse cx="88" cy="52" rx="12" ry="8" fill="rgba(255,255,255,0.35)"/>
-      <!-- Dome bottom ring -->
-      <ellipse cx="100" cy="98" rx="38" ry="7" fill="#c0dcea" opacity="0.8"/>
-
-      <!-- ANTENNA MAST -->
-      <rect x="97" y="25" width="6" height="30" rx="2" fill="#b8d4e8"/>
-      <rect x="98" y="8"  width="4" height="18" rx="1" fill="#a8c8de"/>
-      <!-- Mast tip light -->
-      <circle cx="100" cy="6" r="5" fill="#ff4422" opacity="0.9"/>
-      <circle cx="100" cy="6" r="8" fill="#ff4422" opacity="0.2"/>
-      <!-- Obstruction light glow -->
-      <circle cx="100" cy="6" r="12" fill="rgba(255,80,40,0.1)"/>
-
-      <!-- Side access ladder/gantry -->
-      <line x1="150" y1="162" x2="168" y2="192" stroke="#b0cede" stroke-width="2.5"/>
-      <line x1="150" y1="148" x2="172" y2="182" stroke="#b0cede" stroke-width="2"/>
-      <rect x="163" y="180" width="16" height="20" rx="2" fill="#c0daea" opacity="0.8"/>
-      <!-- Elevator shaft hint -->
-      <rect x="46" y="182" width="10" height="130" rx="3" fill="rgba(200,230,245,0.3)" stroke="#b0d0e0" stroke-width="0.8"/>
-    </g>
-
-    <!-- ══════════════════════════════════════════════════
-         TERMINAL BUILDING — Long Thanh wave roof
-         ══════════════════════════════════════════════════ -->
-    <g filter="url(#shadowSm)" transform="translate(660,0)">
-      <!-- Main body -->
-      <rect x="0" y="278" width="640" height="96" rx="5" fill="url(#termGrd)"/>
-      <!-- Wave/undulating roof — iconic Long Thanh shape -->
-      <path d="M-25,278 Q60,228 160,248 Q240,232 320,245 Q400,230 500,242
-               Q580,228 660,245 L665,262 L-25,290 Z"
-            fill="#b8e0f5"/>
-      <path d="M-25,272 Q60,222 160,242 Q240,226 320,239 Q400,224 500,236
-               Q580,222 660,239 L665,256 L-25,284 Z"
-            fill="#d8f0fb"/>
-      <!-- Roof ridge highlights -->
-      <path d="M0,272 Q80,248 160,262 Q240,248 320,260 Q400,248 500,258
-               Q580,248 660,258"
-            stroke="rgba(255,255,255,0.7)" stroke-width="1.5" fill="none"/>
-      <!-- Window strip -->
-      <rect x="16" y="292" width="608" height="32" rx="3" fill="rgba(255,255,255,0.2)"/>
-      <!-- Individual windows -->
-      <g fill="rgba(160,224,248,0.65)">
-        <rect x="24"  y="297" width="32" height="22" rx="2"/>
-        <rect x="64"  y="297" width="32" height="22" rx="2"/>
-        <rect x="104" y="297" width="32" height="22" rx="2"/>
-        <rect x="144" y="297" width="32" height="22" rx="2"/>
-        <rect x="184" y="297" width="32" height="22" rx="2"/>
-        <rect x="224" y="297" width="32" height="22" rx="2"/>
-        <rect x="264" y="297" width="32" height="22" rx="2"/>
-        <rect x="304" y="297" width="32" height="22" rx="2"/>
-        <rect x="344" y="297" width="32" height="22" rx="2"/>
-        <rect x="384" y="297" width="32" height="22" rx="2"/>
-        <rect x="424" y="297" width="32" height="22" rx="2"/>
-        <rect x="464" y="297" width="32" height="22" rx="2"/>
-        <rect x="504" y="297" width="32" height="22" rx="2"/>
-        <rect x="544" y="297" width="32" height="22" rx="2"/>
-        <rect x="584" y="297" width="32" height="22" rx="2"/>
-      </g>
-      <!-- Entrance canopy -->
-      <path d="M270,326 L270,374 L380,374 L380,326 Z" fill="rgba(180,220,240,0.4)"/>
-      <path d="M258,324 Q325,310 400,324" stroke="#b0d8f0" stroke-width="2" fill="rgba(200,235,250,0.3)"/>
-      <!-- Jetbridge support columns -->
-      <g fill="#8ab8cc" opacity="0.7">
-        <rect x="60"  y="360" width="5" height="14" rx="1"/>
-        <rect x="180" y="358" width="5" height="16" rx="1"/>
-        <rect x="440" y="360" width="5" height="14" rx="1"/>
-        <rect x="560" y="358" width="5" height="16" rx="1"/>
-      </g>
-      <!-- Ground equipment / vehicles -->
-      <rect x="40"  y="364" width="48" height="10" rx="3" fill="#78a8bc" opacity="0.8"/>
-      <rect x="200" y="362" width="60" height="12" rx="3" fill="#78a8bc" opacity="0.8"/>
-      <rect x="460" y="364" width="44" height="10" rx="3" fill="#78a8bc" opacity="0.8"/>
-      <!-- Parked aircraft hint (far right) -->
-      <g transform="translate(545,340)" opacity="0.55">
-        <ellipse cx="0" cy="10" rx="52" ry="6" fill="#c8d8e0"/>
-        <rect x="-8" y="2" width="20" height="6" rx="3" fill="#d8e8f0"/>
-        <path d="M-52,8 L-8,5 L12,8 Z" fill="#c0d0da"/>
-        <path d="M12,8 L52,10 L12,12 Z" fill="#c0d0da"/>
-        <rect x="-10" y="0" width="5" height="14" rx="1" fill="#b0c8d8"/>
-      </g>
-    </g>
-
-    <!-- ── TREES — left dense cluster ── -->
-    <g opacity="0.95">
-      <ellipse cx="20"  cy="372" rx="32" ry="25" fill="#14522a"/>
-      <ellipse cx="52"  cy="364" rx="36" ry="29" fill="#196630"/>
-      <ellipse cx="88"  cy="371" rx="28" ry="23" fill="#134a24"/>
-      <ellipse cx="120" cy="368" rx="32" ry="26" fill="#196630"/>
-      <ellipse cx="155" cy="373" rx="26" ry="21" fill="#14522a"/>
-      <ellipse cx="185" cy="367" rx="30" ry="24" fill="#196630"/>
-      <ellipse cx="218" cy="372" rx="24" ry="20" fill="#134a24"/>
-      <ellipse cx="248" cy="368" rx="28" ry="23" fill="#196630"/>
-      <!-- Taller accent trees -->
-      <ellipse cx="38"  cy="358" rx="18" ry="30" fill="#10411e" opacity="0.7"/>
-      <ellipse cx="105" cy="354" rx="14" ry="26" fill="#10411e" opacity="0.65"/>
-    </g>
-
-    <!-- ── TREES — right cluster ── -->
-    <g opacity="0.95">
-      <ellipse cx="1190" cy="374" rx="28" ry="22" fill="#14522a"/>
-      <ellipse cx="1225" cy="368" rx="34" ry="27" fill="#196630"/>
-      <ellipse cx="1262" cy="373" rx="26" ry="21" fill="#134a24"/>
-      <ellipse cx="1296" cy="368" rx="30" ry="24" fill="#196630"/>
-      <ellipse cx="1330" cy="374" rx="28" ry="22" fill="#14522a"/>
-      <ellipse cx="1362" cy="369" rx="24" ry="20" fill="#196630"/>
-      <ellipse cx="1394" cy="374" rx="30" ry="24" fill="#134a24"/>
-      <ellipse cx="1425" cy="370" rx="26" ry="21" fill="#196630"/>
-      <ellipse cx="1210" cy="360" rx="16" ry="28" fill="#10411e" opacity="0.65"/>
-      <ellipse cx="1340" cy="357" rx="14" ry="25" fill="#10411e" opacity="0.6"/>
-    </g>
-
-    <!-- ── AIRFIELD LIGHTING ── -->
-    <g opacity="0.75">
-      <!-- Approach lights left -->
-      <rect x="235" y="348" width="4" height="28" rx="1" fill="#8ab8ca"/>
-      <ellipse cx="237" cy="347" rx="9" ry="4" fill="#a0ccd8"/>
-      <rect x="260" y="354" width="3" height="22" rx="1" fill="#8ab8ca"/>
-      <ellipse cx="261" cy="353" rx="7" ry="3" fill="#a0ccd8"/>
-      <!-- Approach lights right -->
-      <rect x="1158" y="350" width="4" height="26" rx="1" fill="#8ab8ca"/>
-      <ellipse cx="1160" cy="349" rx="9" ry="4" fill="#a0ccd8"/>
-      <rect x="1180" y="355" width="3" height="21" rx="1" fill="#8ab8ca"/>
-      <ellipse cx="1181" cy="354" rx="7" ry="3" fill="#a0ccd8"/>
-      <!-- PAPI lights hint -->
-      <g transform="translate(180,373)">
-        <rect x="0" y="0" width="18" height="5" rx="1" fill="#cc2222" opacity="0.8"/>
-        <rect x="22" y="0" width="18" height="5" rx="1" fill="#ffffff" opacity="0.8"/>
-      </g>
-    </g>
-
-    <!-- Apron area sheen -->
-    <rect x="300" y="360" width="860" height="18" fill="rgba(100,160,200,0.18)" rx="2"/>
-
-  </svg><!-- end SVG -->
-
-  <!-- ══════════════════════════════════════════════════
-       CONTENT LAYER — WELCOME FORM
-       ══════════════════════════════════════════════════ -->
-  <div class="content-overlay">
-
-    <!-- CENTER CARD -->
-    <div class="relative z-10 flex-1 flex items-center justify-center px-4 py-10">
-      <div class="welcome-card w-full max-w-md px-8 pt-8 pb-7 text-white screen-enter">
-
-        <!-- ── LOGO & TITLES ── -->
-        <div class="text-center mb-6">
-          <!-- Radar icon ring -->
-          <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4"
-               style="background:linear-gradient(135deg,#0d47a1,#1565c0,#1976d2);
-                      box-shadow:0 8px 24px rgba(13,71,161,0.55),0 0 0 4px rgba(14,165,233,0.18)">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
-                 stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/>
-              <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/>
-              <circle cx="12" cy="12" r="2"/>
-              <path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/>
-              <path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/>
-            </svg>
-          </div>
-          <!-- Micro label -->
-          <div class="text-xs font-black tracking-widest text-sky-400 uppercase opacity-80 mb-2">
-            VATM · CNS Division
-          </div>
-          <!-- Main title -->
-          <h1 class="text-lg font-black uppercase leading-snug mb-1 title-glow">
-            TRUNG TÂM KIỂM SOÁT<br>KHÔNG LƯU LONG THÀNH
-          </h1>
-          <!-- Subtitle -->
-          <p class="text-sm font-semibold mt-1"
-             style="color:rgba(186,230,253,0.8)">Chào mừng đến website ôn tập</p>
-          <!-- Info pills -->
-          <div class="flex items-center justify-center gap-3 mt-3 flex-wrap">
-            <span class="text-xs px-3 py-1 rounded-full border border-sky-500/30 text-sky-300/80"
-                  style="background:rgba(14,165,233,0.08)">⏱ 50 phút / đề</span>
-            <span class="text-xs px-3 py-1 rounded-full border border-indigo-500/30 text-indigo-300/80"
-                  style="background:rgba(99,102,241,0.08)">🎯 50 câu ngẫu nhiên</span>
-            <span class="text-xs px-3 py-1 rounded-full border border-emerald-500/30 text-emerald-300/80"
-                  style="background:rgba(16,185,129,0.08)">🔒 Bảo mật kết quả</span>
-          </div>
-        </div>
-
-        <!-- ── DIVIDER ── -->
-        <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(56,189,248,0.3),transparent);margin-bottom:22px"></div>
-
-        <!-- ── FORM FIELDS ── -->
-        <div class="space-y-4">
-
-          <!-- 1. Chức danh -->
-          <div class="form-group">
-            <label class="field-label">Chức danh</label>
-            <div class="select-wrapper">
-              <select id="selChucDanh" class="select-custom" onchange="onChucDanhChange()">
-                <option value="">— Chọn chức danh —</option>
-                <option value="ATSEP">ATSEP</option>
-              </select>
-              <span class="select-arrow">▾</span>
-            </div>
-          </div>
-
-          <!-- 2. Vị trí thi (locked until chức danh chosen) -->
-          <div class="form-group" id="groupViTri" style="opacity:0.35;pointer-events:none">
-            <label class="field-label">Vị trí thi</label>
-            <div class="select-wrapper">
-              <select id="selViTri" class="select-custom" onchange="onViTriChange()">
-                <option value="">— Chọn vị trí thi —</option>
-                <option value="Long Thành">Long Thành</option>
-                <option value="Tân Sơn Nhất">Tân Sơn Nhất</option>
-              </select>
-              <span class="select-arrow">▾</span>
-            </div>
-          </div>
-
-          <!-- 3. Module (locked until vị trí chosen) -->
-          <div class="form-group" id="groupModule" style="opacity:0.35;pointer-events:none">
-            <label class="field-label">Module chuyên ngành</label>
-            <div class="select-wrapper">
-              <select id="selModule" class="select-custom" onchange="onModuleChange()">
-                <option value="">— Chọn module —</option>
-              </select>
-              <span class="select-arrow">▾</span>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- ── START BUTTON ── -->
-        <button id="btnStart" class="btn-start mt-6" onclick="onStartExam()" disabled>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-            <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
-          </svg>
-          VÀO LÀM BÀI
-        </button>
-
-        <!-- ── FOOTER ── -->
-        <div class="text-center mt-5 text-xs" style="color:rgba(148,163,184,0.4);letter-spacing:0.06em">
-          Communication · Navigation · Surveillance
-        </div>
-
+      <!-- System status bar -->
+      <div class="sys-bar">
+        <div class="sys-dot"></div>
+        <span class="sys-txt">SYSTEM ONLINE</span>
+        <span class="sys-time" id="sysTime">UTC+7</span>
       </div>
-    </div>
 
-  </div><!-- end content-overlay -->
+      <!-- Header -->
+      <div style="text-align:center">
+        <div class="logo-ring">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+               stroke="rgba(0,185,255,0.92)" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/>
+            <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/>
+            <circle cx="12" cy="12" r="2"/>
+            <path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/>
+            <path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/>
+          </svg>
+        </div>
+        <div class="header-badge">VATM &middot; Long Th&agrave;nh ATCC</div>
+        <h1 class="main-title">TRUNG T&Acirc;M KI&#7874;M SO&Aacute;T<br>KH&Ocirc;NG L&#431;U LONG TH&Agrave;NH</h1>
+        <p class="subtitle">Ch&agrave;o m&#7915;ng &#273;&#7871;n website &ocirc;n t&#7853;p</p>
+        <div class="info-pills">
+          <span class="info-pill" style="border-color:rgba(0,180,255,0.22);color:rgba(0,215,255,0.9);background:rgba(0,130,255,0.07)">&#9203; 50 ph&uacute;t</span>
+          <span class="info-pill" style="border-color:rgba(99,102,241,0.22);color:rgba(165,180,252,0.9);background:rgba(99,102,241,0.06)">&#127919; 50 c&acirc;u ng&#7851;u nhi&ecirc;n</span>
+          <span class="info-pill" style="border-color:rgba(0,220,157,0.22);color:rgba(0,220,157,0.9);background:rgba(0,180,130,0.06)">&#128274; B&#7843;o m&#7853;t k&#7871;t qu&#7843;</span>
+        </div>
+      </div>
+
+      <div class="neon-divider"></div>
+
+      <!-- 1. Chuc danh -->
+      <div class="field-group slide-up">
+        <label class="field-label">Ch&#7913;c danh</label>
+        <div class="select-wrap">
+          <select id="selChucDanh" class="select-neon" onchange="onChucDanhChange()">
+            <option value="ATSEP" selected>1. ATSEP</option>
+          </select>
+          <span class="select-chevron">&#9660;</span>
+        </div>
+      </div>
+
+      <!-- 2. Vi tri thi -->
+      <div class="field-group slide-up delay-1" id="groupViTri" style="opacity:0.35;pointer-events:none">
+        <label class="field-label">V&#7883; tr&iacute; thi</label>
+        <div class="select-wrap">
+          <select id="selViTri" class="select-neon" onchange="onViTriChange()">
+            <option value="">&mdash; Ch&#7885;n v&#7883; tr&iacute; thi &mdash;</option>
+            <option value="Long Th&#224;nh">Long Th&#224;nh</option>
+            <option value="T&acirc;n S&#417;n Nh&#7845;t">T&acirc;n S&#417;n Nh&#7845;t</option>
+          </select>
+          <span class="select-chevron">&#9660;</span>
+        </div>
+      </div>
+
+      <!-- 3. Module (locked) -->
+      <div class="field-group slide-up delay-2 locked" id="groupModule" style="opacity:0.35;pointer-events:none">
+        <label class="field-label" id="labelModule">
+          <svg id="lockIcon" width="11" height="11" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          Module chuy&ecirc;n ng&agrave;nh
+        </label>
+        <div class="select-wrap">
+          <select id="selModule" class="select-neon" onchange="onModuleChange()" disabled>
+            <option value="">&mdash; Vui l&ograve;ng ch&#7885;n v&#7883; tr&iacute; tr&#432;&#7899;c &mdash;</option>
+          </select>
+          <span class="select-chevron">&#9660;</span>
+        </div>
+      </div>
+
+      <!-- Start button -->
+      <button id="btnStart" class="btn-neon" onclick="onStartExam()" disabled>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+        </svg>
+        V&Agrave;O L&Agrave;M B&Agrave;I
+      </button>
+
+      <div class="card-footer">Communication &middot; Navigation &middot; Surveillance &middot; VATM &copy; 2025</div>
+
+    </div>
+  </div>
+
 </div><!-- end startScreen -->
 
 <!-- ======================================================
@@ -748,7 +633,7 @@ body { margin:0; padding:0; font-family:"Segoe UI",system-ui,-apple-system,sans-
                        border border-white/10 hover:bg-white/6 transition-all"
                 style="background:rgba(255,255,255,0.035)">◀ Trước</button>
         <span id="navInfo" class="text-slate-500 text-sm"></span>
-        <button onclick="nextQ()"
+        <button id="btnNextQ" onclick="nextQ()"
                 class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm
                        border border-white/10 hover:bg-white/6 transition-all"
                 style="background:rgba(255,255,255,0.035)">Tiếp ▶</button>
@@ -813,69 +698,68 @@ body { margin:0; padding:0; font-family:"Segoe UI",system-ui,-apple-system,sans-
 <!-- ======================================================
      RESULT SCREEN
      ====================================================== -->
-<div id="resultScreen" class="hidden exam-bg text-white">
-  <div class="max-w-4xl mx-auto px-4 py-6">
-    <!-- Result header -->
-    <div class="text-center mb-6">
-      <div class="text-xs font-black text-slate-500 tracking-widest uppercase mb-3">
-        KẾT QUẢ ÔN TẬP
-      </div>
-      <div id="resultModuleName" class="text-2xl font-black mb-4"></div>
-      <!-- Score card -->
-      <div class="inline-flex items-center gap-6 rounded-2xl px-8 py-5 border border-white/10"
-           style="background:rgba(255,255,255,0.04)">
-        <div>
-          <div id="scorePct" class="text-5xl font-black">--%</div>
-          <div class="text-xs text-slate-400 mt-1">Tỷ lệ đúng</div>
-        </div>
-        <div class="w-px h-12 bg-white/10"></div>
-        <div>
-          <div id="scoreDetail" class="text-3xl font-black text-slate-200">--/--</div>
-          <div class="text-xs text-slate-400 mt-1">Câu đúng</div>
-        </div>
-        <div class="w-px h-12 bg-white/10"></div>
-        <div>
-          <div id="passStatus" class="text-xl font-black">--</div>
-          <div class="text-xs text-slate-400 mt-1">Kết quả</div>
-        </div>
-      </div>
-      <!-- Score bar -->
-      <div class="mt-4 mx-auto max-w-sm h-2 bg-white/8 rounded-full overflow-hidden">
-        <div id="scoreBar" class="h-full rounded-full transition-all duration-700" style="width:0%"></div>
+<div id="resultScreen" class="hidden result-bg">
+
+  <!-- Flight paths SVG background -->
+  <svg style="position:absolute;inset:0;z-index:0;width:100%;height:100%;pointer-events:none" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
+    <path class="fp"    d="M-200,300 C250,-80  550,620  950,240 S1450,40  1750,320"/>
+    <path class="fp f2" d="M-150,620 C300,200  620,780 1050,380 S1550,120 1850,480"/>
+    <path class="fp f3" d="M 80,150 C420,520  720, 80 1150,430 S1650,260 1950,100"/>
+    <path class="fp f4" d="M-50, 750 C350,350 700,900 1100,550 S1600,200 1900,650"/>
+  </svg>
+
+  <!-- ── MAIN SCORE CARD ── -->
+  <div class="result-card" style="margin-top:24px">
+    <!-- Module badge -->
+    <div style="text-align:center;margin-bottom:18px">
+      <div id="resultModuleName" style="font-size:0.88rem;font-weight:700;color:rgba(255,255,255,0.82);line-height:1.4"></div>
+      <div style="font-size:0.62rem;color:rgba(255,255,255,0.38);margin-top:3px;letter-spacing:0.12em;text-transform:uppercase">Kết quả ôn tập</div>
+    </div>
+
+    <!-- Big score -->
+    <div style="text-align:center">
+      <div id="scorePct" class="score-pct-num">--%</div>
+      <div style="margin-top:10px">
+        <span id="passStatus" class="result-tag fail">✗ KHÔNG ĐẠT</span>
       </div>
     </div>
 
-    <!-- Action buttons -->
-    <div class="flex gap-3 mb-6 justify-center">
-      <button onclick="backToStart()"
-              class="px-5 py-2.5 rounded-xl font-bold text-sm border border-white/15 hover:bg-white/6 transition-all">
-        ← Chọn module khác
-      </button>
-      <button onclick="retakeModule()"
-              class="px-5 py-2.5 rounded-xl font-bold text-sm text-white transition-all hover:scale-105"
-              style="background:linear-gradient(135deg,#0369a1,#0ea5e9)">
-        ↺ Làm lại module này
-      </button>
+    <!-- Stats row -->
+    <div style="display:flex;justify-content:center;align-items:center;gap:24px;margin-top:20px;padding-top:18px;border-top:1px solid rgba(255,255,255,0.1)">
+      <div style="text-align:center">
+        <div id="scoreDetail" style="font-size:1.8rem;font-weight:900;color:white;letter-spacing:-0.02em">--/--</div>
+        <div style="font-size:0.6rem;color:rgba(255,255,255,0.4);margin-top:2px;letter-spacing:0.1em;text-transform:uppercase">Câu đúng</div>
+      </div>
+      <div style="width:1px;height:36px;background:rgba(255,255,255,0.12)"></div>
+      <div style="text-align:center">
+        <div id="resultTime" style="font-size:1.8rem;font-weight:900;color:white;letter-spacing:-0.02em">--:--</div>
+        <div style="font-size:0.6rem;color:rgba(255,255,255,0.4);margin-top:2px;letter-spacing:0.1em;text-transform:uppercase">Thời gian</div>
+      </div>
     </div>
 
-    <!-- Filter tabs -->
-    <div class="flex gap-2 mb-4">
-      <button id="fAll"     onclick="filterReview('all')"
-              class="px-4 py-2 rounded-xl text-sm font-bold border transition-all"
-              style="border-color:#0ea5e9;background:rgba(14,165,233,0.35)">Tất cả</button>
-      <button id="fWrong"   onclick="filterReview('wrong')"
-              class="px-4 py-2 rounded-xl text-sm font-bold border transition-all"
-              style="border-color:rgba(255,255,255,0.15)">Câu sai</button>
-      <button id="fCorrect" onclick="filterReview('correct')"
-              class="px-4 py-2 rounded-xl text-sm font-bold border transition-all"
-              style="border-color:rgba(255,255,255,0.15)">Câu đúng</button>
+    <!-- Score bar -->
+    <div class="res-bar-bg">
+      <div id="scoreBar" class="res-bar-fill" style="width:0%"></div>
     </div>
 
-    <!-- Review list -->
-    <div id="reviewList" class="space-y-3 pb-10"></div>
+    <!-- Buttons -->
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button class="btn-home"   onclick="backToStart()">← Trang chủ</button>
+      <button class="btn-retake" onclick="retakeModule()">↺ Thi lại</button>
+    </div>
   </div>
-</div>
 
+  <!-- ── REVIEW SECTION ── -->
+  <div class="review-wrap">
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button id="fAll"     onclick="filterReview('all')"     class="f-tab active">Tất cả</button>
+      <button id="fWrong"   onclick="filterReview('wrong')"   class="f-tab">Câu sai</button>
+      <button id="fCorrect" onclick="filterReview('correct')" class="f-tab">Câu đúng</button>
+    </div>
+    <div id="reviewList" style="padding-bottom:40px"></div>
+  </div>
+
+</div>
 <!-- ======================================================
      JAVASCRIPT
      ====================================================== -->
@@ -2106,7 +1990,6 @@ function onViTriChange() {
   const grpMod = $('groupModule');
   const selMod = $('selModule');
 
-  // Reset module select
   selMod.innerHTML = '<option value="">— Chọn module —</option>';
   $('btnStart').disabled = true;
 
@@ -2119,12 +2002,21 @@ function onViTriChange() {
       opt.textContent = `${mc.icon}  ${mc.name}`;
       selMod.appendChild(opt);
     });
+    selMod.disabled = false;
+    // Unlock visual
+    grpMod.classList.remove('locked');
+    const lockSvg = $('lockIcon');
+    if (lockSvg) lockSvg.style.display = 'none';
     grpMod.style.opacity = '1';
     grpMod.style.pointerEvents = 'auto';
     grpMod.classList.remove('cascade-in');
     void grpMod.offsetWidth;
     grpMod.classList.add('cascade-in');
   } else {
+    selMod.disabled = true;
+    grpMod.classList.add('locked');
+    const lockSvg = $('lockIcon');
+    if (lockSvg) lockSvg.style.display = '';
     grpMod.style.opacity = '0.35';
     grpMod.style.pointerEvents = 'none';
   }
@@ -2244,6 +2136,27 @@ function showQ(idx) {
     </div>`;
   }).join('');
 
+  // Cập nhật nút Next → "Hoàn thành & nộp bài" ở câu cuối
+  const btnNext = $('btnNextQ');
+  if (btnNext) {
+    const isLast = idx === examQuestions.length - 1;
+    if (isLast) {
+      btnNext.innerHTML = '✅ Hoàn thành &amp; nộp bài';
+      btnNext.style.background = 'linear-gradient(135deg,#10b981,#059669)';
+      btnNext.style.borderColor = 'rgba(16,185,129,0.4)';
+      btnNext.style.color = '#fff';
+      btnNext.style.fontWeight = '700';
+      btnNext.style.boxShadow = '0 0 16px rgba(16,185,129,0.35)';
+    } else {
+      btnNext.innerHTML = 'Tiếp ▶';
+      btnNext.style.background = 'rgba(255,255,255,0.035)';
+      btnNext.style.borderColor = '';
+      btnNext.style.color = '';
+      btnNext.style.fontWeight = '';
+      btnNext.style.boxShadow = '';
+    }
+  }
+
   updateNavGrids();
   updateSidebarStats();
 }
@@ -2263,7 +2176,10 @@ function selectOpt(idx, el, val) {
 }
 
 function prevQ() { showQ(currentIdx-1); }
-function nextQ() { showQ(currentIdx+1); }
+function nextQ() {
+  if (currentIdx >= examQuestions.length - 1) { confirmSubmit(); return; }
+  showQ(currentIdx+1);
+}
 
 // ── NAV GRID ──
 function renderNavGrids() {
@@ -2329,10 +2245,16 @@ function doSubmit(auto=false) {
   $('resultModuleName').textContent = mc.name;
   $('resultModuleName').style.color = mc.color;
   $('scorePct').textContent   = pct+'%';
-  $('scorePct').style.color   = passed ? '#10b981' : '#ef4444';
+  $('scorePct').style.color   = '';
   $('scoreDetail').textContent = `${correct}/${total}`;
-  $('passStatus').textContent  = passed ? '✓ ĐẠT' : '✗ KHÔNG ĐẠT';
-  $('passStatus').style.color  = passed ? '#10b981' : '#ef4444';
+  const ps = $('passStatus');
+  ps.textContent = passed ? '✓ ĐẠT' : '✗ KHÔNG ĐẠT';
+  ps.className   = 'result-tag ' + (passed ? 'pass' : 'fail');
+  // Elapsed time
+  const elapsed = 3000 - secondsLeft;
+  const em = Math.floor(elapsed/60), es = elapsed%60;
+  const rtEl = $('resultTime');
+  if (rtEl) rtEl.textContent = String(em).padStart(2,'0')+':'+String(es).padStart(2,'0');
 
   setTimeout(() => {
     $('scoreBar').style.width = pct+'%';
@@ -2349,8 +2271,10 @@ function filterReview(f) {
   reviewFilter = f;
   ['all','wrong','correct'].forEach(k => {
     const key = 'f' + k.charAt(0).toUpperCase() + k.slice(1);
-    $(key).style.background   = reviewFilter===k ? 'rgba(14,165,233,0.35)' : '';
-    $(key).style.borderColor  = reviewFilter===k ? '#0ea5e9' : 'rgba(255,255,255,0.15)';
+    const el = $(key);
+    if (el) {
+      el.className = 'f-tab' + (reviewFilter===k ? ' active' : '');
+    }
   });
   renderReview(f);
 }
@@ -2367,8 +2291,7 @@ function renderReview(filter) {
   );
 
   $('reviewList').innerHTML = items.length ? items.map(({q,i,ua,ok}) => `
-    <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:16px;
-                border:1px solid ${ok?'rgba(16,185,129,0.22)':'rgba(239,68,68,0.22)'}">
+    <div class="review-card-item ${ok?'correct':'wrong'}">
       <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">
         <div style="width:24px;height:24px;border-radius:50%;flex-shrink:0;
                     display:flex;align-items:center;justify-content:center;
@@ -2379,7 +2302,7 @@ function renderReview(filter) {
           <div style="font-size:11px;color:${mc.color};font-weight:800;margin-bottom:4px">
             ${mc.label} — Câu ${i+1}
           </div>
-          <p style="font-size:13px;font-weight:600;color:white;line-height:1.5;margin:0">${q.question}</p>
+          <p style="font-size:13px;font-weight:600;color:rgba(255,255,255,0.92);line-height:1.5;margin:0">${q.question}</p>
         </div>
       </div>
       <div style="padding-left:34px">
@@ -2439,6 +2362,23 @@ function retakeModule() {
   }, 295);
 }
 
-// Init (không cần renderBubbles nữa — welcome screen dùng dropdown)
+// Init — ATSEP pre-selected → auto-unlock Vị trí dropdown
+(function init() {
+  // Trigger cascade so groupViTri unlocks immediately on page load
+  if ($('selChucDanh')) onChucDanhChange();
+  // Live clock for ATC status bar
+  function updateClock() {
+    const el = $('sysTime');
+    if (!el) return;
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2,'0');
+    const mm = String(now.getMinutes()).padStart(2,'0');
+    const ss = String(now.getSeconds()).padStart(2,'0');
+    el.textContent = hh + ':' + mm + ':' + ss + ' UTC+7';
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+})();
 </script>
-<
+</body>
+</html>

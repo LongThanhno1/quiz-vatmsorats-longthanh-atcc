@@ -312,6 +312,22 @@ body { margin:0; padding:0; font-family:"Segoe UI",system-ui,-apple-system,sans-
   box-shadow:0 6px 18px rgba(26,111,184,0.4);
 }
 .btn-retake:hover { transform:translateY(-1px);box-shadow:0 10px 26px rgba(26,111,184,0.5); }
+/* Scroll-to-top FAB */
+#scrollTopBtn {
+  position:fixed; bottom:24px; right:20px; z-index:9999;
+  width:52px; height:52px; border-radius:50%;
+  background:rgba(86,180,233,0.28);
+  backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  border:1.5px solid rgba(140,210,255,0.45);
+  color:rgba(200,235,255,0.95); font-size:1.6rem; line-height:1;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 4px 20px rgba(86,180,233,0.25), 0 0 0 6px rgba(86,180,233,0.08);
+  opacity:0; pointer-events:none;
+  transition:opacity 200ms ease, transform 200ms ease;
+  will-change:opacity,transform;
+}
+#scrollTopBtn.visible { opacity:1; pointer-events:auto; }
+#scrollTopBtn:hover { transform:translateY(-3px); background:rgba(86,180,233,0.38); box-shadow:0 8px 28px rgba(86,180,233,0.35), 0 0 0 8px rgba(86,180,233,0.1); }
 /* Review section */
 .review-wrap {
   width:100%; max-width:540px; margin:18px auto 0; z-index:10; position:relative;
@@ -336,16 +352,34 @@ body { margin:0; padding:0; font-family:"Segoe UI",system-ui,-apple-system,sans-
 /* ═══════════════════════════════════════════════
    SCREEN TRANSITIONS
 ═══════════════════════════════════════════════ */
+/* ─── Screen transition: 180ms, 8px, hardware-accelerated ─── */
 @keyframes screenFadeIn {
-  from { opacity:0; transform:translateY(22px) scale(0.97); }
-  to   { opacity:1; transform:translateY(0) scale(1); }
+  from { opacity:0; transform:translateY(8px); }
+  to   { opacity:1; transform:translateY(0);   }
 }
 @keyframes screenFadeOut {
-  from { opacity:1; transform:translateY(0) scale(1); }
-  to   { opacity:0; transform:translateY(-30px) scale(0.97); }
+  from { opacity:1; transform:translateY(0);   }
+  to   { opacity:0; transform:translateY(-8px);}
 }
-.screen-enter { animation:screenFadeIn  0.25s cubic-bezier(0.22,1,0.36,1) both; }
-.screen-exit  { animation:screenFadeOut 0.18s ease forwards; pointer-events:none; }
+.screen-enter {
+  animation:screenFadeIn 180ms cubic-bezier(0.25,0.46,0.45,0.94) both;
+  will-change:opacity,transform;
+}
+.screen-exit {
+  animation:screenFadeOut 180ms cubic-bezier(0.25,0.46,0.45,0.94) forwards;
+  pointer-events:none; will-change:opacity,transform;
+}
+
+/* ─── Question card micro-transition ─── */
+#questionCard {
+  will-change:opacity,transform;
+  transition:opacity 150ms cubic-bezier(0.25,0.46,0.45,0.94),
+             transform 150ms cubic-bezier(0.25,0.46,0.45,0.94);
+}
+#questionCard.q-fade-out {
+  opacity:0 !important; transform:translateY(6px) !important;
+  transition-duration:100ms !important;
+}
 
 /* ═══════════════════════════════════════════════
    EXAM SCREEN
@@ -751,11 +785,6 @@ body { margin:0; padding:0; font-family:"Segoe UI",system-ui,-apple-system,sans-
 
   <!-- ── REVIEW SECTION ── -->
   <div class="review-wrap">
-    <div style="display:flex;gap:8px;margin-bottom:14px">
-      <button id="fAll"     onclick="filterReview('all')"     class="f-tab active">Tất cả</button>
-      <button id="fWrong"   onclick="filterReview('wrong')"   class="f-tab">Câu sai</button>
-      <button id="fCorrect" onclick="filterReview('correct')" class="f-tab">Câu đúng</button>
-    </div>
     <div id="reviewList" style="padding-bottom:40px"></div>
   </div>
 
@@ -1945,6 +1974,11 @@ let timerInterval  = null;
 let secondsLeft    = 50 * 60;
 let reviewFilter   = 'all';
 
+// ── Transition timing constants (sync CSS ↔ JS) ──
+const TR_DUR = 180;   // screen fade ms   (matches CSS .screen-exit)
+const Q_DUR  = 100;   // question card exit ms
+let   _qBusy = false; // guard: prevent overlapping question animations
+
 // Helpers
 const shuffle = arr => { let a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a; };
 const fmt = s => `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
@@ -2032,7 +2066,12 @@ function onStartExam() {
   if (!mod) return;
   const ss = $('startScreen');
   ss.classList.add('screen-exit');
-  setTimeout(() => { ss.classList.remove('screen-exit'); startExam(mod); }, 295);
+  // setTimeout EXACTLY matches CSS screen-exit duration (TR_DUR = 180ms)
+  setTimeout(() => {
+    ss.classList.add('hidden');
+    ss.classList.remove('screen-exit');
+    startExam(mod);
+  }, TR_DUR);
 }
 
 // ── START EXAM (direct — no modal) ──
@@ -2060,11 +2099,12 @@ function startExam(moduleId) {
   currentIdx   = 0;
   secondsLeft  = 50 * 60;
 
-  $('startScreen').classList.add('hidden');
+  // startScreen already hidden by onStartExam; show examScreen with enter animation
   const es = $('examScreen');
   es.classList.remove('hidden');
   es.classList.add('screen-enter');
-  setTimeout(() => es.classList.remove('screen-enter'), 500);
+  // Remove will-change after animation completes to free GPU layer
+  setTimeout(() => es.classList.remove('screen-enter'), TR_DUR + 20);
 
   const badge = $('examModuleBadge');
   badge.textContent   = mc.label;
@@ -2103,10 +2143,34 @@ function updateTimerDisplay() {
 }
 
 // ── SHOW QUESTION ──
+// ── SHOW QUESTION (animated, for prev/next) ──
 function showQ(idx) {
   if (idx < 0 || idx >= examQuestions.length) return;
+  const card = $('questionCard');
+  if (idx === currentIdx) { _doRenderQ(idx); return; }
+  if (_qBusy) return; // debounce: ignore rapid taps
+  _qBusy = true;
+  card.classList.add('q-fade-out');        // fade out in Q_DUR=100ms
+  setTimeout(() => {
+    card.classList.remove('q-fade-out');   // content switches here
+    _doRenderQ(idx);                        // renders new question instantly
+    // fade-in is handled automatically by CSS transition reversal
+    setTimeout(() => { _qBusy = false; }, 160);
+  }, Q_DUR);
+}
+
+// ── SHOW QUESTION (instant, for sidebar/grid navigation) ──
+function showQInstant(idx) {
+  if (idx < 0 || idx >= examQuestions.length) return;
+  _qBusy = false; // always allow grid jump
+  $('questionCard').classList.remove('q-fade-out');
+  _doRenderQ(idx);
+}
+
+// ── RENDER QUESTION CONTENT (shared by both showQ variants) ──
+function _doRenderQ(idx) {
   currentIdx = idx;
-  const q   = examQuestions[idx];
+    const q   = examQuestions[idx];
   const mc  = getMC(q.module);
   const ans = userAnswers[idx] !== undefined;
   const tot = examQuestions.length;
@@ -2205,7 +2269,7 @@ function updateSidebarStats() {
 }
 
 function goToQ(i) {
-  showQ(i);
+  showQInstant(i); // sidebar/grid: instant, no animation
   const d = $('mobileDrawer');
   if (d && d.classList.contains('open')) toggleDrawer();
 }
@@ -2340,8 +2404,8 @@ function backToStart() {
     const ss = $('startScreen');
     ss.classList.remove('hidden');
     ss.classList.add('screen-enter');
-    setTimeout(() => ss.classList.remove('screen-enter'), 500);
-  }, 295);
+    setTimeout(() => ss.classList.remove('screen-enter'), TR_DUR + 20);
+  }, TR_DUR);
 }
 
 function retakeModule() {
@@ -2351,15 +2415,9 @@ function retakeModule() {
   setTimeout(() => {
     from.classList.add('hidden');
     from.classList.remove('screen-exit');
-    const ss = $('startScreen');
-    ss.classList.remove('hidden');
-    ss.classList.add('screen-enter');
-    // Đặt lại dropdown về module vừa làm
-    setTimeout(() => {
-      ss.classList.remove('screen-enter');
-      startExam(mod);
-    }, 300);
-  }, 295);
+    // Re-run exam directly, no welcome screen needed
+    startExam(mod);
+  }, TR_DUR);
 }
 
 // Init — ATSEP pre-selected → auto-unlock Vị trí dropdown
@@ -2378,6 +2436,22 @@ function retakeModule() {
   }
   updateClock();
   setInterval(updateClock, 1000);
+})();
+
+/* ── Scroll-to-top button ── */
+(function(){
+  const btn = document.createElement('button');
+  btn.id = 'scrollTopBtn';
+  btn.title = 'Lên đầu trang';
+  btn.innerHTML = '&#8593;';
+  document.body.appendChild(btn);
+  window.addEventListener('scroll', function(){
+    if (window.scrollY > 300) btn.classList.add('visible');
+    else btn.classList.remove('visible');
+  }, {passive:true});
+  btn.addEventListener('click', function(){
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
 })();
 </script>
 </body>
