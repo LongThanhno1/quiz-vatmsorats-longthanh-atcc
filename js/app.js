@@ -6,6 +6,8 @@
 
 'use strict';
 
+const SESSION_KEY = 'cnsQuizState';
+
 // ── Helpers ──────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
 
@@ -329,6 +331,7 @@ function _doRenderQ(idx) {
 
   renderNavGrids();
   updateSidebarStats();
+  saveQuizState(); // lưu vị trí câu hiện tại
 }
 
 
@@ -355,6 +358,7 @@ function selectOpt(idx, el, val) {
 
   renderNavGrids();
   updateSidebarStats();
+  saveQuizState(); // lưu sau mỗi lần chọn đáp án
 }
 
 function prevQ() { showQ(state.currentIdx - 1); }
@@ -444,6 +448,7 @@ function closeSubmitModal() { $('submitModal').classList.add('hidden'); }
 
 function doSubmit(auto = false) {
   clearInterval(state.timerInterval);
+  clearQuizState(); // xoa state khi nop bai
   closeSubmitModal();
   $('examScreen').classList.add('hidden');
   $('resultScreen').classList.remove('hidden');
@@ -485,6 +490,7 @@ function doSubmit(auto = false) {
   }, 100);
 
   renderReview('all');
+  injectBreakdown();
 }
 
 
@@ -541,12 +547,95 @@ function renderReview(filter = 'all') {
 }
 
 
+
+/* =================================================================
+   MODULE BREAKDOWN - Phan tich ket qua theo module/chu de
+================================================================= */
+
+/**
+ * Dem dung/sai theo tung module trong bai thi.
+ * Tra ve object: { moduleId: { total, correct, name, color, icon } }
+ */
+function buildModuleBreakdown(questions, answers) {
+  var groups = {};
+  questions.forEach(function(q, idx) {
+    var key = q.module || 'Khac';
+    if (!groups[key]) {
+      var mc = getMC(key);
+      groups[key] = { total: 0, correct: 0, name: mc.name || key, color: mc.color, icon: mc.icon || '' };
+    }
+    groups[key].total++;
+    if (answers[idx] === q.correctAnswer) groups[key].correct++;
+  });
+  return groups;
+}
+
+/**
+ * Render HTML cho bang phan tich module.
+ * Highlight module yeu nhat (ty le dung thap nhat).
+ */
+function renderBreakdown(groups) {
+  var entries = Object.entries(groups);
+  if (entries.length === 0) return '';
+
+  // Tim module yeu nhat
+  var weakest = entries.reduce(function(a, b) {
+    return (b[1].correct / b[1].total) < (a[1].correct / a[1].total) ? b : a;
+  })[0];
+
+  var rows = entries.map(function(entry) {
+    var cat  = entry[0];
+    var data = entry[1];
+    var pct  = Math.round(data.correct / data.total * 100);
+    var isWeak = cat === weakest && pct < 100;
+    var color = pct >= 70 ? '#10b981' : pct >= 50 ? '#f59e0b' : '#ef4444';
+    var borderClr = isWeak ? 'rgba(239,68,68,0.35)' : 'rgba(255,255,255,0.07)';
+    return '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;margin-bottom:8px;background:rgba(255,255,255,0.04);border:1px solid ' + borderClr + '">' +
+      '<div style="flex:1;font-size:0.82rem;font-weight:700;color:rgba(255,255,255,0.85)">' + data.name + (isWeak ? ' <span style="font-size:0.75rem">\u26a0\ufe0f</span>' : '') + '</div>' +
+      '<div style="font-size:0.78rem;color:rgba(255,255,255,0.45)">' + data.correct + '/' + data.total + ' cau</div>' +
+      '<div style="font-size:0.9rem;font-weight:900;color:' + color + '">' + pct + '%</div>' +
+    '</div>';
+  }).join('');
+
+  return rows;
+}
+
+/**
+ * Tao va inject breakdown container vao result screen.
+ * Goi sau doSubmit tinh xong diem.
+ */
+function injectBreakdown() {
+  // Xoa breakdown cu neu co (vi retake thi lai)
+  var old = document.getElementById('breakdownContainer');
+  if (old) old.remove();
+
+  var groups = buildModuleBreakdown(state.examQuestions, state.userAnswers);
+  var html   = renderBreakdown(groups);
+  if (!html) return;
+
+  var container = document.createElement('div');
+  container.id        = 'breakdownContainer';
+  container.className = 'result-card';
+  container.style.marginTop = '16px';
+  container.innerHTML =
+    '<div style="font-size:0.7rem;font-weight:700;color:rgba(255,255,255,0.4);' +
+    'letter-spacing:0.12em;text-transform:uppercase;margin-bottom:12px">' +
+    '\ud83d\udcca Phan tich theo chu de</div>' +
+    html +
+    '<div style="font-size:0.65rem;color:rgba(255,255,255,0.3);margin-top:10px;text-align:center">' +
+    '\u26a0\ufe0f = Chu de can on them</div>';
+
+  var wrap = document.querySelector('.review-wrap');
+  if (wrap) wrap.prepend(container);
+}
+
 /* =================================================================
    NAVIGATION — Back / Retake
 ================================================================= */
 
 function backToStart() {
   state.selectedModule = null;
+  clearQuizState(); // xoa state khi ve trang chu
   const from = $('resultScreen');
   from.classList.add('screen-exit');
   setTimeout(() => {
@@ -571,11 +660,128 @@ function retakeModule() {
 }
 
 
+
+
+
+/* =================================================================
+   KEYBOARD NAVIGATION
+   1/2/3/4 = chon dap an A/B/C/D | ArrowLeft/Right = chuyen cau | Escape = toggle drawer
+================================================================= */
+
+/**
+ * Wrapper: chon dap an bang so thu tu (0-based index).
+ * Tim option button trong DOM roi goi selectOpt giong click.
+ */
+function selectOption(index) {
+  var btns = document.querySelectorAll('#optionsContainer .option-btn');
+  if (index < 0 || index >= btns.length) return;
+  var q   = state.examQuestions[state.currentIdx];
+  var val = q && q.options ? q.options[index] : null;
+  if (!val) return;
+  selectOpt(state.currentIdx, btns[index], val);
+}
+
+document.addEventListener('keydown', function(e) {
+  // Chi xu ly khi examScreen dang hien
+  var examScreen = document.getElementById('examScreen');
+  if (!examScreen || examScreen.classList.contains('hidden')) return;
+
+  // Chon khi user dang focus input/select/textarea
+  if (['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName)) return;
+
+  switch (e.key) {
+    case '1': selectOption(0); break;
+    case '2': selectOption(1); break;
+    case '3': selectOption(2); break;
+    case '4': selectOption(3); break;
+    case 'ArrowRight':
+    case 'Enter':
+      e.preventDefault();
+      nextQ();
+      break;
+    case 'ArrowLeft':
+      e.preventDefault();
+      prevQ();
+      break;
+    case 'Escape':
+      toggleDrawer();
+      break;
+  }
+});
+
+/* =================================================================
+   SESSION STORAGE - Resume bai thi khi refresh trang
+================================================================= */
+
+function saveQuizState() {
+  if (!state.selectedModule || !state.examQuestions.length) return;
+  const snap = {
+    module:    state.selectedModule,
+    questions: state.examQuestions,
+    answers:   state.userAnswers,
+    currentQ:  state.currentIdx,
+    timeLeft:  state.secondsLeft,
+    savedAt:   Date.now()
+  };
+  try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(snap)); } catch (_) {}
+}
+
+function clearQuizState() {
+  sessionStorage.removeItem(SESSION_KEY);
+}
+
+function checkResume() {
+  let raw;
+  try { raw = sessionStorage.getItem(SESSION_KEY); } catch (_) { return false; }
+  if (!raw) return false;
+  let snap;
+  try { snap = JSON.parse(raw); } catch (_) { clearQuizState(); return false; }
+  if (!snap.timeLeft || snap.timeLeft <= 0 || !snap.questions || !snap.questions.length) {
+    clearQuizState();
+    return false;
+  }
+  const answered = Object.keys(snap.answers || {}).length;
+  const mins     = Math.floor(snap.timeLeft / 60);
+  const mc       = getMC(snap.module);
+  const confirmed = window.confirm(
+    'Ban dang co bai thi do dang!\n\nModule: ' + mc.name +
+    '\nDa tra loi: ' + answered + '/' + snap.questions.length +
+    ' cau\nThoi gian con lai: ' + mins +
+    ' phut\n\nTiep tuc lam bai?'
+  );
+  if (confirmed) { restoreQuizState(snap); return true; }
+  clearQuizState();
+  return false;
+}
+
+function restoreQuizState(snap) {
+  const mc = getMC(snap.module);
+  state.selectedModule = snap.module;
+  state.examQuestions  = snap.questions;
+  state.userAnswers    = snap.answers || {};
+  state.currentIdx     = snap.currentQ || 0;
+  state.secondsLeft    = snap.timeLeft;
+  state.qBusy          = false;
+  $('startScreen').classList.add('hidden');
+  var es = $('examScreen');
+  es.classList.remove('hidden');
+  var badge = $('examModuleBadge');
+  badge.textContent      = mc.label;
+  badge.style.background = mc.bg;
+  badge.style.color      = mc.color;
+  badge.style.border     = '1px solid ' + mc.color + '55';
+  renderNavGrids();
+  showQInstant(state.currentIdx);
+  startTimer();
+}
+
 /* =================================================================
    INIT — chạy khi DOM sẵn sàng
 ================================================================= */
 
 (function init() {
+  if (checkResume()) return;
+
   // Pre-select ATSEP → unlock dropdown Vị trí ngay khi load
   if ($('selChucDanh')) onChucDanhChange();
 
