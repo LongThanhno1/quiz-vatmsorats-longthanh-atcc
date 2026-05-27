@@ -164,6 +164,14 @@ function startExam(moduleId) {
   resetState(moduleId);
   const mc = getMC(moduleId);
 
+  // GA4: Track bắt đầu thi
+  trackEvent('quiz_start', {
+    module_id:   moduleId,
+    module_name: mc.name,
+    vi_tri:      (document.getElementById('selViTri') || {}).value || 'unknown',
+    timestamp:   new Date().toISOString()
+  });
+
   // Lọc câu đúng module → shuffle toàn pool → bốc tối đa MAX_DRAW câu
   const rawPool = questionBank.filter(q => q.module === moduleId);
 
@@ -461,6 +469,17 @@ function doSubmit(auto = false) {
   const pct    = Math.round(correct / total * 100);
   const passed = pct >= PASS_SCORE;
   const mc     = getMC(state.selectedModule);
+
+  // GA4: Track hoàn thành bài thi
+  trackEvent('quiz_complete', {
+    module_id:       state.selectedModule,
+    module_name:     mc.name,
+    score_percent:   pct,
+    correct_answers: correct,
+    total_questions: total,
+    result:          passed ? 'pass' : 'fail',
+    auto_submit:     auto   // true = hết giờ, false = bấm nộp
+  });
 
   $('resultModuleName').textContent = mc.name;
   $('resultModuleName').style.color = mc.color;
@@ -778,6 +797,24 @@ function restoreQuizState(snap) {
 /* =================================================================
    INIT — chạy khi DOM sẵn sàng
 ================================================================= */
+
+
+/* =================================================================
+   GA4 — Quiz Abandon (rời trang khi đang thi)
+================================================================= */
+window.addEventListener('beforeunload', function() {
+  var examScreen = document.getElementById('examScreen');
+  if (!examScreen || examScreen.classList.contains('hidden')) return;
+  // Exam đang hiển thị → user rời trang giữa chừng
+  var mc = getMC(state.selectedModule || '');
+  trackEvent('quiz_abandon', {
+    module_id:        state.selectedModule || 'unknown',
+    module_name:      mc.name || 'unknown',
+    question_reached: state.currentIdx + 1,
+    questions_answered: Object.keys(state.userAnswers || {}).length,
+    time_remaining:   state.secondsLeft || 0
+  });
+});
 
 (function init() {
   if (checkResume()) return;

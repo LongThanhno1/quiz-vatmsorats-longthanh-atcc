@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — CNS Quiz VATM</title>
+  <!-- Google Analytics 4 — G-1R40HNGQ7V -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-1R40HNGQ7V"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-1R40HNGQ7V', { page_title: 'CNS Quiz Admin Dashboard' });
+  </script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+    .header {
+      background: linear-gradient(135deg, #1e3a5f, #0f172a);
+      padding: 20px 32px;
+      border-bottom: 1px solid rgba(0,185,255,0.2);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .header-icon {
+      width: 40px; height: 40px;
+      background: rgba(0,185,255,0.12);
+      border: 1px solid rgba(0,185,255,0.3);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+    }
+    .header h1 { font-size: 1.1rem; font-weight: 700; color: #00b9ff; letter-spacing: 0.04em; }
+    .header p  { font-size: 0.72rem; color: rgba(255,255,255,0.38); margin-top: 3px; }
+    .back-btn {
+      margin-left: auto;
+      padding: 8px 16px;
+      background: rgba(0,185,255,0.08);
+      border: 1px solid rgba(0,185,255,0.25);
+      border-radius: 8px;
+      color: #00b9ff;
+      text-decoration: none;
+      font-size: 0.78rem;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    .back-btn:hover { background: rgba(0,185,255,0.18); }
+
+    .container { padding: 28px 32px; max-width: 1100px; margin: 0 auto; }
+
+    .section-label {
+      font-size: 0.62rem; font-weight: 700;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 0.14em; text-transform: uppercase;
+      margin: 28px 0 12px;
+    }
+
+    /* ── Alert / notice ── */
+    .alert {
+      display: flex; gap: 14px; align-items: flex-start;
+      border-radius: 12px; padding: 16px 20px; margin-bottom: 20px;
+      font-size: 0.8rem; line-height: 1.65;
+    }
+    .alert-warn {
+      background: rgba(245,158,11,0.08);
+      border: 1px solid rgba(245,158,11,0.25);
+      color: rgba(255,255,255,0.65);
+    }
+    .alert-warn .alert-icon { color: #f59e0b; font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; }
+    .alert-warn strong { color: #fbbf24; }
+
+    .alert-info {
+      background: rgba(0,185,255,0.06);
+      border: 1px solid rgba(0,185,255,0.18);
+      color: rgba(255,255,255,0.6);
+    }
+    .alert-info .alert-icon { color: #00b9ff; font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; }
+    .alert-info strong { color: #38bdf8; }
+    .alert-info code {
+      background: rgba(0,185,255,0.12); border-radius: 4px;
+      padding: 1px 6px; font-size: 0.78rem; color: #7dd3fc;
+    }
+
+    /* ── Steps card ── */
+    .steps-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 20px 24px;
+      margin-bottom: 16px;
+    }
+    .steps-card h3 {
+      font-size: 0.82rem; font-weight: 700; color: #00b9ff; margin-bottom: 14px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .steps-card ol {
+      padding-left: 18px;
+      font-size: 0.78rem; color: rgba(255,255,255,0.55); line-height: 2.1;
+    }
+    .steps-card ol li strong { color: rgba(255,255,255,0.85); }
+    .steps-card a { color: #38bdf8; text-underline-offset: 3px; }
+
+    /* ── Events reference table ── */
+    .events-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .event-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      padding: 16px 18px;
+    }
+    .event-card .event-name {
+      font-family: monospace; font-size: 0.8rem; font-weight: 700;
+      color: #a78bfa; margin-bottom: 6px;
+    }
+    .event-card .event-desc {
+      font-size: 0.74rem; color: rgba(255,255,255,0.45); line-height: 1.6; margin-bottom: 10px;
+    }
+    .event-card .params { font-size: 0.68rem; color: rgba(255,255,255,0.3); line-height: 1.9; }
+    .event-card .param-key { color: #7dd3fc; }
+    .event-card .param-val { color: rgba(255,255,255,0.4); }
+
+    /* ── Charts placeholder ── */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px; margin-bottom: 24px;
+    }
+    .chart-placeholder {
+      background: rgba(255,255,255,0.025);
+      border: 1px dashed rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 28px 16px;
+      text-align: center;
+    }
+    .chart-placeholder .chart-icon { font-size: 1.8rem; margin-bottom: 8px; }
+    .chart-placeholder .chart-name { font-size: 0.78rem; font-weight: 700; color: rgba(255,255,255,0.4); }
+    .chart-placeholder .chart-desc { font-size: 0.66rem; color: rgba(255,255,255,0.22); margin-top: 4px; }
+
+    /* ── Embed wrap ── */
+    .embed-wrap {
+      background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .embed-placeholder {
+      padding: 56px 32px; text-align: center;
+      color: rgba(255,255,255,0.18); font-size: 0.82rem; line-height: 2;
+    }
+    .embed-placeholder span {
+      display: block; font-size: 0.68rem;
+      color: rgba(255,255,255,0.12); margin-top: 6px;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      margin-top: 48px; padding: 20px 0;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      font-size: 0.68rem; color: rgba(255,255,255,0.2);
+      text-align: center; letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-icon">📊</div>
+  <div>
+    <h1>Admin Dashboard — CNS Quiz</h1>
+    <p>VATM Long Thành · Dữ liệu từ Google Analytics 4 · Property: G-1R40HNGQ7V</p>
+  </div>
+  <a href="index_refactored.html" class="back-btn">← Về trang Quiz</a>
+</div>
+
+<div class="container">
+
+  <!-- THIẾT LẬP LẦN ĐẦU -->
+  <div class="section-label">⚙️ Thiết lập Looker Studio (làm 1 lần)</div>
+
+  <div class="alert alert-warn">
+    <div class="alert-icon">⚠️</div>
+    <div>
+      <strong>Chưa có dashboard nhúng.</strong> Trang này cần được kết nối với Google Looker Studio để hiển thị biểu đồ thực tế.
+      Làm theo các bước bên dưới — khoảng 10–15 phút — sau đó paste iframe vào phần cuối trang.
+      <br>Dữ liệu GA4 sẽ bắt đầu tích lũy ngay khi website được truy cập lần đầu tiên sau khi tích hợp.
+    </div>
+  </div>
+
+  <div class="steps-card">
+    <h3>📌 Bước 1 — Tạo báo cáo trên Looker Studio</h3>
+    <ol>
+      <li>Truy cập <a href="https://lookerstudio.google.com" target="_blank">lookerstudio.google.com</a> → đăng nhập cùng Google Account đã tạo GA4</li>
+      <li>Nhấn <strong>"Tạo" → "Báo cáo"</strong></li>
+      <li>Chọn nguồn dữ liệu: <strong>Google Analytics</strong> → chọn Property <strong>"CNS Quiz"</strong></li>
+      <li>Thêm các biểu đồ theo danh sách gợi ý bên dưới</li>
+      <li>Nhấn <strong>"Chia sẻ" → "Nhúng báo cáo"</strong> → copy đoạn <code>&lt;iframe ...&gt;</code></li>
+      <li>Mở file <code>admin.html</code> → tìm phần <strong>"THAY THẾ VÀO ĐÂY"</strong> → paste iframe vào, xóa div placeholder</li>
+    </ol>
+  </div>
+
+  <div class="steps-card">
+    <h3>📌 Bước 2 — Thiết lập Custom Events trong GA4</h3>
+    <ol>
+      <li>Vào <a href="https://analytics.google.com" target="_blank">analytics.google.com</a> → chọn Property CNS Quiz</li>
+      <li><strong>Configure → Events</strong> → xác nhận 3 events dưới đây đã xuất hiện sau khi test vài lần thi</li>
+      <li>Nhấn <strong>"Mark as conversion"</strong> cho event <strong>quiz_complete</strong> để theo dõi tỷ lệ hoàn thành</li>
+      <li>Vào <strong>Custom Definitions → Custom Dimensions</strong> → tạo dimension mới: <code>module_name</code> (Event scope)</li>
+      <li>Tương tự tạo: <code>result</code> (pass/fail), <code>score_percent</code>, <code>vi_tri</code></li>
+    </ol>
+  </div>
+
+  <!-- EVENTS REFERENCE -->
+  <div class="section-label">📡 Custom Events đã tích hợp</div>
+
+  <div class="events-grid">
+    <div class="event-card">
+      <div class="event-name">quiz_start</div>
+      <div class="event-desc">Gửi khi user bấm "Vào làm bài" và bài thi bắt đầu. Dùng để đếm số lượt thi theo module.</div>
+      <div class="params">
+        <div><span class="param-key">module_id</span> <span class="param-val">— ID kỹ thuật (VHF, Radar...)</span></div>
+        <div><span class="param-key">module_name</span> <span class="param-val">— Tên đầy đủ của module</span></div>
+        <div><span class="param-key">vi_tri</span> <span class="param-val">— Long Thành / Tân Sơn Nhất</span></div>
+        <div><span class="param-key">timestamp</span> <span class="param-val">— ISO 8601</span></div>
+      </div>
+    </div>
+
+    <div class="event-card">
+      <div class="event-name">quiz_complete</div>
+      <div class="event-desc">Gửi khi nộp bài (bấm nút hoặc hết giờ). Dùng để phân tích điểm số và tỷ lệ đạt/không đạt.</div>
+      <div class="params">
+        <div><span class="param-key">module_id / module_name</span></div>
+        <div><span class="param-key">score_percent</span> <span class="param-val">— 0–100</span></div>
+        <div><span class="param-key">correct_answers</span> <span class="param-val">— Số câu đúng</span></div>
+        <div><span class="param-key">total_questions</span> <span class="param-val">— Tổng số câu</span></div>
+        <div><span class="param-key">result</span> <span class="param-val">— "pass" / "fail"</span></div>
+        <div><span class="param-key">auto_submit</span> <span class="param-val">— true nếu hết giờ</span></div>
+      </div>
+    </div>
+
+    <div class="event-card">
+      <div class="event-name">quiz_abandon</div>
+      <div class="event-desc">Gửi khi user đóng tab / rời trang trong khi đang thi. Dùng để tính tỷ lệ bỏ giữa chừng.</div>
+      <div class="params">
+        <div><span class="param-key">module_id / module_name</span></div>
+        <div><span class="param-key">question_reached</span> <span class="param-val">— Câu đang làm (1-based)</span></div>
+        <div><span class="param-key">questions_answered</span> <span class="param-val">— Số câu đã trả lời</span></div>
+        <div><span class="param-key">time_remaining</span> <span class="param-val">— Giây còn lại</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BIỂU ĐỒ GỢI Ý -->
+  <div class="section-label">📈 Biểu đồ gợi ý cho Looker Studio</div>
+
+  <div class="charts-grid">
+    <div class="chart-placeholder">
+      <div class="chart-icon">👥</div>
+      <div class="chart-name">Tổng người truy cập</div>
+      <div class="chart-desc">Scorecard · Metric: Total Users</div>
+    </div>
+    <div class="chart-placeholder">
+      <div class="chart-icon">🎯</div>
+      <div class="chart-name">Lượt bắt đầu thi</div>
+      <div class="chart-desc">Scorecard · Event: quiz_start · Count</div>
+    </div>
+    <div class="chart-placeholder">
+      <div class="chart-icon">✅</div>
+      <div class="chart-name">Lượt hoàn thành</div>
+      <div class="chart-desc">Scorecard · Event: quiz_complete · Count</div>
+    </div>
+    <div class="chart-placeholder">
+      <div class="chart-icon">📊</div>
+      <div class="chart-name">Lượt thi theo module</div>
+      <div class="chart-desc">Cột · Event: quiz_start · Dimension: module_name</div>
+    </div>
+    <div class="chart-placeholder">
+      <div class="chart-icon">🏆</div>
+      <div class="chart-name">Điểm TB theo module</div>
+      <div class="chart-desc">Bảng · Event: quiz_complete · avg(score_percent)</div>
+    </div>
+    <div class="chart-placeholder">
+      <div class="chart-icon">📉</div>
+      <div class="chart-name">Tỷ lệ bỏ giữa chừng</div>
+      <div class="chart-desc">Tính: quiz_abandon ÷ quiz_start × 100%</div>
+    </div>
+    <div class="chart-placeholder">
+      <div class="chart-icon">📅</div>
+      <div class="chart-name">Lượt truy cập theo ngày</div>
+      <div class="chart-desc">Đường · Dimension: Date · Metric: Sessions</div>
+    </div>
+    <div class="chart-placeholder">
+      <div class="chart-icon">🗺️</div>
+      <div class="chart-name">Phân bổ Đạt / Không đạt</div>
+      <div class="chart-desc">Tròn · Event: quiz_complete · Dimension: result</div>
+    </div>
+  </div>
+
+  <!-- EMBED LOOKER STUDIO -->
+  <div class="section-label">🔗 Looker Studio Dashboard</div>
+
+  <div class="alert alert-info">
+    <div class="alert-icon">ℹ️</div>
+    <div>
+      Sau khi tạo báo cáo xong, nhấn <strong>"Chia sẻ" → "Nhúng báo cáo"</strong> → copy thẻ <code>&lt;iframe&gt;</code>
+      → mở file <code>admin.html</code> → xóa <em>div.embed-placeholder</em> bên dưới → paste iframe vào thay thế.
+      Đặt <code>height="820"</code> để hiển thị đủ các biểu đồ.
+    </div>
+  </div>
+
+  <div class="embed-wrap">
+    <!-- THAY THẾ VÀO ĐÂY — xóa div này và paste <iframe> từ Looker Studio:
+    <iframe
+      width="100%"
+      height="820"
+      src="https://lookerstudio.google.com/embed/reporting/YOUR_REPORT_ID/page/..."
+      frameborder="0"
+      style="border:0"
+      allowfullscreen
+      sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
+    </iframe>
+    -->
+    <div class="embed-placeholder">
+      [ Paste iframe Looker Studio vào đây — xóa div này ]
+      <span>Chiều cao khuyến nghị: height="820"</span>
+    </div>
+  </div>
+
+  <div class="footer">
+    CNS Quiz Admin · VATM Long Thành · GA4 Property: G-1R40HNGQ7V · Không chia sẻ trang này ra ngoài
+  </div>
+
+</div>
+</body>
+</html>
