@@ -181,45 +181,11 @@
     <h1>Admin Dashboard — CNS Quiz</h1>
     <p>VATM Long Thành · Dữ liệu từ Google Analytics 4 · Property: G-1R40HNGQ7V</p>
   </div>
-  <a href="index_refactored.html" class="back-btn">← Về trang Quiz</a>
+  <a href="index.html" class="back-btn">← Về trang Quiz</a>
 </div>
 
 <div class="container">
 
-  <!-- THIẾT LẬP LẦN ĐẦU -->
-  <div class="section-label">⚙️ Thiết lập Looker Studio (làm 1 lần)</div>
-
-  <div class="alert alert-warn">
-    <div class="alert-icon">⚠️</div>
-    <div>
-      <strong>Chưa có dashboard nhúng.</strong> Trang này cần được kết nối với Google Looker Studio để hiển thị biểu đồ thực tế.
-      Làm theo các bước bên dưới — khoảng 10–15 phút — sau đó paste iframe vào phần cuối trang.
-      <br>Dữ liệu GA4 sẽ bắt đầu tích lũy ngay khi website được truy cập lần đầu tiên sau khi tích hợp.
-    </div>
-  </div>
-
-  <div class="steps-card">
-    <h3>📌 Bước 1 — Tạo báo cáo trên Looker Studio</h3>
-    <ol>
-      <li>Truy cập <a href="https://lookerstudio.google.com" target="_blank">lookerstudio.google.com</a> → đăng nhập cùng Google Account đã tạo GA4</li>
-      <li>Nhấn <strong>"Tạo" → "Báo cáo"</strong></li>
-      <li>Chọn nguồn dữ liệu: <strong>Google Analytics</strong> → chọn Property <strong>"CNS Quiz"</strong></li>
-      <li>Thêm các biểu đồ theo danh sách gợi ý bên dưới</li>
-      <li>Nhấn <strong>"Chia sẻ" → "Nhúng báo cáo"</strong> → copy đoạn <code>&lt;iframe ...&gt;</code></li>
-      <li>Mở file <code>admin.html</code> → tìm phần <strong>"THAY THẾ VÀO ĐÂY"</strong> → paste iframe vào, xóa div placeholder</li>
-    </ol>
-  </div>
-
-  <div class="steps-card">
-    <h3>📌 Bước 2 — Thiết lập Custom Events trong GA4</h3>
-    <ol>
-      <li>Vào <a href="https://analytics.google.com" target="_blank">analytics.google.com</a> → chọn Property CNS Quiz</li>
-      <li><strong>Configure → Events</strong> → xác nhận 3 events dưới đây đã xuất hiện sau khi test vài lần thi</li>
-      <li>Nhấn <strong>"Mark as conversion"</strong> cho event <strong>quiz_complete</strong> để theo dõi tỷ lệ hoàn thành</li>
-      <li>Vào <strong>Custom Definitions → Custom Dimensions</strong> → tạo dimension mới: <code>module_name</code> (Event scope)</li>
-      <li>Tương tự tạo: <code>result</code> (pass/fail), <code>score_percent</code>, <code>vi_tri</code></li>
-    </ol>
-  </div>
 
   <!-- EVENTS REFERENCE -->
   <div class="section-label">📡 Custom Events đã tích hợp</div>
@@ -310,31 +276,16 @@
   <!-- EMBED LOOKER STUDIO -->
   <div class="section-label">🔗 Looker Studio Dashboard</div>
 
-  <div class="alert alert-info">
-    <div class="alert-icon">ℹ️</div>
-    <div>
-      Sau khi tạo báo cáo xong, nhấn <strong>"Chia sẻ" → "Nhúng báo cáo"</strong> → copy thẻ <code>&lt;iframe&gt;</code>
-      → mở file <code>admin.html</code> → xóa <em>div.embed-placeholder</em> bên dưới → paste iframe vào thay thế.
-      Đặt <code>height="820"</code> để hiển thị đủ các biểu đồ.
-    </div>
-  </div>
-
   <div class="embed-wrap">
-    <!-- THAY THẾ VÀO ĐÂY — xóa div này và paste <iframe> từ Looker Studio:
     <iframe
       width="100%"
-      height="820"
-      src="https://lookerstudio.google.com/embed/reporting/YOUR_REPORT_ID/page/..."
+      height="800"
+      src="https://datastudio.google.com/embed/reporting/55b16826-03f7-49b2-8b88-ed35470ecead/page/v1VzF"
       frameborder="0"
-      style="border:0"
+      style="border:0;display:block;width:100%"
       allowfullscreen
       sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
     </iframe>
-    -->
-    <div class="embed-placeholder">
-      [ Paste iframe Looker Studio vào đây — xóa div này ]
-      <span>Chiều cao khuyến nghị: height="820"</span>
-    </div>
   </div>
 
   <div class="footer">
