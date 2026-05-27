@@ -4,6 +4,32 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ôn tập CNS (Communication · Navigation · Surveillance)</title>
+<meta name="description" content="Website ôn tập CNS (Communication · Navigation · Surveillance) dành cho ATSEP - VATM Long Thành">
+<meta name="author" content="VATM - Long Thành ATCC">
+<meta property="og:title" content="CNS Quiz - VATM Long Thành">
+<meta property="og:description" content="Ôn tập 50 câu ngẫu nhiên về Communication, Navigation, Surveillance cho kỳ thi ATSEP">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='none' stroke='%2300b9ff' stroke-width='8'/><circle cx='50' cy='50' r='5' fill='%2300b9ff'/><line x1='50' y1='5' x2='50' y2='50' stroke='%2300b9ff' stroke-width='4' transform='rotate(45 50 50)'/></svg>" type="image/svg+xml">
+<!-- Google Analytics 4 — G-1R40HNGQ7V -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-1R40HNGQ7V"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-1R40HNGQ7V', {
+    page_title: 'CNS Quiz - VATM Long Thành',
+    page_location: window.location.href,
+    send_page_view: true
+  });
+
+  /** Gửi custom event lên GA4 — fail silently nếu gtag chưa load */
+  function trackEvent(eventName, params) {
+    if (typeof gtag === 'function') {
+      gtag('event', eventName, params);
+    }
+  }
+</script>
+
 <script src="https://cdn.tailwindcss.com"></script>
 
 <!-- Local stylesheet -->
@@ -222,8 +248,7 @@
   <div class="max-w-7xl mx-auto px-4 py-5 lg:flex lg:gap-6">
     <!-- Question Panel -->
     <div class="flex-1 min-w-0">
-      <div id="questionCard" class="rounded-2xl p-5 mb-4 border border-white/6"
-           style="background:rgba(255,255,255,0.035)">
+      <div id="questionCard" class="rounded-2xl p-5 mb-4 border border-white/6 glass-panel">
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-2">
             <span id="qModuleBadge" class="text-xs px-2 py-1 rounded-lg font-black uppercase tracking-wider"></span>
@@ -239,20 +264,21 @@
       <div class="flex items-center justify-between gap-3">
         <button onclick="prevQ()"
                 class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm
-                       border border-white/10 hover:bg-white/6 transition-all"
-                style="background:rgba(255,255,255,0.035)">◀ Trước</button>
+                       border border-white/10 hover:bg-white/6 transition-all glass-panel">◀ Trước</button>
         <span id="navInfo" class="text-slate-500 text-sm"></span>
         <button id="btnNextQ" onclick="nextQ()"
                 class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm
-                       border border-white/10 hover:bg-white/6 transition-all"
-                style="background:rgba(255,255,255,0.035)">Tiếp ▶</button>
+                       border border-white/10 hover:bg-white/6 transition-all glass-panel">Tiếp ▶</button>
+      </div>
+      <!-- Keyboard shortcut hint -->
+      <div class="keyboard-hint">
+        Phím tắt: <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd> chọn đáp án &nbsp;|&nbsp; <kbd>←</kbd><kbd>→</kbd> chuyển câu
       </div>
     </div>
 
     <!-- Desktop Sidebar -->
     <div class="lg-sidebar w-60 flex-shrink-0">
-      <div class="rounded-2xl p-4 sticky top-20 border border-white/6"
-           style="background:rgba(255,255,255,0.035)">
+      <div class="rounded-2xl p-4 sticky top-20 border border-white/6 glass-panel">
         <div class="text-xs font-black text-slate-500 tracking-widest uppercase mb-3">Câu hỏi</div>
         <div id="sidebarStats" class="mb-3"></div>
         <div id="desktopNavGrid" class="grid gap-1.5"
@@ -336,13 +362,13 @@
     <!-- Stats row -->
     <div style="display:flex;justify-content:center;align-items:center;gap:24px;margin-top:20px;padding-top:18px;border-top:1px solid rgba(255,255,255,0.1)">
       <div style="text-align:center">
-        <div id="scoreDetail" style="font-size:1.8rem;font-weight:900;color:white;letter-spacing:-0.02em">--/--</div>
-        <div style="font-size:0.6rem;color:rgba(255,255,255,0.4);margin-top:2px;letter-spacing:0.1em;text-transform:uppercase">Câu đúng</div>
+        <div id="scoreDetail" class="res-stat-num">--/--</div>
+        <div class="res-stat-label">Câu đúng</div>
       </div>
       <div style="width:1px;height:36px;background:rgba(255,255,255,0.12)"></div>
       <div style="text-align:center">
-        <div id="resultTime" style="font-size:1.8rem;font-weight:900;color:white;letter-spacing:-0.02em">--:--</div>
-        <div style="font-size:0.6rem;color:rgba(255,255,255,0.4);margin-top:2px;letter-spacing:0.1em;text-transform:uppercase">Thời gian</div>
+        <div id="resultTime" class="res-stat-num">--:--</div>
+        <div class="res-stat-label">Thời gian</div>
       </div>
     </div>
 
