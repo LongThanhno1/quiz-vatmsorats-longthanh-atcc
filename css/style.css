@@ -429,3 +429,42 @@ body { margin:0; padding:0; font-family:"Segoe UI",system-ui,-apple-system,sans-
 
 @media(min-width:1024px) { .fab,.drawer { display:none!important; } .lg-sidebar { display:block; } }
 @media(max-width:1023px)  { .lg-sidebar { display:none; } }
+
+/* ── Keyboard shortcut hint ──────────────────────────────────────── */
+.keyboard-hint {
+  text-align: center;
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.25);
+  margin-top: 8px;
+  letter-spacing: 0.05em;
+}
+.keyboard-hint kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 4px;
+  font-size: 0.65rem;
+  background: rgba(255,255,255,0.06);
+  margin: 0 2px;
+}
+
+/* ── Utility classes extracted from inline styles ─────────────────── */
+/* Semi-transparent glass panel background — used on questionCard, nav buttons, sidebar */
+.glass-panel { background: rgba(255,255,255,0.035); }
+
+/* Result screen — big stat number (score, time) */
+.res-stat-num {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: white;
+  letter-spacing: -0.02em;
+}
+
+/* Result screen — small stat label below the number */
+.res-stat-label {
+  font-size: 0.6rem;
+  color: rgba(255,255,255,0.4);
+  margin-top: 2px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
