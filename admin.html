@@ -9,9 +9,7 @@
   (function() {
     const PASS = 'longthanhtwr';
     const KEY  = 'admin_auth';
-    // Đã xác thực trong session này → vào luôn
     if (sessionStorage.getItem(KEY) === 'ok') return;
-    // Tạo overlay
     const overlay = document.createElement('div');
     overlay.id = 'auth-overlay';
     overlay.style.cssText = `
@@ -53,7 +51,7 @@
           width:100%;padding:12px;border-radius:10px;
           background:linear-gradient(135deg,#0369a1,#0ea5e9);
           border:none;color:#fff;font-size:0.9rem;font-weight:600;
-          cursor:pointer;letter-spacing:.05em;transition:opacity .2s;
+          cursor:pointer;letter-spacing:.05em;
         ">XÁC NHẬN</button>
         <div style="margin-top:16px">
           <a href="index.html" style="
