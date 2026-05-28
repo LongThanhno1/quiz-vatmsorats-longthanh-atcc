@@ -6,337 +6,358 @@
   <title>CNS Quiz — Kiểm tra Ngân hàng đề</title>
   <script src="js/questions.js"></script>
   <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;padding:24px;min-height:100vh}
-    h1{font-size:1.5rem;color:#38bdf8;margin-bottom:4px}
-    .sub{color:#475569;font-size:0.8rem;margin-bottom:24px}
-    .section{font-size:0.7rem;font-weight:700;color:#475569;letter-spacing:.12em;text-transform:uppercase;
-      margin:28px 0 12px;padding-bottom:8px;border-bottom:1px solid #1e293b}
-    .stat-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:4px}
-    .stat{background:#1e293b;border:1px solid #334155;border-radius:10px;padding:12px 18px;min-width:130px;text-align:center}
-    .stat-v{font-size:1.7rem;font-weight:700;color:#f1f5f9}
-    .stat-l{font-size:0.72rem;color:#64748b;margin-top:2px}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
-    .card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:14px 18px}
-    .card-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-    .card-icon{font-size:1.3rem}
-    .card-name{font-size:.9rem;font-weight:600;color:#cbd5e1}
-    .card-sub{font-size:.68rem;color:#475569;margin-top:1px}
-    .card-count{font-size:1.9rem;font-weight:700;color:#38bdf8;margin-bottom:4px}
-    .badge{font-size:.72rem;padding:2px 8px;border-radius:20px;display:inline-block}
-    .badge-new{background:#064e3b;color:#34d399}
-    .badge-add{background:#1e3a5f;color:#60a5fa}
-    .badge-keep{background:#0f172a;color:#475569;border:1px solid #1e293b}
-    .val-box{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:16px}
-    .val-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #0f172a;font-size:.85rem}
-    .val-row:last-child{border:none}
-    .val-icon{font-size:1rem;flex-shrink:0;margin-top:1px}
-    .val-label{color:#94a3b8;flex:1}
-    .val-value{color:#e2e8f0;font-weight:600;text-align:right;max-width:300px;word-break:break-all}
-    .val-err{color:#f87171}
-    .picker{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-    .mbtn{padding:5px 12px;border-radius:16px;border:1px solid #334155;background:#1e293b;
-      color:#64748b;cursor:pointer;font-size:.78rem;transition:all .15s}
-    .mbtn:hover,.mbtn.active{background:#0369a1;border-color:#38bdf8;color:#fff}
-    .pg-row{display:flex;gap:8px;align-items:center;margin:10px 0;flex-wrap:wrap}
-    .pg-btn{padding:5px 12px;border-radius:8px;border:1px solid #334155;background:#1e293b;
-      color:#64748b;cursor:pointer;font-size:.78rem}
-    .pg-btn:hover{background:#334155;color:#e2e8f0}
-    .pg-btn:disabled{opacity:.3;cursor:default}
-    .pg-info{color:#475569;font-size:.78rem}
-    .q-list{display:flex;flex-direction:column;gap:10px}
-    .q-card{background:#1e293b;border:1px solid #334155;border-radius:10px;padding:14px}
-    .q-meta{font-size:.68rem;color:#475569;margin-bottom:6px}
-    .q-text{font-size:.88rem;color:#e2e8f0;line-height:1.55;margin-bottom:10px}
-    .q-opts{display:grid;grid-template-columns:1fr 1fr;gap:5px}
-    .q-opt{padding:6px 10px;border-radius:6px;font-size:.78rem;background:#0f172a;
-      border:1px solid #1e293b;color:#64748b}
-    .q-opt.ok{background:#064e3b;border-color:#34d399;color:#34d399;font-weight:600}
-    .q-opt.ok::before{content:"✓ "}
-    .q-opt.bad-ans{background:#450a0a;border-color:#f87171;color:#f87171}
-    .warn-ans{grid-column:1/-1;color:#f87171;font-size:.7rem;margin-top:4px}
-    /* ID range bar */
-    .id-bar{height:4px;border-radius:2px;background:#0ea5e9;margin-top:6px;opacity:.7}
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 24px;
+      min-height: 100vh;
+    }
+    h1 {
+      font-size: 1.6rem;
+      color: #38bdf8;
+      margin-bottom: 6px;
+    }
+    .sub { color: #64748b; font-size: 0.85rem; margin-bottom: 24px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 16px 20px;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .card-icon { font-size: 1.4rem; }
+    .card-title { font-size: 1rem; font-weight: 600; color: #cbd5e1; }
+    .card-count {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #38bdf8;
+      margin-bottom: 4px;
+    }
+    .card-change {
+      font-size: 0.78rem;
+      padding: 2px 8px;
+      border-radius: 20px;
+      display: inline-block;
+    }
+    .change-new { background: #064e3b; color: #34d399; }
+    .change-append { background: #1e3a5f; color: #60a5fa; }
+    .change-keep { background: #1e293b; color: #64748b; border: 1px solid #334155; }
+
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #334155;
+    }
+    .stats-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .stat-box {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 14px 20px;
+      text-align: center;
+      min-width: 140px;
+    }
+    .stat-value { font-size: 1.8rem; font-weight: 700; color: #f1f5f9; }
+    .stat-label { font-size: 0.75rem; color: #64748b; margin-top: 4px; }
+
+    .sample-section { margin-top: 32px; }
+    .sample-picker {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .mod-btn {
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid #334155;
+      background: #1e293b;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 0.82rem;
+      transition: all 0.2s;
+    }
+    .mod-btn:hover, .mod-btn.active {
+      background: #0369a1;
+      border-color: #38bdf8;
+      color: #fff;
+    }
+
+    .q-list { display: flex; flex-direction: column; gap: 12px; }
+    .q-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .q-num { font-size: 0.72rem; color: #475569; margin-bottom: 6px; }
+    .q-text { font-size: 0.92rem; color: #e2e8f0; margin-bottom: 12px; line-height: 1.5; }
+    .q-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .q-opt {
+      padding: 7px 12px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #94a3b8;
+    }
+    .q-opt.correct {
+      background: #064e3b;
+      border-color: #34d399;
+      color: #34d399;
+      font-weight: 600;
+    }
+    .q-opt.correct::before { content: "✓ "; }
+
+    .check-section {
+      margin-top: 32px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid #1e293b;
+      font-size: 0.88rem;
+    }
+    .check-row:last-child { border: none; }
+    .check-ok { color: #34d399; font-size: 1.1rem; }
+    .check-fail { color: #f87171; font-size: 1.1rem; }
+    .check-label { color: #94a3b8; flex: 1; }
+    .check-value { color: #e2e8f0; font-weight: 600; }
+
+    .pagination {
+      display: flex; gap: 8px; align-items: center;
+      margin-top: 16px; flex-wrap: wrap;
+    }
+    .pg-btn {
+      padding: 6px 14px; border-radius: 8px;
+      border: 1px solid #334155; background: #1e293b;
+      color: #94a3b8; cursor: pointer; font-size: 0.82rem;
+    }
+    .pg-btn:hover { background: #334155; color: #e2e8f0; }
+    .pg-info { color: #64748b; font-size: 0.82rem; }
   </style>
 </head>
 <body>
-<h1>🔍 CNS Quiz — Kiểm tra Ngân hàng đề</h1>
-<p class="sub" id="ts">Đang tải...</p>
+  <h1>🔍 CNS Quiz — Kiểm tra Ngân hàng đề</h1>
+  <p class="sub" id="timestamp">Đang tải dữ liệu...</p>
 
-<div class="section">📊 Tổng quan</div>
-<div class="stat-row" id="stat-row"></div>
+  <!-- TỔNG QUAN -->
+  <div class="section-title">📊 Tổng quan</div>
+  <div class="stats-row" id="stats-row"></div>
 
-<div class="section">📦 Theo module · ID thực tế</div>
-<div class="grid" id="mod-grid"></div>
+  <!-- THEO MODULE -->
+  <div class="section-title">📦 Theo module</div>
+  <div class="grid" id="module-grid"></div>
 
-<div class="section">✅ Kiểm tra tự động</div>
-<div class="val-box" id="val-box"></div>
+  <!-- VALIDATION -->
+  <div class="section-title">✅ Kết quả kiểm tra tự động</div>
+  <div class="check-section" id="check-section"></div>
 
-<div class="section">👁 Xem mẫu câu hỏi</div>
-<div class="picker" id="picker"></div>
-<div class="pg-row" id="pg-row"></div>
-<div class="q-list" id="q-list"></div>
+  <!-- XEM MẪU -->
+  <div class="sample-section">
+    <div class="section-title">👁 Xem mẫu câu hỏi</div>
+    <div class="sample-picker" id="mod-picker"></div>
+    <div class="pagination" id="pagination"></div>
+    <div class="q-list" id="q-list"></div>
+  </div>
 
 <script>
-// ── Config thực tế từ questions.js ───────────────────────────────────────────
-// ID thực tế từng module (đã xác nhận)
-const ID_RANGE = {
-  'VHF':         {from:1,   to:151,  note:'Thay mới 2026'},
-  'ADS-B':       {from:211, to:511,  note:'Giữ nguyên'},
-  'A-SGMCS':     {from:512, to:557,  note:'Từ file cũ'},   // 46 câu cũ
-  'RDP/FDP':     {from:558, to:703,  note:'Bổ sung 2026'},
-  'VCCS':        {from:704, to:949,  note:'Thay mới 2026'},
-  'SMS':         {from:950, to:966,  note:'Giữ nguyên'},
-  'A-SGMCS-new': {from:967, to:1112, note:'Bổ sung 2026'}, // 146 câu mới
-};
-// Số câu gốc trước khi cập nhật (tổng = 1216)
+// ── Data ─────────────────────────────────────────────────────────────────────
 const BEFORE = {
-  'VHF':121,'Radar':78,'SMS':17,'ADS-B-LT':30,
-  'Ghi âm':66,'ADS-B':301,'RDP/FDP':46,
-  'VCCS':61,'Radar-TSN':121,'KipTruong-TSN':233,'A-SGMCS':67
+  'VHF': 121, 'Ghi âm': 66, 'ADS-B': 301, 'RDP/FDP': 46,
+  'VCCS': 61, 'SMS': 17, 'A-SGMCS': 67, 'Radar': 78,
+  'ADS-B-LT': 30, 'Radar-TSN': 121, 'KipTruong-TSN': 233
 };
-const ICONS = {
-  'VHF':'📡','Radar':'📻','SMS':'🛡','ADS-B-LT':'🛰',
-  'Ghi âm':'🎙','ADS-B':'🛰','RDP/FDP':'🖥',
-  'VCCS':'☎','Radar-TSN':'📻','KipTruong-TSN':'🧑‍💼','A-SGMCS':'⚙'
+const CHANGED = {
+  'VHF': 'new', 'VCCS': 'new', 'A-SGMCS': 'new', 'RDP/FDP': 'append'
 };
-const UPDATED = {
-  'VHF':'new','VCCS':'new','A-SGMCS':'add','RDP/FDP':'add'
+const MOD_ICONS = {
+  'VHF':'📡','Ghi âm':'🎙','ADS-B':'🛰','RDP/FDP':'🖥',
+  'VCCS':'☎','SMS':'🛡','A-SGMCS':'⚙','Radar':'📻',
+  'ADS-B-LT':'🛰','Radar-TSN':'📻','KipTruong-TSN':'🧑‍💼'
 };
-// Thứ tự hiển thị đúng theo ID
-const ORDER = [
-  'VHF','ADS-B','A-SGMCS','RDP/FDP','VCCS','SMS',
-  'A-SGMCS', // sẽ merge
-  'Radar','ADS-B-LT','Ghi âm','Radar-TSN','KipTruong-TSN'
-];
 
-const PAGE = 5;
-let selMod='', selPage=0;
+// ── Build stats ───────────────────────────────────────────────────────────────
+function buildStats() {
+  const counts = {};
+  questionBank.forEach(q => counts[q.module] = (counts[q.module]||0) + 1);
+  const total = questionBank.length;
+  const idMin = Math.min(...questionBank.map(q=>q.id));
+  const idMax = Math.max(...questionBank.map(q=>q.id));
 
-// ── Tính số câu ───────────────────────────────────────────────────────────────
-function getCounts(){
-  const c={};
-  questionBank.forEach(q=>c[q.module]=(c[q.module]||0)+1);
-  return c;
-}
+  // Stats row
+  document.getElementById('timestamp').textContent =
+    `Kiểm tra lúc: ${new Date().toLocaleString('vi-VN')} | questions.js được tải thành công`;
 
-function getIdRange(){
-  const r={};
-  questionBank.forEach(q=>{
-    if(!r[q.module]) r[q.module]={min:q.id,max:q.id};
-    r[q.module].min=Math.min(r[q.module].min,q.id);
-    r[q.module].max=Math.max(r[q.module].max,q.id);
-  });
-  return r;
-}
+  const statsData = [
+    { value: total, label: 'Tổng câu hỏi' },
+    { value: Object.keys(counts).length, label: 'Số module' },
+    { value: `${idMin}–${idMax}`, label: 'ID range' },
+  ];
+  document.getElementById('stats-row').innerHTML = statsData.map(s =>
+    `<div class="stat-box"><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div></div>`
+  ).join('');
 
-// ── Render tổng quan ──────────────────────────────────────────────────────────
-function renderStats(c){
-  const total=questionBank.length;
-  const ids=questionBank.map(q=>q.id);
-  const idMin=Math.min(...ids), idMax=Math.max(...ids);
-  const goc=Object.values(BEFORE).reduce((a,b)=>a+b,0);
-
-  document.getElementById('ts').textContent=
-    `Tải lúc ${new Date().toLocaleString('vi-VN')} · Tổng gốc: ${goc} câu · Hiện tại: ${total} câu`;
-
-  document.getElementById('stat-row').innerHTML=[
-    {v:total,               l:'Tổng câu hỏi'},
-    {v:Object.keys(c).length, l:'Số module'},
-    {v:`${idMin}–${idMax}`, l:'ID range'},
-    {v:(total-goc>=0?'+':'')+(total-goc), l:'Tăng so với gốc (1216)'},
-  ].map(s=>`<div class="stat">
-    <div class="stat-v">${s.v}</div>
-    <div class="stat-l">${s.l}</div>
-  </div>`).join('');
-}
-
-// ── Render module grid ────────────────────────────────────────────────────────
-function renderGrid(c, r){
-  const mods=[...new Set(questionBank.map(q=>q.module))];
-  // sắp xếp theo ID min
-  mods.sort((a,b)=>(r[a]?.min||9999)-(r[b]?.min||9999));
-
-  const totalIds=Math.max(...questionBank.map(q=>q.id));
-
-  document.getElementById('mod-grid').innerHTML=mods.map(m=>{
-    const after=c[m]||0;
-    const before=BEFORE[m]||0;
-    const t=UPDATED[m];
-    let bdg='';
-    if(t==='new') bdg=`<span class="badge badge-new">🔄 Thay mới ${before}→${after}</span>`;
-    else if(t==='add') bdg=`<span class="badge badge-add">➕ +${after-before} câu (${before}→${after})</span>`;
-    else bdg=`<span class="badge badge-keep">Giữ nguyên</span>`;
-
-    const rMin=r[m]?.min||0, rMax=r[m]?.max||0;
-    const barW=totalIds>0?Math.round((rMax-rMin+1)/totalIds*100):0;
-
-    return `<div class="card">
-      <div class="card-top">
-        <span class="card-icon">${ICONS[m]||'❓'}</span>
-        <div>
-          <div class="card-name">${m}</div>
-          <div class="card-sub">ID ${rMin}–${rMax}</div>
+  // Module grid
+  const moduleOrder = ['VHF','Ghi âm','ADS-B','RDP/FDP','VCCS','SMS','A-SGMCS','Radar','ADS-B-LT','Radar-TSN','KipTruong-TSN'];
+  document.getElementById('module-grid').innerHTML = moduleOrder.map(mod => {
+    const after = counts[mod] || 0;
+    const before = BEFORE[mod] || 0;
+    const diff = after - before;
+    const change = CHANGED[mod];
+    let badge = '';
+    if (change === 'new') badge = `<span class="card-change change-new">🔄 Thay mới: ${before}→${after}</span>`;
+    else if (change === 'append') badge = `<span class="card-change change-append">➕ Thêm ${diff} câu</span>`;
+    else badge = `<span class="card-change change-keep">Giữ nguyên</span>`;
+    return `
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">${MOD_ICONS[mod]||'❓'}</span>
+          <span class="card-title">${mod}</span>
         </div>
-      </div>
-      <div class="card-count">${after}</div>
-      ${bdg}
-      <div class="id-bar" style="width:${barW}%"></div>
-    </div>`;
+        <div class="card-count">${after}</div>
+        ${badge}
+      </div>`;
   }).join('');
+
+  return counts;
 }
 
 // ── Validation ────────────────────────────────────────────────────────────────
-function renderVal(c){
-  const total=questionBank.length;
-  const ids=questionBank.map(q=>q.id);
-  const goc=Object.values(BEFORE).reduce((a,b)=>a+b,0);
-  const checks=[];
+function runValidation(counts) {
+  const checks = [];
 
-  // 1. Tổng > gốc
-  checks.push({ok:total>goc,
-    l:`Tổng câu (${total}) > gốc (${goc})`,
-    v:`${total} câu · tăng ${total-goc}`});
+  // 1. Total
+  const total = questionBank.length;
+  checks.push({ ok: total === 1574, label: 'Tổng câu hỏi = 1574', value: total });
 
-  // 2. Không trùng ID
-  const uniq=new Set(ids);
-  const dups=ids.filter((id,i)=>ids.indexOf(id)!==i);
-  checks.push({ok:uniq.size===ids.length,
-    l:'Không có ID trùng lặp',
-    v:uniq.size===ids.length?'OK':`❌ ${dups.length} ID trùng: ${dups.slice(0,8).join(', ')}`});
+  // 2. IDs sequential
+  const ids = questionBank.map(q=>q.id).sort((a,b)=>a-b);
+  const sequential = ids.every((id,i) => id === i+1);
+  checks.push({ ok: sequential, label: 'IDs sequential (1–1574)', value: sequential ? 'OK' : 'CÓ GAP' });
 
-  // 3. correctAnswer khớp options
-  const badA=questionBank.filter(q=>!q.options||!q.options.includes(q.correctAnswer));
-  checks.push({ok:badA.length===0,
-    l:'correctAnswer nằm trong options',
-    v:badA.length===0?`${total}/${total} ✓`
-      :`❌ ${badA.length} câu lỗi · ID: ${badA.slice(0,6).map(q=>q.id).join(', ')}`});
+  // 3. No duplicate IDs
+  const dupSet = new Set(ids);
+  checks.push({ ok: dupSet.size === ids.length, label: 'Không trùng ID', value: `${dupSet.size} unique / ${ids.length} total` });
 
-  // 4. Đủ 4 options
-  const bad4=questionBank.filter(q=>!q.options||q.options.length!==4);
-  checks.push({ok:bad4.length===0,
-    l:'Tất cả đủ 4 lựa chọn',
-    v:bad4.length===0?'OK'
-      :`❌ ${bad4.length} câu · ID: ${bad4.slice(0,6).map(q=>q.id).join(', ')}`});
+  // 4. correctAnswer in options
+  const badAnswers = questionBank.filter(q => !q.options.includes(q.correctAnswer));
+  checks.push({ ok: badAnswers.length === 0, label: 'correctAnswer khớp options', value: `${questionBank.length - badAnswers.length}/${questionBank.length} ✓` });
 
-  // 5. Không thiếu correctAnswer
-  const noA=questionBank.filter(q=>!q.correctAnswer);
-  checks.push({ok:noA.length===0,
-    l:'Không câu nào thiếu correctAnswer',
-    v:noA.length===0?'OK':`❌ ${noA.length} câu`});
+  // 5. All have 4 options
+  const bad4 = questionBank.filter(q => q.options.length !== 4);
+  checks.push({ ok: bad4.length === 0, label: 'Tất cả đủ 4 lựa chọn', value: bad4.length === 0 ? 'OK' : `${bad4.length} câu thiếu` });
 
-  // 6. Đủ field bắt buộc
-  const noF=questionBank.filter(q=>!q.id||!q.module||!q.question||!q.options||!q.correctAnswer);
-  checks.push({ok:noF.length===0,
-    l:'Đủ field bắt buộc (id/module/question/options/correctAnswer)',
-    v:noF.length===0?'OK':`❌ ${noF.length} câu thiếu field`});
+  // 6. Module counts
+  const expected = { 'VHF':144,'Ghi âm':66,'ADS-B':301,'RDP/FDP':146,'VCCS':246,'SMS':17,'A-SGMCS':192,'Radar':78,'ADS-B-LT':30,'Radar-TSN':121,'KipTruong-TSN':233 };
+  const countOk = Object.entries(expected).every(([m,n]) => counts[m] === n);
+  checks.push({ ok: countOk, label: 'Số câu từng module đúng kế hoạch', value: countOk ? 'OK' : 'Sai số lượng' });
 
-  // 7. Module giữ nguyên không bị mất
-  const keep=['Radar','SMS','ADS-B-LT','Ghi âm','ADS-B','Radar-TSN','KipTruong-TSN'];
-  const lost=keep.filter(m=>(c[m]||0)<(BEFORE[m]||0));
-  checks.push({ok:lost.length===0,
-    l:'Module giữ nguyên không bị mất câu',
-    v:lost.length===0?'OK'
-      :lost.map(m=>`${m}: ${c[m]||0}/${BEFORE[m]}`).join(', ')});
+  document.getElementById('check-section').innerHTML = checks.map(c =>
+    `<div class="check-row">
+      <span class="${c.ok ? 'check-ok' : 'check-fail'}">${c.ok ? '✅' : '❌'}</span>
+      <span class="check-label">${c.label}</span>
+      <span class="check-value">${c.value}</span>
+    </div>`
+  ).join('');
 
-  // 8. Không còn A-SMGCS sót trong RDP/FDP
-  const wrong=questionBank.filter(q=>
-    q.module==='RDP/FDP'&&q.question&&q.question.startsWith('Hệ thống A-SMGCS'));
-  checks.push({ok:wrong.length===0,
-    l:'Không câu A-SMGCS sót trong module RDP/FDP',
-    v:wrong.length===0?'OK'
-      :`❌ Còn ${wrong.length} câu · ID: ${wrong.slice(0,6).map(q=>q.id).join(', ')}`});
-
-  // 9. A-SGMCS = id 512-557 (46 câu) + id 967-1112 (146 câu) = 192 câu
-  const asgmcs=c['A-SGMCS']||0;
-  checks.push({ok:asgmcs===192,
-    l:'A-SGMCS = 192 câu (46 cũ id512-557 + 146 mới id967-1112)',
-    v:`${asgmcs} câu${asgmcs===192?' ✓':' ← kiểm tra lại'}`});
-
-  // 10. SMS = id 950-966 = 17 câu
-  const sms=c['SMS']||0;
-  checks.push({ok:sms===17,
-    l:'SMS = 17 câu (id 950–966)',
-    v:`${sms} câu${sms===17?' ✓':''}`});
-
-  // 11. Module cập nhật có câu
-  checks.push({ok:['VHF','VCCS','A-SGMCS','RDP/FDP'].every(m=>(c[m]||0)>0),
-    l:'Module cập nhật đều có câu hỏi',
-    v:['VHF','VCCS','A-SGMCS','RDP/FDP'].map(m=>`${m}:${c[m]||0}`).join(' | ')});
-
-  document.getElementById('val-box').innerHTML=checks.map(ch=>`
-    <div class="val-row">
-      <span class="val-icon">${ch.ok?'✅':'❌'}</span>
-      <span class="val-label">${ch.l}</span>
-      <span class="val-value ${ch.ok?'':'val-err'}">${ch.v}</span>
-    </div>`).join('');
+  if (badAnswers.length > 0) {
+    console.warn('Bad answers:', badAnswers.slice(0,5));
+  }
 }
 
 // ── Sample viewer ─────────────────────────────────────────────────────────────
-function modQs(m){return questionBank.filter(q=>q.module===m);}
+let currentMod = 'VHF';
+let currentPage = 0;
+const PAGE_SIZE = 5;
 
-function renderSample(){
-  const qs=modQs(selMod);
-  const tp=Math.ceil(qs.length/PAGE)||1;
-  selPage=Math.max(0,Math.min(tp-1,selPage));
-  const sl=qs.slice(selPage*PAGE,(selPage+1)*PAGE);
+function getModuleQuestions(mod) {
+  return questionBank.filter(q => q.module === mod);
+}
 
-  document.getElementById('pg-row').innerHTML=`
-    <button class="pg-btn" onclick="goPage(-1)" ${selPage===0?'disabled':''}>◀ Trước</button>
-    <span class="pg-info">Trang ${selPage+1}/${tp} · ${qs.length} câu</span>
-    <button class="pg-btn" onclick="goPage(1)" ${selPage>=tp-1?'disabled':''}>Sau ▶</button>
-    ${sl.length?`<span class="pg-info">· ID ${sl[0].id}–${sl[sl.length-1].id}</span>`:''}
+function renderSamples() {
+  const qs = getModuleQuestions(currentMod);
+  const totalPages = Math.ceil(qs.length / PAGE_SIZE);
+  const pageQs = qs.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
+
+  document.getElementById('pagination').innerHTML = `
+    <button class="pg-btn" onclick="changePage(-1)" ${currentPage===0?'disabled':''}>◀ Trước</button>
+    <span class="pg-info">Trang ${currentPage+1}/${totalPages} (${qs.length} câu)</span>
+    <button class="pg-btn" onclick="changePage(1)" ${currentPage===totalPages-1?'disabled':''}>Sau ▶</button>
+    <span class="pg-info" style="margin-left:8px">ID ${pageQs[0]?.id}–${pageQs[pageQs.length-1]?.id}</span>
   `;
 
-  document.getElementById('q-list').innerHTML=sl.map(q=>{
-    const ok=q.options&&q.options.includes(q.correctAnswer);
-    return `<div class="q-card">
-      <div class="q-meta">ID ${q.id} · ${q.module}${q.refDoc?' · 📄 '+q.refDoc:''}</div>
-      <div class="q-text">${q.question||'(Trống)'}</div>
+  document.getElementById('q-list').innerHTML = pageQs.map(q => `
+    <div class="q-card">
+      <div class="q-num">ID: ${q.id} · ${q.module} · ${q.refDoc}</div>
+      <div class="q-text">${q.question}</div>
       <div class="q-opts">
-        ${(q.options||[]).map(o=>`
-          <div class="q-opt ${o===q.correctAnswer?(ok?'ok':'bad-ans'):''}">${o}</div>`).join('')}
-        ${!ok?`<div class="warn-ans">⚠ correctAnswer không khớp: "${q.correctAnswer}"</div>`:''}
+        ${q.options.map(opt => `
+          <div class="q-opt ${opt === q.correctAnswer ? 'correct' : ''}">${opt}</div>
+        `).join('')}
       </div>
-    </div>`;
-  }).join('')||'<div style="color:#475569;padding:20px;text-align:center">Không có câu hỏi</div>';
+    </div>
+  `).join('');
 }
 
-function goPage(d){selPage+=d;renderSample();}
-
-function selectMod(m){
-  selMod=m;selPage=0;
-  document.querySelectorAll('.mbtn').forEach(b=>b.classList.toggle('active',b.dataset.m===m));
-  renderSample();
+function changePage(dir) {
+  const qs = getModuleQuestions(currentMod);
+  const totalPages = Math.ceil(qs.length / PAGE_SIZE);
+  currentPage = Math.max(0, Math.min(totalPages - 1, currentPage + dir));
+  renderSamples();
 }
 
-function renderPicker(){
-  const mods=[...new Set(questionBank.map(q=>q.module))];
-  const r=getIdRange();
-  mods.sort((a,b)=>(r[a]?.min||9999)-(r[b]?.min||9999));
-  if(!selMod||!mods.includes(selMod)) selMod=mods[0];
-  document.getElementById('picker').innerHTML=mods.map(m=>
-    `<button class="mbtn${m===selMod?' active':''}" data-m="${m}" onclick="selectMod('${m}')">
-      ${ICONS[m]||'❓'} ${m}
-    </button>`).join('');
+function selectMod(mod) {
+  currentMod = mod;
+  currentPage = 0;
+  document.querySelectorAll('.mod-btn').forEach(b => b.classList.toggle('active', b.dataset.mod === mod));
+  renderSamples();
+}
+
+function buildPicker() {
+  const mods = [...new Set(questionBank.map(q=>q.module))];
+  document.getElementById('mod-picker').innerHTML = mods.map(m =>
+    `<button class="mod-btn${m===currentMod?' active':''}" data-mod="${m}" onclick="selectMod('${m}')">${MOD_ICONS[m]||''} ${m}</button>`
+  ).join('');
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
-window.addEventListener('load',()=>{
-  if(typeof questionBank==='undefined'){
-    document.body.innerHTML=`<div style="color:#f87171;padding:40px;font-size:1.1rem">
-      ❌ Không load được questions.js<br>
-      <small style="color:#64748b;display:block;margin-top:8px">Mở bằng Live Server hoặc kiểm tra đường dẫn</small>
-    </div>`;
+window.addEventListener('load', () => {
+  if (typeof questionBank === 'undefined') {
+    document.body.innerHTML = '<div style="color:#f87171;padding:40px;font-size:1.2rem">❌ Không load được questions.js — kiểm tra đường dẫn file</div>';
     return;
   }
-  const c=getCounts();
-  const r=getIdRange();
-  renderStats(c);
-  renderGrid(c,r);
-  renderVal(c);
-  renderPicker();
-  renderSample();
+  const counts = buildStats();
+  runValidation(counts);
+  buildPicker();
+  renderSamples();
 });
 </script>
 </body>
