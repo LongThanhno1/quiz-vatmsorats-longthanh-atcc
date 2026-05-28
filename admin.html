@@ -3,7 +3,89 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard — CNS Quiz VATM</title>
+  <title>Admin Dashboard — CNS Quiz VATMSORATS</title>
+  <!-- Admin Access Control -->
+  <script>
+  (function() {
+    const PASS = 'longthanhtwr';
+    const KEY  = 'admin_auth';
+    // Đã xác thực trong session này → vào luôn
+    if (sessionStorage.getItem(KEY) === 'ok') return;
+    // Tạo overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'auth-overlay';
+    overlay.style.cssText = `
+      position:fixed;inset:0;z-index:99999;
+      background:rgba(10,15,28,0.97);
+      display:flex;align-items:center;justify-content:center;
+      font-family:'Segoe UI',sans-serif;
+    `;
+    overlay.innerHTML = `
+      <div style="
+        background:#1e293b;border:1px solid rgba(0,185,255,0.25);
+        border-radius:16px;padding:40px 48px;text-align:center;
+        max-width:360px;width:90%;box-shadow:0 0 60px rgba(0,185,255,0.1);
+      ">
+        <div style="font-size:2rem;margin-bottom:8px">🛰️</div>
+        <div style="font-size:1rem;font-weight:700;color:#38bdf8;
+          letter-spacing:.08em;margin-bottom:4px">
+          ADMIN DASHBOARD
+        </div>
+        <div style="font-size:0.72rem;color:rgba(255,255,255,0.35);
+          letter-spacing:.1em;text-transform:uppercase;margin-bottom:28px">
+          VATMSORATS Long Thành ATCC
+        </div>
+        <input id="auth-input" type="password"
+          placeholder="Nhập mã truy cập"
+          style="
+            width:100%;padding:12px 16px;border-radius:10px;
+            border:1px solid rgba(0,185,255,0.3);
+            background:rgba(0,0,0,0.3);color:#e2e8f0;
+            font-size:0.9rem;outline:none;margin-bottom:12px;
+            text-align:center;letter-spacing:.1em;
+          "
+        />
+        <div id="auth-err" style="
+          color:#f87171;font-size:0.75rem;
+          min-height:18px;margin-bottom:12px;
+        "></div>
+        <button id="auth-btn" style="
+          width:100%;padding:12px;border-radius:10px;
+          background:linear-gradient(135deg,#0369a1,#0ea5e9);
+          border:none;color:#fff;font-size:0.9rem;font-weight:600;
+          cursor:pointer;letter-spacing:.05em;transition:opacity .2s;
+        ">XÁC NHẬN</button>
+        <div style="margin-top:16px">
+          <a href="index.html" style="
+            color:rgba(255,255,255,0.25);font-size:0.72rem;
+            text-decoration:none;letter-spacing:.08em;
+          ">← Về trang Quiz</a>
+        </div>
+      </div>
+    `;
+    document.documentElement.appendChild(overlay);
+    function check() {
+      const val = document.getElementById('auth-input').value.trim();
+      if (val === PASS) {
+        sessionStorage.setItem(KEY, 'ok');
+        overlay.remove();
+      } else {
+        const err = document.getElementById('auth-err');
+        err.textContent = '❌ Mã không đúng — thử lại';
+        document.getElementById('auth-input').value = '';
+        document.getElementById('auth-input').focus();
+        setTimeout(() => { err.textContent = ''; }, 3000);
+      }
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('auth-btn').addEventListener('click', check);
+      document.getElementById('auth-input').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') check();
+      });
+      document.getElementById('auth-input').focus();
+    });
+  })();
+  </script>
   <!-- Google Analytics 4 — G-1R40HNGQ7V -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-1R40HNGQ7V"></script>
   <script>
