@@ -1,7 +1,7 @@
 # 🛰️ CNS Quiz — VATMSORATS Long Thành ATCC
 > Website ôn tập trắc nghiệm CNS/ATM dành cho ATSEP tại Trung tâm Kiểm soát không lưu Long Thành - VATMSORATS Long Thành ATCC.
 
-[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Truy_cập_ngay-0078d4?style=for-the-badge)](https://longthanhno1.github.io/my-first-website-cns-quiz/)
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Truy_cập_ngay-0078d4?style=for-the-badge)](https://longthanhno1.github.io/quiz-vatmsorats-longthanh-atcc/)
 [![Câu hỏi](https://img.shields.io/badge/📚_Câu_hỏi-1574_câu-10b981?style=for-the-badge)](#)
 [![Phiên bản](https://img.shields.io/badge/Phiên_bản-v1.0--2026-f59e0b?style=for-the-badge)](#)
 [![Analytics](https://img.shields.io/badge/📊_Analytics-GA4-orange?style=for-the-badge)](#)
@@ -12,7 +12,7 @@
 
 Website ôn tập trắc nghiệm **CNS/ATM** (Communication · Navigation · Surveillance) dành cho nhân viên kỹ thuật điện tử hàng không (ATSEP) tại **Trung tâm Kiểm soát không lưu Long Thành - VATMSORATS Long Thành ATCC**.
 
-> ⚠️ Đây là công cụ ôn tập **nội bộ tại Trung tâm Kiểm soát không lưu Long Thành **, không phải tài liệu chính thức của VATM.
+> ⚠️ Đây là công cụ ôn tập **nội bộ**, không phải tài liệu chính thức của VATM.
 
 ---
 
@@ -20,10 +20,10 @@ Website ôn tập trắc nghiệm **CNS/ATM** (Communication · Navigation · Su
 
 | Trang | Link |
 |---|---|
-| 🌐 Trang thi | https://longthanhno1.github.io/my-first-website-cns-quiz/ |
-| 📊 Admin Dashboard | https://longthanhno1.github.io/my-first-website-cns-quiz/admin.html |
-| 🔍 Kiểm tra ngân hàng đề | https://longthanhno1.github.io/my-first-website-cns-quiz/check.html |
-| 📦 Source code | https://github.com/LongThanhno1/my-first-website-cns-quiz |
+| 🌐 Trang thi | https://longthanhno1.github.io/quiz-vatmsorats-longthanh-atcc/ |
+| 📊 Admin Dashboard | https://longthanhno1.github.io/quiz-vatmsorats-longthanh-atcc/admin.html |
+| 🔍 Kiểm tra ngân hàng đề | https://longthanhno1.github.io/quiz-vatmsorats-longthanh-atcc/check.html |
+| 📦 Source code | https://github.com/LongThanhno1/quiz-vatmsorats-longthanh-atcc |
 
 ---
 
@@ -41,7 +41,7 @@ Website ôn tập trắc nghiệm **CNS/ATM** (Communication · Navigation · Su
 
 ---
 
-## 📚 Ngân hàng câu hỏi — Cập nhật 28/05/2026
+## 📚 Ngân hàng câu hỏi — Cập nhật 2026
 
 | Module | Số câu | Vị trí | Nguồn |
 |---|---|---|---|
@@ -63,7 +63,7 @@ Website ôn tập trắc nghiệm **CNS/ATM** (Communication · Navigation · Su
 ## 🏗️ Cấu trúc project
 
 ```
-my-first-website-cns-quiz/
+quiz-vatmsorats-longthanh-atcc/
 │
 ├── index.html          # Giao diện thi chính
 ├── admin.html          # Dashboard analytics (Looker Studio)
@@ -87,7 +87,7 @@ Hệ thống theo dõi tự động qua **Google Analytics 4**:
 - Số người hoàn thành bài thi (`quiz_complete`)
 - Tỷ lệ bỏ giữa chừng (`quiz_abandon`)
 
-**Xem dashboard:** [admin.html](https://longthanhno1.github.io/my-first-website-cns-quiz/admin.html)
+**Xem dashboard:** [admin.html](https://longthanhno1.github.io/quiz-vatmsorats-longthanh-atcc/admin.html)
 
 ---
 
@@ -95,7 +95,7 @@ Hệ thống theo dõi tự động qua **Google Analytics 4**:
 
 ```bash
 # Clone repo
-git clone https://github.com/LongThanhno1/my-first-website-cns-quiz.git
+git clone https://github.com/LongThanhno1/quiz-vatmsorats-longthanh-atcc.git
 
 # Mở bằng Live Server (VS Code extension)
 # hoặc mở thẳng index.html trong trình duyệt
@@ -121,7 +121,7 @@ Chỉnh sửa file `js/questions.js`. Mỗi câu hỏi có cấu trúc:
 }
 ```
 
-**Kiểm tra sau khi cập nhật:** Truy cập [check.html](https://longthanhno1.github.io/my-first-website-cns-quiz/check.html)
+**Kiểm tra sau khi cập nhật:** Truy cập [check.html](https://longthanhno1.github.io/quiz-vatmsorats-longthanh-atcc/check.html)
 
 ---
 
@@ -139,7 +139,7 @@ Chỉnh sửa file `js/questions.js`. Mỗi câu hỏi có cấu trúc:
 ## 👤 Tác giả
 
 **Đỗ Thanh Long**  
-Kỹ sư ATSEP — Trung tâm Kiểm soát không lưu Long Thành-Công ty quản lý bay miền nam ( VATMSORATS)  
+Kỹ sư ATSEP — Trung tâm Kiểm soát không lưu Long Thành - Công ty quản lý bay miền nam ( VATMSORATS)  
 Tổng công ty Quản lý bay Việt Nam (VATM)
 
 ---
