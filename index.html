@@ -2453,6 +2453,34 @@ function retakeModule() {
     window.scrollTo({top:0, behavior:'smooth'});
   });
 })();
+
+/* ── Keyboard Navigation ─────────────────────────────
+   1/2/3/4 = chon dap an A/B/C/D | ArrowLeft/Right = chuyen cau | Escape = toggle drawer
+─────────────────────────────────────────────────────────────────── */
+document.addEventListener('keydown', function(e) {
+  var examScreen = document.getElementById('examScreen');
+  if (!examScreen || examScreen.classList.contains('hidden')) return;
+  if (['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+  switch (e.key) {
+    case '1': case '2': case '3': case '4':
+      var idx = parseInt(e.key) - 1;
+      var opts = document.querySelectorAll('#optionsContainer .option-btn');
+      if (opts[idx]) opts[idx].click();
+      break;
+    case 'ArrowRight':
+    case 'Enter':
+      e.preventDefault();
+      nextQ();
+      break;
+    case 'ArrowLeft':
+      e.preventDefault();
+      prevQ();
+      break;
+    case 'Escape':
+      if (typeof toggleDrawer === 'function') toggleDrawer();
+      break;
+  }
+});
 </script>
 </body>
 </html>
