@@ -1,6 +1,6 @@
 # 🛰️ CNS Quiz — VATMSORATS Long Thành ATCC
 
-> Website ôn tập trắc nghiệm CNS/ATM dành cho ATSEP tại Trung tâm Kiểm soát đường dài Hồ Chí Minh - VATMSORATS Long Thành ATCC.
+> Website ôn tập trắc nghiệm CNS/ATM dành cho ATSEP tại Trung tâm Kiểm soát không lưu Long Thành - VATMSORATS - Long Thành ATCC.
 
 [![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Truy_cập_ngay-0078d4?style=for-the-badge)](https://longthanhno1.github.io/quiz-vatmsorats-longthanh-atcc/)
 [![Câu hỏi](https://img.shields.io/badge/📚_Câu_hỏi-1.858_câu-10b981?style=for-the-badge)](#)
@@ -11,7 +11,7 @@
 
 ## 📌 Giới thiệu
 
-Website ôn tập trắc nghiệm **CNS/ATM** (Communication · Navigation · Surveillance) dành cho nhân viên kỹ thuật điện tử hàng không (ATSEP) tại **VATMSORATS Long Thành ATCC**.
+Website ôn tập trắc nghiệm **CNS/ATM** (Communication · Navigation · Surveillance) dành cho nhân viên kỹ thuật điện tử hàng không (ATSEP) tại **VATMSORATS - Long Thành ATCC**.
 
 > ⚠️ Đây là công cụ ôn tập **nội bộ**, không phải tài liệu chính thức của VATM.
 
@@ -138,7 +138,7 @@ nhánh phụ (fix/... hoặc feature/...)
   ↓ test local bằng Live Server
 ```
 
-> ⚠️ Không push thẳng lên main — luôn dùng nhánh phụ và test trước.
+> ⚠️ Không push thẳng lên main — luôn dùng nhánh phụ và test local trước.
 
 ---
 
