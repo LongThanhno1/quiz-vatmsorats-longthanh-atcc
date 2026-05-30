@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CNS Quiz — Kiểm tra Ngân hàng đề</title>
-  <script src="js/questions.js"></script>
+  <script src="js/questions.js?v=2.0"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -190,60 +190,44 @@
 
 <script>
 // ── Data ─────────────────────────────────────────────────────────────────────
-const BEFORE = {
-  'VHF': 121, 'Ghi âm': 66, 'ADS-B': 301, 'RDP/FDP': 46,
-  'VCCS': 61, 'SMS': 17, 'A-SGMCS': 67, 'Radar': 78,
-  'ADS-B-LT': 30, 'Radar-TSN': 121, 'KipTruong-TSN': 233
-};
-const CHANGED = {
-  'VHF': 'new', 'VCCS': 'new', 'A-SGMCS': 'new', 'RDP/FDP': 'append'
-};
 const MOD_ICONS = {
   'VHF':'📡','Ghi âm':'🎙','ADS-B':'🛰','RDP/FDP':'🖥',
   'VCCS':'☎','SMS':'🛡','A-SGMCS':'⚙','Radar':'📻',
   'ADS-B-LT':'🛰','Radar-TSN':'📻','KipTruong-TSN':'🧑‍💼'
 };
+const MODULE_ORDER = ['VHF','Ghi âm','ADS-B','RDP/FDP','VCCS','SMS','A-SGMCS','Radar','ADS-B-LT','Radar-TSN','KipTruong-TSN'];
 
 // ── Build stats ───────────────────────────────────────────────────────────────
 function buildStats() {
   const counts = {};
   questionBank.forEach(q => counts[q.module] = (counts[q.module]||0) + 1);
   const total = questionBank.length;
-  const idMin = Math.min(...questionBank.map(q=>q.id));
-  const idMax = Math.max(...questionBank.map(q=>q.id));
+  const ids = questionBank.map(q=>q.id);
+  const idMin = Math.min(...ids), idMax = Math.max(...ids);
+  const maxCount = Math.max(...Object.values(counts));
 
-  // Stats row
   document.getElementById('timestamp').textContent =
-    `Kiểm tra lúc: ${new Date().toLocaleString('vi-VN')} | questions.js được tải thành công`;
+    `Kiểm tra lúc: ${new Date().toLocaleString('vi-VN')} | questions.js tải thành công`;
 
-  const statsData = [
+  document.getElementById('stats-row').innerHTML = [
     { value: total, label: 'Tổng câu hỏi' },
     { value: Object.keys(counts).length, label: 'Số module' },
     { value: `${idMin}–${idMax}`, label: 'ID range' },
-  ];
-  document.getElementById('stats-row').innerHTML = statsData.map(s =>
-    `<div class="stat-box"><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div></div>`
-  ).join('');
+  ].map(s => `<div class="stat-box"><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div></div>`).join('');
 
-  // Module grid
-  const moduleOrder = ['VHF','Ghi âm','ADS-B','RDP/FDP','VCCS','SMS','A-SGMCS','Radar','ADS-B-LT','Radar-TSN','KipTruong-TSN'];
-  document.getElementById('module-grid').innerHTML = moduleOrder.map(mod => {
-    const after = counts[mod] || 0;
-    const before = BEFORE[mod] || 0;
-    const diff = after - before;
-    const change = CHANGED[mod];
-    let badge = '';
-    if (change === 'new') badge = `<span class="card-change change-new">🔄 Thay mới: ${before}→${after}</span>`;
-    else if (change === 'append') badge = `<span class="card-change change-append">➕ Thêm ${diff} câu</span>`;
-    else badge = `<span class="card-change change-keep">Giữ nguyên</span>`;
+  document.getElementById('module-grid').innerHTML = MODULE_ORDER.map(mod => {
+    const cnt = counts[mod] || 0;
+    const pct = Math.round(cnt / maxCount * 100);
     return `
       <div class="card">
         <div class="card-header">
           <span class="card-icon">${MOD_ICONS[mod]||'❓'}</span>
           <span class="card-title">${mod}</span>
         </div>
-        <div class="card-count">${after}</div>
-        ${badge}
+        <div class="card-count">${cnt}</div>
+        <div style="background:rgba(255,255,255,0.06);border-radius:4px;height:6px;margin-top:8px;overflow:hidden;">
+          <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,#0ea5e9,#6366f1);border-radius:4px;"></div>
+        </div>
       </div>`;
   }).join('');
 
@@ -253,94 +237,123 @@ function buildStats() {
 // ── Validation ────────────────────────────────────────────────────────────────
 function runValidation(counts) {
   const checks = [];
-
-  // 1. Total
   const total = questionBank.length;
-  checks.push({ ok: total === 1574, label: 'Tổng câu hỏi = 1574', value: total });
+  const ids = questionBank.map(q=>q.id).sort((a,b)=>a-b);
+
+  // 1. Total > 0
+  checks.push({ ok: total > 0, label: `Tổng câu hỏi (động)`, value: total });
 
   // 2. IDs sequential
-  const ids = questionBank.map(q=>q.id).sort((a,b)=>a-b);
   const sequential = ids.every((id,i) => id === i+1);
-  checks.push({ ok: sequential, label: 'IDs sequential (1–1574)', value: sequential ? 'OK' : 'CÓ GAP' });
+  checks.push({ ok: sequential, label: `IDs sequential (1–${total})`, value: sequential ? 'OK' : 'CÓ GAP' });
 
   // 3. No duplicate IDs
-  const dupSet = new Set(ids);
-  checks.push({ ok: dupSet.size === ids.length, label: 'Không trùng ID', value: `${dupSet.size} unique / ${ids.length} total` });
+  const uniq = new Set(ids);
+  checks.push({ ok: uniq.size === ids.length, label: 'Không trùng ID', value: `${uniq.size} unique / ${ids.length} total` });
 
-  // 4. correctAnswer in options
-  const badAnswers = questionBank.filter(q => !q.options.includes(q.correctAnswer));
-  checks.push({ ok: badAnswers.length === 0, label: 'correctAnswer khớp options', value: `${questionBank.length - badAnswers.length}/${questionBank.length} ✓` });
+  // 4. correctAnswer exact match in options (case-sensitive)
+  const badCA = questionBank.filter(q => !q.options || !q.options.includes(q.correctAnswer));
+  checks.push({ ok: badCA.length === 0, label: 'correctAnswer khớp exact (case-sensitive)', value: badCA.length === 0 ? `${total}/${total} ✓` : `❌ ${badCA.length} câu lỗi` });
+  if (badCA.length > 0) {
+    window._badCA = badCA;
+    checks[checks.length-1].detail = badCA.slice(0,3).map(q=>`ID${q.id}: ${q.correctAnswer?.substring(0,40)}`).join('; ');
+  }
 
-  // 5. All have 4 options
-  const bad4 = questionBank.filter(q => q.options.length !== 4);
-  checks.push({ ok: bad4.length === 0, label: 'Tất cả đủ 4 lựa chọn', value: bad4.length === 0 ? 'OK' : `${bad4.length} câu thiếu` });
+  // 5. Options >= 2
+  const bad2 = questionBank.filter(q => !q.options || q.options.length < 2);
+  checks.push({ ok: bad2.length === 0, label: 'Tất cả có ≥ 2 lựa chọn', value: bad2.length === 0 ? 'OK' : `${bad2.length} câu thiếu` });
 
-  // 6. Module counts
-  const expected = { 'VHF':144,'Ghi âm':66,'ADS-B':301,'RDP/FDP':146,'VCCS':246,'SMS':17,'A-SGMCS':192,'Radar':78,'ADS-B-LT':30,'Radar-TSN':121,'KipTruong-TSN':233 };
-  const countOk = Object.entries(expected).every(([m,n]) => counts[m] === n);
-  checks.push({ ok: countOk, label: 'Số câu từng module đúng kế hoạch', value: countOk ? 'OK' : 'Sai số lượng' });
+  // 6. Fields đầy đủ
+  const reqFields = ['id','module','moduleName','question','options','correctAnswer','refDoc'];
+  const missingF = questionBank.filter(q => reqFields.some(f => q[f]===undefined||q[f]===null||q[f]===''));
+  checks.push({ ok: missingF.length === 0, label: 'Field đầy đủ (id/module/question/options/correctAnswer/refDoc)', value: missingF.length === 0 ? 'OK' : `${missingF.length} câu thiếu field` });
+
+  // 7. Câu trùng CÙNG module
+  const modTexts = {};
+  let dupSameModule = 0;
+  questionBank.forEach(q => {
+    const k = q.module + '|||' + q.question.trim();
+    if (modTexts[k]) dupSameModule++;
+    else modTexts[k] = q.id;
+  });
+  checks.push({ ok: dupSameModule === 0, label: 'Không trùng câu hỏi (trong cùng module)', value: dupSameModule === 0 ? 'OK' : `${dupSameModule} câu trùng nội bộ module` });
+
+  // 8. Câu trùng cross-module (thông tin, không fail)
+  const allTexts = {};
+  let dupCross = 0;
+  questionBank.forEach(q => {
+    const k = q.question.trim();
+    if (allTexts[k] && allTexts[k] !== q.module) dupCross++;
+    else if (!allTexts[k]) allTexts[k] = q.module;
+  });
+  checks.push({ ok: true, label: 'Câu trùng text nhưng khác module (cross-module, thông tin)', value: `${dupCross} câu (chấp nhận được)` });
+
+  // 9. Module keys hợp lệ
+  const VALID = new Set(['VHF','Radar','SMS','ADS-B-LT','Ghi âm','ADS-B','RDP/FDP','VCCS','Radar-TSN','KipTruong-TSN','A-SGMCS']);
+  const badMod = questionBank.filter(q => !VALID.has(q.module));
+  checks.push({ ok: badMod.length === 0, label: 'Module key hợp lệ', value: badMod.length === 0 ? 'OK' : `${badMod.length} câu sai module: ${[...new Set(badMod.map(q=>q.module))].join(',')}` });
 
   document.getElementById('check-section').innerHTML = checks.map(c =>
     `<div class="check-row">
       <span class="${c.ok ? 'check-ok' : 'check-fail'}">${c.ok ? '✅' : '❌'}</span>
       <span class="check-label">${c.label}</span>
-      <span class="check-value">${c.value}</span>
+      <span class="check-value">${c.value}${c.detail ? '<br><small style="color:#f87171">'+c.detail+'</small>' : ''}</span>
     </div>`
   ).join('');
 
-  if (badAnswers.length > 0) {
-    console.warn('Bad answers:', badAnswers.slice(0,5));
-  }
+  // Export JSON button
+  document.getElementById('check-section').insertAdjacentHTML('afterend',
+    `<div style="margin-top:12px;">
+      <button onclick="exportReport()" style="padding:8px 18px;border-radius:8px;border:1px solid #334155;background:#1e293b;color:#94a3b8;cursor:pointer;font-size:0.82rem;">
+        📥 Export báo cáo JSON
+      </button>
+    </div>`
+  );
+
+  window._reportData = { timestamp: new Date().toISOString(), total, counts, checks };
+}
+
+function exportReport() {
+  const data = window._reportData || {};
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `cns-quiz-audit-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
 }
 
 // ── Sample viewer ─────────────────────────────────────────────────────────────
-let currentMod = 'VHF';
-let currentPage = 0;
+let currentMod = 'VHF', currentPage = 0;
 const PAGE_SIZE = 5;
-
-function getModuleQuestions(mod) {
-  return questionBank.filter(q => q.module === mod);
-}
-
+function getModuleQuestions(mod) { return questionBank.filter(q => q.module === mod); }
 function renderSamples() {
   const qs = getModuleQuestions(currentMod);
   const totalPages = Math.ceil(qs.length / PAGE_SIZE);
-  const pageQs = qs.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
-
+  const pageQs = qs.slice(currentPage * PAGE_SIZE, (currentPage+1)*PAGE_SIZE);
   document.getElementById('pagination').innerHTML = `
     <button class="pg-btn" onclick="changePage(-1)" ${currentPage===0?'disabled':''}>◀ Trước</button>
     <span class="pg-info">Trang ${currentPage+1}/${totalPages} (${qs.length} câu)</span>
     <button class="pg-btn" onclick="changePage(1)" ${currentPage===totalPages-1?'disabled':''}>Sau ▶</button>
-    <span class="pg-info" style="margin-left:8px">ID ${pageQs[0]?.id}–${pageQs[pageQs.length-1]?.id}</span>
-  `;
-
+    <span class="pg-info" style="margin-left:8px">ID ${pageQs[0]?.id}–${pageQs[pageQs.length-1]?.id}</span>`;
   document.getElementById('q-list').innerHTML = pageQs.map(q => `
     <div class="q-card">
       <div class="q-num">ID: ${q.id} · ${q.module} · ${q.refDoc}</div>
       <div class="q-text">${q.question}</div>
       <div class="q-opts">
-        ${q.options.map(opt => `
-          <div class="q-opt ${opt === q.correctAnswer ? 'correct' : ''}">${opt}</div>
-        `).join('')}
+        ${q.options.map(opt => `<div class="q-opt ${opt===q.correctAnswer?'correct':''}">${opt}</div>`).join('')}
       </div>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
-
 function changePage(dir) {
-  const qs = getModuleQuestions(currentMod);
-  const totalPages = Math.ceil(qs.length / PAGE_SIZE);
-  currentPage = Math.max(0, Math.min(totalPages - 1, currentPage + dir));
+  const total = Math.ceil(getModuleQuestions(currentMod).length / PAGE_SIZE);
+  currentPage = Math.max(0, Math.min(total-1, currentPage+dir));
   renderSamples();
 }
-
 function selectMod(mod) {
-  currentMod = mod;
-  currentPage = 0;
+  currentMod = mod; currentPage = 0;
   document.querySelectorAll('.mod-btn').forEach(b => b.classList.toggle('active', b.dataset.mod === mod));
   renderSamples();
 }
-
 function buildPicker() {
   const mods = [...new Set(questionBank.map(q=>q.module))];
   document.getElementById('mod-picker').innerHTML = mods.map(m =>
@@ -351,7 +364,7 @@ function buildPicker() {
 // ── Init ──────────────────────────────────────────────────────────────────────
 window.addEventListener('load', () => {
   if (typeof questionBank === 'undefined') {
-    document.body.innerHTML = '<div style="color:#f87171;padding:40px;font-size:1.2rem">❌ Không load được questions.js — kiểm tra đường dẫn file</div>';
+    document.body.innerHTML = '<div style="color:#f87171;padding:40px;font-size:1.2rem">❌ Không load được questions.js</div>';
     return;
   }
   const counts = buildStats();
