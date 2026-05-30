@@ -668,3 +668,14 @@ document.addEventListener('DOMContentLoaded', function() {
   // Resume bài thi nếu có
   checkResume();
 });
+
+// ── SCROLL TO TOP ──
+window.addEventListener('scroll', function() {
+  const btn = document.getElementById('scrollTopBtn');
+  if (!btn) return;
+  if (window.pageYOffset > 300) {
+    btn.classList.add('visible');
+  } else {
+    btn.classList.remove('visible');
+  }
+});
