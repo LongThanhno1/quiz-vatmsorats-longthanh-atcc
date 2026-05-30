@@ -130,10 +130,11 @@ function startExam(moduleId) {
     return;
   }
 
-  // Trộn ngẫu nhiên (Fisher-Yates), sau đó bốc tối đa 50 câu
+  // Trộn ngẫu nhiên (Fisher-Yates)
+  // Thi thử: bốc tối đa 50 câu | Ôn tập: lấy toàn bộ pool
   const MAX_DRAW = 50;
-  const pool     = shuffle(rawPool);          // toàn bộ pool đã trộn
-  const count    = Math.min(MAX_DRAW, pool.length);   // <= 50, không bao giờ vượt pool
+  const pool     = shuffle(rawPool);
+  const count    = quizMode === 'practice' ? pool.length : Math.min(MAX_DRAW, pool.length);
   examQuestions  = pool.slice(0, count).map(q => ({ ...q, options: shuffle(q.options) }));
 
   userAnswers  = {};
