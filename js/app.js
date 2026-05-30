@@ -59,7 +59,15 @@ function onViTriChange() {
       const mc  = getMC(mId);
       const opt = document.createElement('option');
       opt.value = mId;
-      opt.textContent = `${mc.icon}  ${mc.name}`;
+      if (quizMode === 'practice') {
+        // Hiện số câu thực tế trong pool
+        const poolSize = questionBank.filter(q => q.module === mId).length;
+        opt.textContent = `${mc.icon}  ${mc.name}  —  ${poolSize} câu`;
+      } else {
+        const poolSize = questionBank.filter(q => q.module === mId).length;
+        const drawCount = Math.min(mc.draw || 50, poolSize);
+        opt.textContent = `${mc.icon}  ${mc.name}  —  ${drawCount} câu`;
+      }
       selMod.appendChild(opt);
     });
     selMod.disabled = false;
@@ -95,6 +103,8 @@ function setQuizMode(mode) {
   if (bE) { bE.className = 'mode-btn' + (mode==='exam'     ? ' active-exam'     : ''); }
   if (bP) { bP.className = 'mode-btn' + (mode==='practice' ? ' active-practice' : ''); }
   if (lbl) lbl.textContent = mode === 'practice' ? 'BẮT ĐẦU ÔN TẬP' : 'VÀO LÀM BÀI';
+  // Cập nhật lại dropdown module nếu đã chọn vị trí
+  if ($('selViTri') && $('selViTri').value) onViTriChange();
 }
 
 // ── WELCOME SCREEN: VÀO LÀM BÀI handler ──
