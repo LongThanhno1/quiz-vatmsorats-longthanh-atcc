@@ -3,7 +3,7 @@
 > Website ôn tập trắc nghiệm CNS/ATM dành cho ATSEP tại Trung tâm Kiểm soát không lưu Long Thành - VATMSORATS - Long Thành ATCC.
 
 [![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Truy_cập_ngay-0078d4?style=for-the-badge)](https://longthanhno1.github.io/quiz-vatmsorats-longthanh-atcc/)
-[![Câu hỏi](https://img.shields.io/badge/📚_Câu_hỏi-1.858_câu-10b981?style=for-the-badge)](#)
+[![Câu hỏi](https://img.shields.io/badge/📚_Câu_hỏi-1858_câu-10b981?style=for-the-badge)](#)
 [![Phiên bản](https://img.shields.io/badge/Phiên_bản-v1.11--2026-f59e0b?style=for-the-badge)](#)
 [![Analytics](https://img.shields.io/badge/📊_Analytics-GA4-orange?style=for-the-badge)](#)
 
@@ -146,6 +146,8 @@ nhánh phụ (fix/... hoặc feature/...)
 
 | Phiên bản | Ngày | Thay đổi |
 |---|---|---|
+| v1.1-2026 | 29/05/2026 | Cập nhật VHF 144→428 câu (6 sheet: Câu hỏi chung, Park Air, R&S, Jotron, HF, Icom) |
+| v1.0-2026 | 28/05/2026 | Cập nhật ngân hàng đề 2026 · GA4 · Admin dashboard · Check tool |
 | v1.11-2026 | 29/05/2026 | VHF cập nhật đủ 428 câu từ 6 sheet ngân hàng 2026 |
 | v1.1-2026 | 28/05/2026 | Fix A-SMGCS/RDP/FDP · keyboard nav · resume · admin auth |
 | v1.0-2026 | 28/05/2026 | Ngân hàng đề 2026 · GA4 · Admin dashboard · check.html |
@@ -157,9 +159,8 @@ nhánh phụ (fix/... hoặc feature/...)
 
 ## 👤 Tác giả
 
-**Đỗ Thanh Long**
-Kỹ sư ATSEP — VATMSORATS - Long Thành ATCC
-Tổng công ty Quản lý bay Việt Nam (VATM)
+**Đỗ Thanh Long**  
+Kỹ sư ATSEP — Trung tâm Kiểm soát không lưu Long Thành (Long Thanh ATCC) - Công ty quản lý bay miền nam (VATMSORATS) - Tổng công ty Quản lý bay Việt Nam (VATM)
 
 ---
 
