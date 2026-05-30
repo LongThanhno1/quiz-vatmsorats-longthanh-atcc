@@ -10,7 +10,7 @@
 
 ## 📌 Giới thiệu
 
-Website ôn tập trắc nghiệm **CNS/ATM** (Communication · Navigation · Surveillance) dành cho nhân viên kỹ thuật điện tử hàng không (ATSEP) tại **Trung tâm Kiểm soát không lưu Long Thành - VATMSORATS Long Thành ATCC**.
+Website ôn tập trắc nghiệm **CNS/ATM** (Communication · Navigation · Surveillance) dành cho nhân viên kỹ thuật điện tử hàng không (ATSEP) tại **Trung tâm Kiểm soát không lưu Long Thành (Long Thanh ATCC)** - Công ty quản lý bay miền nam (VATMSORATS) - Tổng công ty Quản lý bay Việt Nam (VATM).
 
 > ⚠️ Đây là công cụ ôn tập **nội bộ**, không phải tài liệu chính thức của VATM.
 
@@ -140,8 +140,7 @@ Chỉnh sửa file `js/questions.js`. Mỗi câu hỏi có cấu trúc:
 ## 👤 Tác giả
 
 **Đỗ Thanh Long**  
-Kỹ sư ATSEP — Trung tâm Kiểm soát không lưu Long Thành - Công ty quản lý bay miền nam ( VATMSORATS)  
-Tổng công ty Quản lý bay Việt Nam (VATM)
+Kỹ sư ATSEP — Trung tâm Kiểm soát không lưu Long Thành (Long Thanh ATCC) - Công ty quản lý bay miền nam (VATMSORATS) - Tổng công ty Quản lý bay Việt Nam (VATM)
 
 ---
 
