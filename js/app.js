@@ -427,6 +427,9 @@ function doSubmit(auto=false) {
   closeSubmitModal();
   $('examScreen').classList.add('hidden');
   $('resultScreen').classList.remove('hidden');
+  // Luôn hiện scroll-to-top trên màn hình kết quả
+  const _sb = $('scrollTopBtn');
+  if (_sb) _sb.classList.add('visible');
 
   let correct = 0;
   examQuestions.forEach((q,i) => { if (userAnswers[i] === q.correctAnswer) correct++; });
@@ -566,6 +569,7 @@ function hideReview() {
 function backToStart() {
   quizMode = 'exam';
   selectedModule = null;
+  const _sb = $('scrollTopBtn'); if (_sb) _sb.classList.remove('visible');
   const from = $('resultScreen');
   from.classList.add('screen-exit');
   setTimeout(() => {
@@ -579,6 +583,7 @@ function backToStart() {
 }
 
 function retakeModule() {
+  const _sb = $('scrollTopBtn'); if (_sb) _sb.classList.remove('visible');
   const mod = selectedModule;
   const from = $('resultScreen');
   from.classList.add('screen-exit');
