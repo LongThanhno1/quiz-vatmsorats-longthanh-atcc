@@ -60,27 +60,8 @@
     </svg>
   </div>
 
-  <!-- Aircraft blips -->
-  <div class="blip" style="top:11%;left:68%">
-    <div class="blip-dot"></div>
-    <div class="blip-tag">VN161<br>FL340 &#8599; 465kt</div>
-  </div>
-  <div class="blip" style="top:31%;left:83%">
-    <div class="blip-dot" style="animation-delay:1.3s"></div>
-    <div class="blip-tag">QH123<br>FL280 &#8600; 418kt</div>
-  </div>
-  <div class="blip" style="top:67%;left:77%">
-    <div class="blip-dot" style="animation-delay:0.7s"></div>
-    <div class="blip-tag">VJ456<br>FL190 &#8594; 382kt</div>
-  </div>
-  <div class="blip" style="top:74%;left:16%">
-    <div class="blip-dot" style="animation-delay:2.1s"></div>
-    <div class="blip-tag">BL789<br>FL120 &#8599; 315kt</div>
-  </div>
-  <div class="blip" style="top:17%;left:24%">
-    <div class="blip-dot" style="animation-delay:1.6s"></div>
-    <div class="blip-tag">VN234<br>FL350 &#8594; 472kt</div>
-  </div>
+  <!-- Radar blips (JS-driven) -->
+  <div id="radarBlips" style="position:absolute;inset:0;pointer-events:none;z-index:4;overflow:hidden;"></div>
 
   <!-- ── WELCOME CARD ── -->
   <div class="welcome-container">
