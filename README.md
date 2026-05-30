@@ -2,8 +2,8 @@
 > Website ôn tập trắc nghiệm CNS/ATM dành cho ATSEP tại Trung tâm Kiểm soát không lưu Long Thành - VATMSORATS Long Thành ATCC.
 
 [![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Truy_cập_ngay-0078d4?style=for-the-badge)](https://longthanhno1.github.io/quiz-vatmsorats-longthanh-atcc/)
-[![Câu hỏi](https://img.shields.io/badge/📚_Câu_hỏi-1574_câu-10b981?style=for-the-badge)](#)
-[![Phiên bản](https://img.shields.io/badge/Phiên_bản-v1.0--2026-f59e0b?style=for-the-badge)](#)
+[![Câu hỏi](https://img.shields.io/badge/📚_Câu_hỏi-1858_câu-10b981?style=for-the-badge)](#)
+[![Phiên bản](https://img.shields.io/badge/Phiên_bản-v1.1--2026-f59e0b?style=for-the-badge)](#)
 [![Analytics](https://img.shields.io/badge/📊_Analytics-GA4-orange?style=for-the-badge)](#)
 
 ---
@@ -29,7 +29,7 @@ Website ôn tập trắc nghiệm **CNS/ATM** (Communication · Navigation · Su
 
 ## 🎯 Tính năng
 
-- ✅ **1.574 câu hỏi** phủ toàn bộ lĩnh vực CNS/ATM - cập nhật 2026
+- ✅ **1.858 câu hỏi** phủ toàn bộ lĩnh vực CNS/ATM - cập nhật 2026
 - 🔀 **Random 50 câu** ngẫu nhiên mỗi lần thi
 - ⏱️ **50 phút** mỗi bài thi
 - 📊 **Phân tích kết quả** theo chủ đề sau khi nộp bài
@@ -45,7 +45,7 @@ Website ôn tập trắc nghiệm **CNS/ATM** (Communication · Navigation · Su
 
 | Module | Số câu | Vị trí | Nguồn |
 |---|---|---|---|
-| 📡 VHF | 144 | Long Thành + Tân Sơn Nhất | NGÂN HÀNG VHF 2026 (KTTWRTSN) |
+| 📡 VHF | 428 | Long Thành + Tân Sơn Nhất | NGÂN HÀNG VHF 2026 (KTTWRTSN) — 6 sheet |
 | 📻 Radar | 78 | Long Thành | Giữ nguyên |
 | 🛡️ SMS | 17 | Long Thành | Giữ nguyên |
 | 🛰️ ADS-B-LT | 30 | Long Thành | Giữ nguyên |
@@ -56,7 +56,7 @@ Website ôn tập trắc nghiệm **CNS/ATM** (Communication · Navigation · Su
 | 📻 Radar-TSN | 121 | Tân Sơn Nhất | Giữ nguyên |
 | 🧑‍💼 Kíp trưởng | 233 | Tân Sơn Nhất | Giữ nguyên |
 | ⚙️ A-SGMCS | 192 | Tân Sơn Nhất | A-SMGCS TSN 2026 |
-| **Tổng** | **1.574** | | |
+| **Tổng** | **1.858** | | |
 
 ---
 
@@ -71,7 +71,7 @@ quiz-vatmsorats-longthanh-atcc/
 ├── css/
 │   └── style.css       # Stylesheet tùy chỉnh
 ├── js/
-│   ├── questions.js    # ⚠️ Database câu hỏi (1.574 câu)
+│   ├── questions.js    # ⚠️ Database câu hỏi (1.858 câu)
 │   └── app.js          # Logic quiz
 └── README.md
 ```
@@ -129,6 +129,7 @@ Chỉnh sửa file `js/questions.js`. Mỗi câu hỏi có cấu trúc:
 
 | Phiên bản | Ngày | Thay đổi |
 |---|---|---|
+| v1.1-2026 | 29/05/2026 | Cập nhật VHF 144→428 câu (6 sheet: Câu hỏi chung, Park Air, R&S, Jotron, HF, Icom) |
 | v1.0-2026 | 28/05/2026 | Cập nhật ngân hàng đề 2026 · GA4 · Admin dashboard · Check tool |
 | v3 | 2025 | Giao diện HUD radar · Xem lại câu sai |
 | v2 | 2025 | Phân loại module CNS |
