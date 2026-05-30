@@ -1,102 +1,102 @@
-# CNS Quiz — VATMSORATS Long Thành ATCC
+# 🛰️ CNS Quiz — VATMSORATS Long Thành ATCC
 
 > Website ôn tập trắc nghiệm CNS/ATM dành cho ATSEP tại Trung tâm Kiểm soát không lưu Long Thành (Long Thanh ATCC) - Công ty quản lý bay miền nam (VATMSORATS) - Tổng công ty Quản lý bay Việt Nam (VATM).
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-Truy_cập_ngay-0078d4?style=for-the-badge)](https://longthanhno1.github.io/quiz-vatmsorats-longthanh-atcc/)
-[![Câu hỏi](https://img.shields.io/badge/Cau_hoi-1780_cau-10b981?style=for-the-badge)](#)
-[![Phiên bản](https://img.shields.io/badge/Phien_ban-v2.0--2026-f59e0b?style=for-the-badge)](#)
-[![Analytics](https://img.shields.io/badge/Analytics-GA4-orange?style=for-the-badge)](#)
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Truy_cập_ngay-0078d4?style=for-the-badge)](https://longthanhno1.github.io/quiz-vatmsorats-longthanh-atcc/)
+[![Câu hỏi](https://img.shields.io/badge/📚_Câu_hỏi-1780_câu-10b981?style=for-the-badge)](#)
+[![Phiên bản](https://img.shields.io/badge/Phiên_bản-v2.0--2026-f59e0b?style=for-the-badge)](#)
+[![Analytics](https://img.shields.io/badge/📊_Analytics-GA4-orange?style=for-the-badge)](#)
 
 ---
 
-## Giới thiệu
+## 📌 Giới thiệu
 
 Website ôn tập trắc nghiệm **CNS/ATM** (Communication · Navigation · Surveillance) dành cho nhân viên kỹ thuật điện tử hàng không (ATSEP).
 
-> Đây là công cụ ôn tập **nội bộ**, không phải tài liệu chính thức của VATM.
+> ⚠️ Đây là công cụ ôn tập **nội bộ**, không phải tài liệu chính thức của VATM.
 
 ---
 
-## Truy cập nhanh
+## 🚀 Truy cập nhanh
 
 | Trang | Link |
 |---|---|
-| Trang thi | https://longthanhno1.github.io/quiz-vatmsorats-longthanh-atcc/ |
-| Admin Dashboard | https://longthanhno1.github.io/quiz-vatmsorats-longthanh-atcc/admin.html |
-| Kiểm tra ngân hàng đề | https://longthanhno1.github.io/quiz-vatmsorats-longthanh-atcc/check.html |
-| Source code | https://github.com/LongThanhno1/quiz-vatmsorats-longthanh-atcc |
+| 🌐 Trang thi | https://longthanhno1.github.io/quiz-vatmsorats-longthanh-atcc/ |
+| 📊 Admin Dashboard | https://longthanhno1.github.io/quiz-vatmsorats-longthanh-atcc/admin.html |
+| 🔍 Kiểm tra ngân hàng đề | https://longthanhno1.github.io/quiz-vatmsorats-longthanh-atcc/check.html |
+| 📦 Source code | https://github.com/LongThanhno1/quiz-vatmsorats-longthanh-atcc |
 
 ---
 
-## Tính năng
+## 🎯 Tính năng
 
-- **1.780 câu hỏi** phủ toàn bộ lĩnh vực CNS/ATM — cập nhật 2026
-- **Random 50 câu** ngẫu nhiên mỗi lần thi thử
-- **50 phút** mỗi bài thi
-- **Practice Mode** — ôn tập không giới hạn thời gian, hiển thị đáp án ngay
-- **Progress Bar** — 50 ô phân đoạn theo dõi tiến độ làm bài
-- **Cảnh báo Timer** — đổi màu và toast khi còn 5 phút, 1 phút
-- **Ôn lại câu sai** — xem lại đáp án sai/đúng kèm tài liệu tham khảo
-- **Resume bài thi** — refresh trang không mất tiến độ
-- **Phím tắt** — `1/2/3/4` chọn đáp án, `←/→` chuyển câu
-- **Radar live** — aircraft targets di chuyển và sweep fade như PSR/SSR thật
-- **Responsive** — dùng được trên điện thoại và máy tính
-- **Giao diện HUD** — phong cách radar/aviation
-- **Google Analytics 4** — theo dõi lượt truy cập và thi
-- **Cấu trúc tách file** — index.html 19KB · app.js · questions.js · style.css
+- ✅ **1.780 câu hỏi** phủ toàn bộ lĩnh vực CNS/ATM — cập nhật 2026
+- 🔀 **Random 50 câu** ngẫu nhiên mỗi lần thi thử
+- ⏱️ **50 phút** mỗi bài thi
+- 📚 **Practice Mode** — ôn tập không giới hạn thời gian, hiển thị đáp án ngay
+- 📊 **Progress Bar** — 50 ô phân đoạn theo dõi tiến độ làm bài
+- ⏰ **Cảnh báo Timer** — đổi màu và toast khi còn 5 phút, 1 phút
+- 📋 **Ôn lại câu sai** — xem lại đáp án sai/đúng kèm tài liệu tham khảo
+- 💾 **Resume bài thi** — refresh trang không mất tiến độ
+- ⌨️ **Phím tắt** — `1/2/3/4` chọn đáp án, `←/→` chuyển câu
+- 🛩️ **Radar live** — aircraft targets di chuyển và sweep fade như PSR/SSR thật
+- 📱 **Responsive** — dùng được trên điện thoại và máy tính
+- 🎨 **Giao diện HUD** — phong cách radar/aviation
+- 📈 **Google Analytics 4** — theo dõi lượt truy cập và thi
+- 🏗️ **Cấu trúc tách file** — index.html 19KB · app.js · questions.js · style.css
 
 ---
 
-## Ngân hàng câu hỏi — Cập nhật 2026
+## 📚 Ngân hàng câu hỏi — Cập nhật 2026
 
 | Module | Số câu | Vị trí | Nguồn |
 |---|---|---|---|
-| VHF | 428 | Long Thành + Tân Sơn Nhất | NGÂN HÀNG VHF 2026 (KTTWRTSN) — 6 sheet |
-| Radar | 77 | Long Thành | Giữ nguyên |
-| SMS | 17 | Long Thành | Giữ nguyên |
-| ADS-B-LT | 30 | Long Thành | Giữ nguyên |
-| Ghi âm | 66 | Tân Sơn Nhất | Giữ nguyên |
-| ADS-B | 298 | Tân Sơn Nhất | Giữ nguyên |
-| RDP/FDP | 141 | Long Thành + Tân Sơn Nhất | Trắc nghiệm mạng + ĐGNL 2026 |
-| VCCS | 237 | Tân Sơn Nhất | VCCS 2026 (KTTWRTSN) |
-| Radar-TSN | 111 | Tân Sơn Nhất | Giữ nguyên |
-| Kíp trưởng | 230 | Tân Sơn Nhất | Giữ nguyên |
-| A-SGMCS | 145 | Tân Sơn Nhất | A-SMGCS TSN 2026 |
+| 📡 VHF | 428 | Long Thành + Tân Sơn Nhất | NGÂN HÀNG VHF 2026 (KTTWRTSN) — 6 sheet |
+| 📻 Radar | 77 | Long Thành | Giữ nguyên |
+| 🛡️ SMS | 17 | Long Thành | Giữ nguyên |
+| 🛰️ ADS-B-LT | 30 | Long Thành | Giữ nguyên |
+| 🎙️ Ghi âm | 66 | Tân Sơn Nhất | Giữ nguyên |
+| 🛰️ ADS-B | 298 | Tân Sơn Nhất | Giữ nguyên |
+| 🖥️ RDP/FDP | 141 | Long Thành + Tân Sơn Nhất | Trắc nghiệm mạng + ĐGNL 2026 |
+| ☎️ VCCS | 237 | Tân Sơn Nhất | VCCS 2026 (KTTWRTSN) |
+| 📻 Radar-TSN | 111 | Tân Sơn Nhất | Giữ nguyên |
+| 🧑‍💼 Kíp trưởng | 230 | Tân Sơn Nhất | Giữ nguyên |
+| ⚙️ A-SGMCS | 145 | Tân Sơn Nhất | A-SMGCS TSN 2026 |
 | **Tổng** | **1.780** | | |
 
 ---
 
-## Cấu trúc project
+## 🏗️ Cấu trúc project
 
 ```
 quiz-vatmsorats-longthanh-atcc/
-├── index.html          # Giao diện thi chính (19 KB)
-├── admin.html          # Dashboard analytics (Looker Studio)
-├── check.html          # Công cụ kiểm tra ngân hàng đề
+├── index.html          # 🖥️ Giao diện thi chính (19 KB)
+├── admin.html          # 📊 Dashboard analytics (Looker Studio)
+├── check.html          # 🔍 Công cụ kiểm tra ngân hàng đề
 ├── css/
-│   └── style.css       # Stylesheet
+│   └── style.css       # 🎨 Stylesheet
 ├── js/
-│   ├── questions.js    # Database câu hỏi (1.780 câu)
-│   └── app.js          # Logic quiz + Radar engine
+│   ├── questions.js    # ⚠️ Database câu hỏi (1.780 câu)
+│   └── app.js          # ⚡ Logic quiz + Radar engine
 └── README.md
 ```
 
 ---
 
-## Analytics & Monitoring
+## 📊 Analytics & Monitoring
 
 Theo dõi tự động qua **Google Analytics 4**:
 
-- Lượt truy cập website
-- Số người bắt đầu thi từng module (`quiz_start`)
-- Số người hoàn thành bài thi (`quiz_complete`)
-- Tỷ lệ bỏ giữa chừng (`quiz_abandon`)
+- 👁️ Lượt truy cập website
+- 🚀 Số người bắt đầu thi từng module (`quiz_start`)
+- ✅ Số người hoàn thành bài thi (`quiz_complete`)
+- 📉 Tỷ lệ bỏ giữa chừng (`quiz_abandon`)
 
 Xem dashboard: [admin.html](https://longthanhno1.github.io/quiz-vatmsorats-longthanh-atcc/admin.html)
 
 ---
 
-## Chạy local
+## 🔧 Chạy local
 
 ```bash
 git clone https://github.com/LongThanhno1/quiz-vatmsorats-longthanh-atcc.git
@@ -106,7 +106,7 @@ Mở bằng [Live Server](https://marketplace.visualstudio.com/items?itemName=ri
 
 ---
 
-## Cập nhật câu hỏi
+## ✏️ Cập nhật câu hỏi
 
 Chỉnh sửa `js/questions.js`. Cấu trúc mỗi câu hỏi:
 
@@ -126,7 +126,7 @@ Kiểm tra sau khi cập nhật: [check.html](https://longthanhno1.github.io/qui
 
 ---
 
-## Changelog
+## 📋 Changelog
 
 | Phiên bản | Ngày | Thay đổi |
 |---|---|---|
@@ -139,11 +139,12 @@ Kiểm tra sau khi cập nhật: [check.html](https://longthanhno1.github.io/qui
 
 ---
 
-## Tác giả
+## 👤 Tác giả
 
 **Đỗ Thanh Long**
+
 Kỹ sư ATSEP — Trung tâm Kiểm soát không lưu Long Thành (Long Thanh ATCC) - Công ty quản lý bay miền nam (VATMSORATS) - Tổng công ty Quản lý bay Việt Nam (VATM)
 
 ---
 
-> Đây là công cụ ôn tập **không chính thức**, xây dựng với mục đích hỗ trợ học tập nội bộ. Không thay thế tài liệu đào tạo chính thức của VATM hoặc ICAO.
+> ⚠️ Đây là công cụ ôn tập **không chính thức**, xây dựng với mục đích hỗ trợ học tập nội bộ. Không thay thế tài liệu đào tạo chính thức của VATM hoặc ICAO.
