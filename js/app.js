@@ -698,3 +698,121 @@ function updateScrollBtn() {
 window.addEventListener('scroll', updateScrollBtn, {passive:true});
 // Fire on load in case page already scrolled
 document.addEventListener('DOMContentLoaded', updateScrollBtn);
+
+/* ── RADAR ENGINE ── */
+(function() {
+  const AIRCRAFT = [
+    {call:'VN161', fl:'FL340', spd:'465kt'},
+    {call:'QH123', fl:'FL280', spd:'418kt'},
+    {call:'VJ456', fl:'FL190', spd:'382kt'},
+    {call:'BL789', fl:'FL120', spd:'315kt'},
+    {call:'VN234', fl:'FL350', spd:'472kt'},
+    {call:'VJ789', fl:'FL220', spd:'390kt'},
+    {call:'QH456', fl:'FL300', spd:'445kt'},
+    {call:'BL123', fl:'FL150', spd:'328kt'},
+  ];
+
+  const blips = [];
+  let rafId = null;
+
+  function headingArrow(h) {
+    h = ((h % 360) + 360) % 360;
+    if (h < 22.5 || h >= 337.5) return '↑';
+    if (h < 67.5)  return '↗';
+    if (h < 112.5) return '→';
+    if (h < 157.5) return '↘';
+    if (h < 202.5) return '↓';
+    if (h < 247.5) return '↙';
+    if (h < 292.5) return '←';
+    return '↖';
+  }
+
+  function rand(min, max) { return min + Math.random() * (max - min); }
+
+  function radarInit() {
+    const container = document.getElementById('radarBlips');
+    if (!container) return;
+
+    const count = 6 + Math.floor(Math.random() * 3); // 6-8
+    for (let i = 0; i < count; i++) {
+      const ac = AIRCRAFT[i % AIRCRAFT.length];
+      const heading = rand(0, 360);
+      const el = document.createElement('div');
+      el.className = 'blip';
+      el.style.cssText = 'position:absolute;pointer-events:none;';
+      el.innerHTML =
+        '<div class="blip-dot"></div>' +
+        '<div class="blip-tag">' + ac.call + '<br>' + ac.fl + ' ' + headingArrow(heading) + ' ' + ac.spd + '</div>';
+      container.appendChild(el);
+
+      blips.push({
+        el: el,
+        tag: el.querySelector('.blip-tag'),
+        dot: el.querySelector('.blip-dot'),
+        x: rand(5, 95),
+        y: rand(5, 95),
+        heading: heading,
+        speed: rand(0.008, 0.018),
+        changeTimer: Math.floor(rand(240, 600)),
+        opacity: 0.15,
+        call: ac.call, fl: ac.fl, spd: ac.spd
+      });
+    }
+    radarLoop();
+  }
+
+  function radarLoop() {
+    const sweepAngle = (Date.now() / 10000 * 360) % 360;
+    const cx = 50, cy = 50;
+
+    for (let i = 0; i < blips.length; i++) {
+      const b = blips[i];
+
+      // Movement
+      b.x += Math.cos(b.heading * Math.PI / 180) * b.speed;
+      b.y += Math.sin(b.heading * Math.PI / 180) * b.speed;
+      if (b.x < -3)  b.x = 103;
+      if (b.x > 103) b.x = -3;
+      if (b.y < -3)  b.y = 103;
+      if (b.y > 103) b.y = -3;
+      b.el.style.left = b.x + '%';
+      b.el.style.top  = b.y + '%';
+
+      // Heading change
+      b.changeTimer--;
+      if (b.changeTimer <= 0) {
+        b.heading += rand(-40, 40);
+        b.changeTimer = Math.floor(rand(480, 900));
+        // Update tag arrow
+        b.tag.innerHTML = b.call + '<br>' + b.fl + ' ' + headingArrow(b.heading) + ' ' + b.spd;
+      }
+
+      // Sweep sync
+      const targetAngle = ((Math.atan2(b.y - cy, b.x - cx) * 180 / Math.PI) + 360) % 360;
+      let diff = Math.abs(sweepAngle - targetAngle);
+      if (diff > 180) diff = 360 - diff;
+
+      if (diff < 10) {
+        b.opacity = 1.0;
+        b.dot.style.boxShadow = '0 0 12px rgba(150,230,255,1), 0 0 24px rgba(150,210,255,0.6)';
+      } else {
+        b.opacity = Math.max(0.12, b.opacity - 0.0008);
+        b.dot.style.boxShadow = '';
+      }
+      b.dot.style.opacity = b.opacity;
+    }
+
+    rafId = requestAnimationFrame(radarLoop);
+  }
+
+  document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(radarLoop);
+    } else {
+      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', radarInit);
+})();

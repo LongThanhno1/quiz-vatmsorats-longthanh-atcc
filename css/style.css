@@ -98,7 +98,7 @@ body { margin:0; padding:0; font-family:"Segoe UI",system-ui,-apple-system,sans-
   width:5px; height:5px; border-radius:50%;
   background:rgba(200,240,255,0.9);
   box-shadow:0 0 5px rgba(150,210,255,0.8), 0 0 10px rgba(150,210,255,0.4);
-  animation:blipFade 3.5s ease-in-out infinite; position:relative;
+  transition:opacity 0.4s ease, box-shadow 0.4s ease; position:relative;
 }
 .blip-dot::after {
   content:''; position:absolute; top:-4px; left:-4px; width:13px; height:13px;
