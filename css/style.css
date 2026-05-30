@@ -1,8 +1,3 @@
-/* ================================================================
-   CNS Quiz — Stylesheet
-   Tách từ index.html | Sky-Blue Glassmorphism Theme
-================================================================= */
-
 :root {
   --bg: #0b1f3a;
   --sky: #2d7ab5;
@@ -406,6 +401,18 @@ body { margin:0; padding:0; font-family:"Segoe UI",system-ui,-apple-system,sans-
 .nav-btn.answered { background:#0ea5e9; color:white; }
 .nav-btn.current  { outline:2px solid white; outline-offset:2px; color:white; }
 
+/* Practice Mode */
+.mode-btn { flex:1; padding:10px 0; border-radius:10px; border:1px solid rgba(255,255,255,0.15);
+  background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.6); font-size:13px; font-weight:700;
+  cursor:pointer; transition:all 0.2s; }
+.mode-btn.active-exam { background:rgba(14,165,233,0.18); border-color:rgba(14,165,233,0.5); color:#38bdf8; }
+.mode-btn.active-practice { background:rgba(16,185,129,0.18); border-color:rgba(16,185,129,0.5); color:#34d399; }
+.opt-correct { background:rgba(16,185,129,0.18)!important; border-color:rgba(16,185,129,0.6)!important; color:#34d399!important; }
+.opt-wrong   { background:rgba(239,68,68,0.15)!important;   border-color:rgba(239,68,68,0.5)!important;   color:#f87171!important; }
+.opt-disabled { pointer-events:none; opacity:0.55; }
+#practiceFeedback { display:none; margin-top:12px; padding:10px 14px; border-radius:10px; font-size:13px; font-weight:700; }
+#practiceFeedback.correct { background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.35); color:#34d399; }
+#practiceFeedback.wrong   { background:rgba(239,68,68,0.1);   border:1px solid rgba(239,68,68,0.3);   color:#f87171; }
 /* Timer */
 .timer-warn { animation:blink 0.9s infinite; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.35} }
@@ -429,42 +436,3 @@ body { margin:0; padding:0; font-family:"Segoe UI",system-ui,-apple-system,sans-
 
 @media(min-width:1024px) { .fab,.drawer { display:none!important; } .lg-sidebar { display:block; } }
 @media(max-width:1023px)  { .lg-sidebar { display:none; } }
-
-/* ── Keyboard shortcut hint ──────────────────────────────────────── */
-.keyboard-hint {
-  text-align: center;
-  font-size: 0.65rem;
-  color: rgba(255,255,255,0.25);
-  margin-top: 8px;
-  letter-spacing: 0.05em;
-}
-.keyboard-hint kbd {
-  display: inline-block;
-  padding: 1px 5px;
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 4px;
-  font-size: 0.65rem;
-  background: rgba(255,255,255,0.06);
-  margin: 0 2px;
-}
-
-/* ── Utility classes extracted from inline styles ─────────────────── */
-/* Semi-transparent glass panel background — used on questionCard, nav buttons, sidebar */
-.glass-panel { background: rgba(255,255,255,0.035); }
-
-/* Result screen — big stat number (score, time) */
-.res-stat-num {
-  font-size: 1.8rem;
-  font-weight: 900;
-  color: white;
-  letter-spacing: -0.02em;
-}
-
-/* Result screen — small stat label below the number */
-.res-stat-label {
-  font-size: 0.6rem;
-  color: rgba(255,255,255,0.4);
-  margin-top: 2px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
