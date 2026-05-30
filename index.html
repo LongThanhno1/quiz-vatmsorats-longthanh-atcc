@@ -403,6 +403,27 @@
      ====================================================== -->
 <script src="js/questions.js"></script>
 <script>
+// ── State ──
+let selectedModule = null;
+let quizMode       = 'exam';
+let examQuestions  = [];
+let userAnswers    = {};
+let currentIdx     = 0;
+let timerInterval  = null;
+let secondsLeft    = 50 * 60;
+let reviewFilter   = 'all';
+
+// ── Transition timing (sync CSS ↔ JS) ──
+const TR_DUR = 180;
+const Q_DUR  = 100;
+let   _qBusy = false;
+
+// ── Helpers ──
+const shuffle = arr => { let a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a; };
+const fmt = s => `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+const getMC = id => MODULE_CONFIG.find(m=>m.id===id)||{color:'#64748b',name:id,icon:'?',grd:'',bg:'',label:id};
+const $ = id => document.getElementById(id);
+
 // ── CASCADE DROPDOWN LOGIC ──
 function onChucDanhChange() {
   const cd = $('selChucDanh').value;
