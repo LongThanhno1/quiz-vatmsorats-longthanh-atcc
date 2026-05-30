@@ -1,16 +1,17 @@
 # 🛰️ CNS Quiz — VATMSORATS Long Thành ATCC
-> Website ôn tập trắc nghiệm CNS/ATM dành cho ATSEP tại Trung tâm Kiểm soát không lưu Long Thành - VATMSORATS Long Thành ATCC.
+
+> Website ôn tập trắc nghiệm CNS/ATM dành cho ATSEP tại Trung tâm Kiểm soát không lưu Long Thành - VATMSORATS - Long Thành ATCC.
 
 [![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Truy_cập_ngay-0078d4?style=for-the-badge)](https://longthanhno1.github.io/quiz-vatmsorats-longthanh-atcc/)
 [![Câu hỏi](https://img.shields.io/badge/📚_Câu_hỏi-1858_câu-10b981?style=for-the-badge)](#)
-[![Phiên bản](https://img.shields.io/badge/Phiên_bản-v1.1--2026-f59e0b?style=for-the-badge)](#)
+[![Phiên bản](https://img.shields.io/badge/Phiên_bản-v1.11--2026-f59e0b?style=for-the-badge)](#)
 [![Analytics](https://img.shields.io/badge/📊_Analytics-GA4-orange?style=for-the-badge)](#)
 
 ---
 
 ## 📌 Giới thiệu
 
-Website ôn tập trắc nghiệm **CNS/ATM** (Communication · Navigation · Surveillance) dành cho nhân viên kỹ thuật điện tử hàng không (ATSEP) tại **Trung tâm Kiểm soát không lưu Long Thành (Long Thanh ATCC)** - Công ty quản lý bay miền nam (VATMSORATS) - Tổng công ty Quản lý bay Việt Nam (VATM).
+Website ôn tập trắc nghiệm **CNS/ATM** (Communication · Navigation · Surveillance) dành cho nhân viên kỹ thuật điện tử hàng không (ATSEP) tại **VATMSORATS - Long Thành ATCC**.
 
 > ⚠️ Đây là công cụ ôn tập **nội bộ**, không phải tài liệu chính thức của VATM.
 
@@ -38,6 +39,7 @@ Website ôn tập trắc nghiệm **CNS/ATM** (Communication · Navigation · Su
 - 📱 **Responsive** — dùng được trên điện thoại và máy tính
 - 🎨 **Giao diện HUD** — phong cách radar/aviation
 - 📈 **Google Analytics 4** — theo dõi lượt truy cập và thi
+- 🔐 **Admin bảo mật** — dashboard yêu cầu mã truy cập
 
 ---
 
@@ -66,7 +68,7 @@ Website ôn tập trắc nghiệm **CNS/ATM** (Communication · Navigation · Su
 quiz-vatmsorats-longthanh-atcc/
 │
 ├── index.html          # Giao diện thi chính
-├── admin.html          # Dashboard analytics (Looker Studio)
+├── admin.html          # Dashboard analytics (yêu cầu mã truy cập)
 ├── check.html          # Công cụ kiểm tra ngân hàng đề
 ├── css/
 │   └── style.css       # Stylesheet tùy chỉnh
@@ -88,6 +90,7 @@ Hệ thống theo dõi tự động qua **Google Analytics 4**:
 - Tỷ lệ bỏ giữa chừng (`quiz_abandon`)
 
 **Xem dashboard:** [admin.html](https://longthanhno1.github.io/quiz-vatmsorats-longthanh-atcc/admin.html)
+> 🔐 Yêu cầu mã truy cập nội bộ
 
 ---
 
@@ -121,7 +124,21 @@ Chỉnh sửa file `js/questions.js`. Mỗi câu hỏi có cấu trúc:
 }
 ```
 
-**Kiểm tra sau khi cập nhật:** Truy cập [check.html](https://longthanhno1.github.io/quiz-vatmsorats-longthanh-atcc/check.html)
+**Kiểm tra sau khi cập nhật:** [check.html](https://longthanhno1.github.io/quiz-vatmsorats-longthanh-atcc/check.html)
+
+---
+
+## 🔄 Git Workflow
+
+```
+main (ổn định — GitHub Pages)
+  ↑ merge sau khi test OK
+nhánh phụ (fix/... hoặc feature/...)
+  ↑ Cowork làm việc ở đây
+  ↓ test local bằng Live Server
+```
+
+> ⚠️ Không push thẳng lên main — luôn dùng nhánh phụ và test local trước.
 
 ---
 
@@ -131,6 +148,9 @@ Chỉnh sửa file `js/questions.js`. Mỗi câu hỏi có cấu trúc:
 |---|---|---|
 | v1.1-2026 | 29/05/2026 | Cập nhật VHF 144→428 câu (6 sheet: Câu hỏi chung, Park Air, R&S, Jotron, HF, Icom) |
 | v1.0-2026 | 28/05/2026 | Cập nhật ngân hàng đề 2026 · GA4 · Admin dashboard · Check tool |
+| v1.11-2026 | 29/05/2026 | VHF cập nhật đủ 428 câu từ 6 sheet ngân hàng 2026 |
+| v1.1-2026 | 28/05/2026 | Fix A-SMGCS/RDP/FDP · keyboard nav · resume · admin auth |
+| v1.0-2026 | 28/05/2026 | Ngân hàng đề 2026 · GA4 · Admin dashboard · check.html |
 | v3 | 2025 | Giao diện HUD radar · Xem lại câu sai |
 | v2 | 2025 | Phân loại module CNS |
 | v1 | 2025 | Phiên bản đầu tiên |
@@ -146,5 +166,5 @@ Kỹ sư ATSEP — Trung tâm Kiểm soát không lưu Long Thành (Long Thanh A
 
 ## ⚠️ Tuyên bố miễn trừ
 
-Đây là công cụ ôn tập **không chính thức**, xây dựng với mục đích hỗ trợ học tập nội bộ.  
+Đây là công cụ ôn tập **không chính thức**, xây dựng với mục đích hỗ trợ học tập nội bộ.
 Không thay thế tài liệu đào tạo chính thức của VATM hoặc ICAO.
