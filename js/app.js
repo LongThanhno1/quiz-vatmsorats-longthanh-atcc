@@ -762,15 +762,8 @@ function checkResume() {
   const answered = Object.keys(snap.answers || {}).length;
   const mins     = Math.floor(snap.timeLeft / 60);
   const mc       = getMC(snap.module);
-  const confirmed = window.confirm(
-    'Ban dang co bai thi do dang!\n\nModule: ' + mc.name +
-    '\nDa tra loi: ' + answered + '/' + snap.questions.length +
-    ' cau\nThoi gian con lai: ' + mins +
-    ' phut\n\nTiep tuc lam bai?'
-  );
-  if (confirmed) { restoreQuizState(snap); return true; }
-  clearQuizState();
-  return false;
+ restoreQuizState(snap);
+return true;
 }
 
 function restoreQuizState(snap) {

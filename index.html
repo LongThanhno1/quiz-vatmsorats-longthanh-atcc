@@ -2497,4 +2497,89 @@ function retakeModule() {
   setTimeout(() => {
     from.classList.add('hidden');
     from.classList.remove('screen-exit');
-    // Re-run exam directly, no welcome screen nee
+   startExam(mod);
+  }, TR_DUR);
+}
+
+// ── INIT ──
+const QUIZ_SAVE_KEY = 'cns_quiz_state_v3';
+
+function saveQuizState() {
+  if (!selectedModule || !examQuestions.length) return;
+  try {
+    sessionStorage.setItem(QUIZ_SAVE_KEY, JSON.stringify({
+      module: selectedModule,
+      questions: examQuestions,
+      answers: userAnswers,
+      currentQ: currentIdx,
+      timeLeft: secondsLeft,
+      savedAt: Date.now()
+    }));
+  } catch(e) {}
+}
+
+function clearQuizState() { sessionStorage.removeItem(QUIZ_SAVE_KEY); }
+
+function checkResume() {
+  try {
+    const raw = sessionStorage.getItem(QUIZ_SAVE_KEY);
+    if (!raw) return false;
+    const snap = JSON.parse(raw);
+    if (Date.now() - snap.savedAt > 3 * 3600 * 1000) { clearQuizState(); return false; }
+    // Restore state
+    selectedModule = snap.module;
+    examQuestions  = snap.questions;
+    userAnswers    = snap.answers || {};
+    currentIdx     = snap.currentQ  || 0;
+    secondsLeft    = snap.timeLeft  || 50 * 60;
+    const ss = $('startScreen');
+    const es = $('examScreen');
+    if (ss) ss.classList.add('hidden');
+    if (es) {
+      es.classList.remove('hidden');
+      renderNavGrids();
+      showQInstant(currentIdx);
+      startTimer();
+    }
+    return true;
+  } catch(e) { clearQuizState(); return false; }
+}
+
+// Patch selectOpt, showQ, doSubmit to save/clear state
+(function() {
+  const _origSelectOpt = window.selectOpt;
+  if (_origSelectOpt) window.selectOpt = function(idx, el, val) {
+    _origSelectOpt(idx, el, val); saveQuizState();
+  };
+  const _origShowQ = window.showQ;
+  if (_origShowQ) window.showQ = function(idx) {
+    _origShowQ(idx); saveQuizState();
+  };
+  const _origDoSubmit = window.doSubmit;
+  if (_origDoSubmit) window.doSubmit = function(auto) {
+    clearQuizState(); _origDoSubmit(auto);
+  };
+})();
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Clock
+  setInterval(function() {
+    const el = $('sysTime');
+    if (!el) return;
+    const now = new Date();
+    el.textContent = now.toLocaleTimeString('vi-VN', {
+      hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false
+    }) + ' UTC+7';
+  }, 1000);
+
+  // Unlock selViTri if selChucDanh already has a value (e.g. "ATSEP" pre-selected)
+  if ($('selChucDanh') && $('selChucDanh').value) {
+    onChucDanhChange();
+  }
+
+  // Resume bài thi nếu có
+  checkResume();
+});
+</script>
+</body>
+</html>
