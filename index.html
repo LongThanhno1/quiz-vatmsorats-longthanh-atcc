@@ -410,8 +410,14 @@ body { margin:0; padding:0; font-family:"Segoe UI",system-ui,-apple-system,sans-
 .nav-btn.current  { outline:2px solid white; outline-offset:2px; color:white; }
 
 /* Timer */
-.timer-warn { animation:blink 0.9s infinite; }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.35} }
+.timer-warn     { animation:blink 0.9s infinite; }
+.timer-critical { animation:blink-fast 0.35s infinite; }
+@keyframes blink      { 0%,100%{opacity:1} 50%{opacity:0.35} }
+@keyframes blink-fast { 0%,100%{opacity:1} 50%{opacity:0.2}  }
+@keyframes toast-in   { from{opacity:0;transform:translateY(-12px)} to{opacity:1;transform:translateY(0)} }
+@keyframes toast-out  { from{opacity:1} to{opacity:0} }
+#timerToast { animation:toast-in 0.3s ease; }
+#timerToast.hiding { animation:toast-out 0.4s ease forwards; }
 
 /* FAB */
 .fab { position:fixed; bottom:22px; right:22px; z-index:50; }
@@ -636,6 +642,11 @@ body { margin:0; padding:0; font-family:"Segoe UI",system-ui,-apple-system,sans-
         </button>
       </div>
     </div>
+    <!-- Timer Toast -->
+    <div id="timerToast" style="display:none;position:absolute;left:50%;transform:translateX(-50%);top:56px;z-index:50;
+         padding:7px 18px;border-radius:10px;font-size:13px;font-weight:700;white-space:nowrap;
+         background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);color:#fca5a5;
+         pointer-events:none;"></div>
     <!-- Progress bar -->
     <div class="h-1 bg-white/5">
       <div id="progressBar" class="h-full transition-all"
@@ -2137,17 +2148,55 @@ function startTimer() {
 }
 
 function updateTimerDisplay() {
-  const el = $('timerText');
+  const el   = $('timerText');
+  const disp = $('timerDisplay');
+  const svg  = $('timerSvg');
   el.textContent = fmt(secondsLeft);
-  if (secondsLeft < 300) {
+
+  if (secondsLeft <= 60) {
+    // < 1 phút: đỏ đậm, blink nhanh
+    el.className = 'timer-critical text-red-400 text-lg';
+    disp.style.borderColor = 'rgba(239,68,68,0.7)';
+    disp.style.background  = 'rgba(239,68,68,0.18)';
+    if (svg) svg.querySelector('circle,polyline') && (svg.style.filter='drop-shadow(0 0 4px #ef4444)');
+    if (svg) svg.querySelectorAll('*').forEach(e=>e.setAttribute('stroke','#f87171'));
+    // Toast tại đúng 60s
+    if (secondsLeft === 60) showTimerToast('⚠️ Còn 1 phút! Hãy kiểm tra lại bài!', 5000);
+  } else if (secondsLeft < 300) {
+    // < 5 phút: đỏ, blink chậm
     el.className = 'timer-warn text-red-400 text-lg';
-    $('timerDisplay').style.borderColor  = 'rgba(239,68,68,0.5)';
-    $('timerDisplay').style.background   = 'rgba(239,68,68,0.1)';
+    disp.style.borderColor = 'rgba(239,68,68,0.5)';
+    disp.style.background  = 'rgba(239,68,68,0.1)';
+    if (svg) svg.querySelectorAll('*').forEach(e=>e.setAttribute('stroke','#f87171'));
   } else if (secondsLeft < 600) {
+    // < 10 phút: amber, không blink
     el.className = 'text-amber-400 text-lg';
+    disp.style.borderColor = 'rgba(245,158,11,0.4)';
+    disp.style.background  = 'rgba(245,158,11,0.08)';
+    if (svg) svg.querySelectorAll('*').forEach(e=>e.setAttribute('stroke','#fbbf24'));
+    // Toast tại đúng 300s
+    if (secondsLeft === 300) showTimerToast('⏰ Còn 5 phút — kiểm tra các câu chưa trả lời!', 4000);
   } else {
+    // Bình thường: xanh
     el.className = 'text-sky-300 text-lg';
+    disp.style.borderColor = 'rgba(14,165,233,0.22)';
+    disp.style.background  = 'rgba(14,165,233,0.1)';
+    if (svg) svg.querySelectorAll('*').forEach(e=>e.setAttribute('stroke','#38bdf8'));
   }
+}
+
+var _toastTimer = null;
+function showTimerToast(msg, duration) {
+  var t = $('timerToast');
+  if (!t) return;
+  if (_toastTimer) clearTimeout(_toastTimer);
+  t.textContent = msg;
+  t.classList.remove('hiding');
+  t.style.display = 'block';
+  _toastTimer = setTimeout(function() {
+    t.classList.add('hiding');
+    setTimeout(function(){ t.style.display='none'; t.classList.remove('hiding'); }, 400);
+  }, duration);
 }
 
 // ── SHOW QUESTION ──
@@ -2448,73 +2497,4 @@ function retakeModule() {
   from.classList.add('screen-exit');
   setTimeout(() => {
     from.classList.add('hidden');
-    from.classList.remove('screen-exit');
-    // Re-run exam directly, no welcome screen needed
-    startExam(mod);
-  }, TR_DUR);
-}
-
-// Init — ATSEP pre-selected → auto-unlock Vị trí dropdown
-(function init() {
-  // Trigger cascade so groupViTri unlocks immediately on page load
-  if ($('selChucDanh')) onChucDanhChange();
-  // Live clock for ATC status bar
-  function updateClock() {
-    const el = $('sysTime');
-    if (!el) return;
-    const now = new Date();
-    const hh = String(now.getHours()).padStart(2,'0');
-    const mm = String(now.getMinutes()).padStart(2,'0');
-    const ss = String(now.getSeconds()).padStart(2,'0');
-    el.textContent = hh + ':' + mm + ':' + ss + ' UTC+7';
-  }
-  updateClock();
-  setInterval(updateClock, 1000);
-})();
-
-/* ── Scroll-to-top button ── */
-(function(){
-  const btn = document.createElement('button');
-  btn.id = 'scrollTopBtn';
-  btn.title = 'Lên đầu trang';
-  btn.innerHTML = '&#8593;';
-  document.body.appendChild(btn);
-  window.addEventListener('scroll', function(){
-    if (window.scrollY > 300) btn.classList.add('visible');
-    else btn.classList.remove('visible');
-  }, {passive:true});
-  btn.addEventListener('click', function(){
-    window.scrollTo({top:0, behavior:'smooth'});
-  });
-})();
-
-/* ── Keyboard Navigation ─────────────────────────────
-   1/2/3/4 = chon dap an A/B/C/D | ArrowLeft/Right = chuyen cau | Escape = toggle drawer
-─────────────────────────────────────────────────────────────────── */
-document.addEventListener('keydown', function(e) {
-  var examScreen = document.getElementById('examScreen');
-  if (!examScreen || examScreen.classList.contains('hidden')) return;
-  if (['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName)) return;
-  switch (e.key) {
-    case '1': case '2': case '3': case '4':
-      var idx = parseInt(e.key) - 1;
-      var opts = document.querySelectorAll('#optionsContainer .option-btn');
-      if (opts[idx]) opts[idx].click();
-      break;
-    case 'ArrowRight':
-    case 'Enter':
-      e.preventDefault();
-      nextQ();
-      break;
-    case 'ArrowLeft':
-      e.preventDefault();
-      prevQ();
-      break;
-    case 'Escape':
-      if (typeof toggleDrawer === 'function') toggleDrawer();
-      break;
-  }
-});
-</script>
-</body>
-</html>
+    from.classList.
