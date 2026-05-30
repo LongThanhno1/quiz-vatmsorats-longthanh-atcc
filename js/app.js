@@ -670,12 +670,15 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ── SCROLL TO TOP ──
-window.addEventListener('scroll', function() {
+function updateScrollBtn() {
   const btn = document.getElementById('scrollTopBtn');
   if (!btn) return;
-  if (window.pageYOffset > 300) {
+  if (window.pageYOffset > 200 || document.documentElement.scrollTop > 200) {
     btn.classList.add('visible');
   } else {
     btn.classList.remove('visible');
   }
-});
+}
+window.addEventListener('scroll', updateScrollBtn, {passive:true});
+// Fire on load in case page already scrolled
+document.addEventListener('DOMContentLoaded', updateScrollBtn);
