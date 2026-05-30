@@ -98,7 +98,8 @@ body { margin:0; padding:0; font-family:"Segoe UI",system-ui,-apple-system,sans-
   width:5px; height:5px; border-radius:50%;
   background:rgba(200,240,255,0.9);
   box-shadow:0 0 5px rgba(150,210,255,0.8), 0 0 10px rgba(150,210,255,0.4);
-  transition:opacity 0.4s ease, box-shadow 0.4s ease; position:relative;
+  opacity:0; /* JS controls per-frame */
+  position:relative; /* opacity set by JS each frame — no transition */
 }
 .blip-dot::after {
   content:''; position:absolute; top:-4px; left:-4px; width:13px; height:13px;
@@ -109,6 +110,7 @@ body { margin:0; padding:0; font-family:"Segoe UI",system-ui,-apple-system,sans-
   position:absolute; top:-24px; left:9px; white-space:nowrap;
   font-family:'Courier New',monospace; font-size:9px; font-weight:700;
   color:rgba(200,240,255,0.78); letter-spacing:0.05em; line-height:1.35;
+  opacity:0;
 }
 @keyframes blipFade   { 0%,100%{opacity:1} 50%{opacity:0.3} }
 @keyframes blipExpand { 0%{transform:scale(1);opacity:0.6} 100%{transform:scale(3);opacity:0} }

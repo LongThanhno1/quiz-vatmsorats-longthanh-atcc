@@ -787,19 +787,31 @@ document.addEventListener('DOMContentLoaded', updateScrollBtn);
         b.tag.innerHTML = b.call + '<br>' + b.fl + ' ' + headingArrow(b.heading) + ' ' + b.spd;
       }
 
-      // Sweep sync
+      // Sweep sync — PSR/SSR behavior
       const targetAngle = ((Math.atan2(b.y - cy, b.x - cx) * 180 / Math.PI) + 360) % 360;
       let diff = Math.abs(sweepAngle - targetAngle);
       if (diff > 180) diff = 360 - diff;
 
-      if (diff < 10) {
-        b.opacity = 1.0;
-        b.dot.style.boxShadow = '0 0 12px rgba(150,230,255,1), 0 0 24px rgba(150,210,255,0.6)';
+      let opacity, shadow;
+      if (diff < 8) {
+        // FLASH: vệt sweep đang quét qua
+        opacity = 1.0;
+        shadow = '0 0 14px rgba(150,230,255,1), 0 0 28px rgba(150,210,255,0.7), 0 0 6px #fff';
+      } else if (diff < 60) {
+        // FADE: đuôi vệt — giảm tuyến tính 1→0
+        opacity = 1 - (diff - 8) / 52;
+        const glow = Math.round(opacity * 255);
+        shadow = '0 0 ' + Math.round(opacity * 14) + 'px rgba(150,230,255,' + opacity.toFixed(2) + ')';
       } else {
-        b.opacity = Math.max(0.12, b.opacity - 0.0008);
-        b.dot.style.boxShadow = '';
+        // ẨN hoàn toàn
+        opacity = 0;
+        shadow = '';
       }
-      b.dot.style.opacity = b.opacity;
+
+      b.dot.style.opacity = opacity;
+      b.dot.style.boxShadow = shadow;
+      // blip-tag chỉ hiện khi đủ sáng
+      b.tag.style.opacity = opacity > 0.3 ? opacity : 0;
     }
 
     rafId = requestAnimationFrame(radarLoop);
