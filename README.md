@@ -126,6 +126,109 @@ Kiểm tra sau khi cập nhật: [check.html](https://longthanhno1.github.io/qui
 
 ---
 
+## 🔄 Workflow phát triển
+
+### Git branching
+
+```
+main        ← production (GitHub Pages deploy từ đây)
+  └── develop  ← nhánh làm việc chính
+        └── fix/tên-fix   ← nhánh sửa lỗi
+        └── feat/tên-feat ← nhánh tính năng mới
+```
+
+### Quy trình chuẩn
+
+```bash
+# 1. Làm việc trên develop
+git checkout develop
+
+# 2. Thêm tính năng / sửa lỗi
+git add .
+git commit -m "feat: mô tả tính năng"
+
+# 3. Test local bằng Live Server → check.html pass
+
+# 4. Merge vào main khi xong
+git checkout main
+git merge develop --no-ff -m "release: vX.X-2026"
+git push origin main
+
+# 5. Tag release (tùy chọn)
+git tag vX.X-2026
+git push origin vX.X-2026
+```
+
+> ⚠️ **KHÔNG push thẳng lên `main`** — luôn merge từ `develop` sau khi test xong.
+
+---
+
+## 📥 Workflow cập nhật ngân hàng đề
+
+### Quy trình thêm câu hỏi mới
+
+**Bước 1** — Chuẩn bị dữ liệu
+
+Mỗi câu hỏi cần đủ 7 trường: `id · module · moduleName · question · options · correctAnswer · refDoc`
+
+```javascript
+{
+  id: 1781,                          // ID tiếp nối sau câu cuối
+  module: "VHF",                     // Key module (xem danh sách bên dưới)
+  moduleName: "VHF (Thông tin vô tuyến VHF)",
+  question: "Nội dung câu hỏi?",
+  options: ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
+  correctAnswer: "Đáp án A",         // Phải khớp EXACT với 1 phần tử trong options
+  refDoc: "Ten-tai-lieu.pdf"
+}
+```
+
+**Module key hợp lệ:**
+
+| Key | Tên đầy đủ | Vị trí |
+|---|---|---|
+| `VHF` | VHF (Thông tin vô tuyến VHF) | Long Thành + Tân Sơn Nhất |
+| `Radar` | Radar Long Thành (PSR/SSR) | Long Thành |
+| `SMS` | SMS & Báo cáo an toàn | Long Thành |
+| `ADS-B-LT` | ADS-B Long Thành | Long Thành |
+| `Ghi âm` | Ghi âm chuyên dụng | Tân Sơn Nhất |
+| `ADS-B` | ADS-B Tân Sơn Nhất | Tân Sơn Nhất |
+| `RDP/FDP` | RDP/FDP (Xử lý dữ liệu) | Long Thành + Tân Sơn Nhất |
+| `VCCS` | VCCS (Điều khiển thoại) | Tân Sơn Nhất |
+| `Radar-TSN` | Radar Tân Sơn Nhất | Tân Sơn Nhất |
+| `KipTruong-TSN` | Kíp trưởng CNS Tân Sơn Nhất | Tân Sơn Nhất |
+| `A-SGMCS` | A-SMGCS Tân Sơn Nhất | Tân Sơn Nhất |
+
+**Bước 2** — Backup trước khi sửa
+
+```bash
+cp js/questions.js js/questions.backup_$(date +%Y%m%d).js
+```
+
+**Bước 3** — Append câu mới vào cuối array trong `js/questions.js`
+
+**Bước 4** — Kiểm tra
+
+```bash
+# Mở check.html bằng Live Server → xác nhận:
+# ✅ Tổng số câu tăng đúng
+# ✅ Không có ID trùng / gap
+# ✅ correctAnswer khớp options
+# ✅ Module key hợp lệ
+```
+
+**Bước 5** — Commit
+
+```bash
+git add js/questions.js
+git commit -m "feat: add X cau [MODULE] - ID Y-Z"
+git push origin develop
+```
+
+**Bước 6** — Merge lên main sau khi test xong (xem Workflow phát triển)
+
+---
+
 ## 📋 Changelog
 
 | Phiên bản | Ngày | Thay đổi |
