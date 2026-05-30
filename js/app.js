@@ -752,8 +752,8 @@ document.addEventListener('DOMContentLoaded', updateScrollBtn);
         x: rand(5, 95),
         y: rand(5, 95),
         heading: heading,
-        speed: rand(0.008, 0.018),
-        changeTimer: Math.floor(rand(240, 600)),
+        speed: rand(0.002, 0.006),
+        changeTimer: Math.floor(rand(400, 900)),
         opacity: 0.15,
         call: ac.call, fl: ac.fl, spd: ac.spd
       });
@@ -782,7 +782,7 @@ document.addEventListener('DOMContentLoaded', updateScrollBtn);
       b.changeTimer--;
       if (b.changeTimer <= 0) {
         b.heading += rand(-40, 40);
-        b.changeTimer = Math.floor(rand(480, 900));
+        b.changeTimer = Math.floor(rand(800, 1500));
         // Update tag arrow
         b.tag.innerHTML = b.call + '<br>' + b.fl + ' ' + headingArrow(b.heading) + ' ' + b.spd;
       }
