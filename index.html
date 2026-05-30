@@ -409,6 +409,18 @@ body { margin:0; padding:0; font-family:"Segoe UI",system-ui,-apple-system,sans-
 .nav-btn.answered { background:#0ea5e9; color:white; }
 .nav-btn.current  { outline:2px solid white; outline-offset:2px; color:white; }
 
+/* Practice Mode */
+.mode-btn { flex:1; padding:10px 0; border-radius:10px; border:1px solid rgba(255,255,255,0.15);
+  background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.6); font-size:13px; font-weight:700;
+  cursor:pointer; transition:all 0.2s; }
+.mode-btn.active-exam { background:rgba(14,165,233,0.18); border-color:rgba(14,165,233,0.5); color:#38bdf8; }
+.mode-btn.active-practice { background:rgba(16,185,129,0.18); border-color:rgba(16,185,129,0.5); color:#34d399; }
+.opt-correct { background:rgba(16,185,129,0.18)!important; border-color:rgba(16,185,129,0.6)!important; color:#34d399!important; }
+.opt-wrong   { background:rgba(239,68,68,0.15)!important;   border-color:rgba(239,68,68,0.5)!important;   color:#f87171!important; }
+.opt-disabled { pointer-events:none; opacity:0.55; }
+#practiceFeedback { display:none; margin-top:12px; padding:10px 14px; border-radius:10px; font-size:13px; font-weight:700; }
+#practiceFeedback.correct { background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.35); color:#34d399; }
+#practiceFeedback.wrong   { background:rgba(239,68,68,0.1);   border:1px solid rgba(239,68,68,0.3);   color:#f87171; }
 /* Timer */
 .timer-warn { animation:blink 0.9s infinite; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.35} }
@@ -593,12 +605,21 @@ body { margin:0; padding:0; font-family:"Segoe UI",system-ui,-apple-system,sans-
       </div>
 
       <!-- Start button -->
+      <!-- Mode selector -->
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <button id="btnModeExam" class="mode-btn active-exam" onclick="setQuizMode('exam')">
+          ⏱ Thi thử
+        </button>
+        <button id="btnModePractice" class="mode-btn" onclick="setQuizMode('practice')">
+          📚 Ôn tập
+        </button>
+      </div>
       <button id="btnStart" class="btn-neon" onclick="onStartExam()" disabled>
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
           <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
         </svg>
-        V&Agrave;O L&Agrave;M B&Agrave;I
+        <span id="btnStartLabel">V&Agrave;O L&Agrave;M B&Agrave;I</span>
       </button>
 
       <div class="card-footer">Communication &middot; Navigation &middot; Surveillance &middot; VATMSORATS &copy; 2026</div>
@@ -667,6 +688,7 @@ body { margin:0; padding:0; font-family:"Segoe UI",system-ui,-apple-system,sans-
         </div>
         <p id="questionText" class="text-base font-semibold leading-relaxed text-white mb-5"></p>
         <div id="optionsContainer" class="space-y-2.5"></div>
+        <div id="practiceFeedback"></div>
       </div>
       <!-- Nav Buttons -->
       <div class="flex items-center justify-between gap-3">
@@ -1993,6 +2015,7 @@ const MODULE_CONFIG = [
 
 // State
 let selectedModule = null;
+let quizMode       = 'exam';
 let examQuestions  = [];
 let userAnswers    = {};
 let currentIdx     = 0;
@@ -2086,6 +2109,17 @@ function onModuleChange() {
   $('btnStart').disabled = !$('selModule').value;
 }
 
+// ── QUIZ MODE SELECTOR ──
+function setQuizMode(mode) {
+  quizMode = mode;
+  const bE = $('btnModeExam');
+  const bP = $('btnModePractice');
+  const lbl = $('btnStartLabel');
+  if (bE) { bE.className = 'mode-btn' + (mode==='exam'     ? ' active-exam'     : ''); }
+  if (bP) { bP.className = 'mode-btn' + (mode==='practice' ? ' active-practice' : ''); }
+  if (lbl) lbl.textContent = mode === 'practice' ? 'BẮT ĐẦU ÔN TẬP' : 'VÀO LÀM BÀI';
+}
+
 // ── WELCOME SCREEN: VÀO LÀM BÀI handler ──
 function onStartExam() {
   const mod = $('selModule').value;
@@ -2110,6 +2144,10 @@ function startExam(moduleId) {
   // --- STRICT POOL: chỉ câu thuộc đúng module này ---
   const rawPool  = questionBank.filter(q => q.module === moduleId);
 
+  // GA4
+  if (typeof gtag === 'function') gtag('event', quizMode==='practice' ? 'practice_start' : 'quiz_start',
+    {module_id: moduleId, module_name: mc.name});
+
   if (rawPool.length === 0) {
     alert(`⚠ Module "${mc.label}" chưa có câu hỏi trong ngân hàng đề.\nVui lòng bổ sung dữ liệu vào questionBank trước khi thi.`);
     return;
@@ -2124,6 +2162,14 @@ function startExam(moduleId) {
   userAnswers  = {};
   currentIdx   = 0;
   secondsLeft  = 50 * 60;
+
+  // Practice mode: ẩn timer, không countdown
+  const timerDisp = $('timerDisplay');
+  if (quizMode === 'practice') {
+    if (timerDisp) timerDisp.style.display = 'none';
+  } else {
+    if (timerDisp) timerDisp.style.display = '';
+  }
 
   // startScreen already hidden by onStartExam; show examScreen with enter animation
   const es = $('examScreen');
@@ -2146,6 +2192,7 @@ function startExam(moduleId) {
 // ── TIMER ──
 function startTimer() {
   clearInterval(timerInterval);
+  if (quizMode === 'practice') return;  // Practice: không đếm giờ
   updateTimerDisplay();
   timerInterval = setInterval(() => {
     secondsLeft--;
@@ -2202,6 +2249,10 @@ function _doRenderQ(idx) {
   const tot = examQuestions.length;
   const cnt = Object.keys(userAnswers).length;
 
+  // Reset practice feedback khi chuyển câu
+  const fb2 = $('practiceFeedback');
+  if (fb2) { fb2.style.display='none'; fb2.textContent=''; fb2.className=''; }
+
   $('qModuleBadge').textContent = mc.label;
   $('qModuleBadge').style.background = mc.bg;
   $('qModuleBadge').style.color      = mc.color;
@@ -2214,6 +2265,9 @@ function _doRenderQ(idx) {
       : $('qAnsweredBadge').classList.add('hidden');
 
   const labels = ['A','B','C','D'];
+  // Trong practice mode: nếu câu đã trả lời → render lại với highlight
+  const alreadyAnswered = quizMode === 'practice' && userAnswers[idx] !== undefined;
+
   $('optionsContainer').innerHTML = q.options.map((opt,i) => {
     const sel = userAnswers[idx] === opt;
     const esc = opt.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
@@ -2225,6 +2279,25 @@ function _doRenderQ(idx) {
       <span style="font-size:14px;line-height:1.5">${opt}</span>
     </div>`;
   }).join('');
+
+  // Practice mode: nếu câu đã trả lời → re-apply highlight sau khi render
+  if (alreadyAnswered) {
+    const ua2 = userAnswers[idx];
+    document.querySelectorAll('#optionsContainer .option-btn').forEach(btn => {
+      const spans = btn.querySelectorAll('span');
+      const optText = spans[spans.length-1]?.textContent;
+      btn.classList.add('opt-disabled');
+      if (optText === q.correctAnswer) btn.classList.add('opt-correct');
+      else if (optText === ua2 && ua2 !== q.correctAnswer) btn.classList.add('opt-wrong');
+    });
+    const isOk = ua2 === q.correctAnswer;
+    const fb3 = $('practiceFeedback');
+    if (fb3) {
+      fb3.style.display = 'block';
+      fb3.className = isOk ? 'correct' : 'wrong';
+      fb3.textContent = isOk ? '✓ Chính xác!' : `✗ Đáp án đúng là: ${q.correctAnswer}`;
+    }
+  }
 
   // Cập nhật nút Next → "Hoàn thành & nộp bài" ở câu cuối
   const btnNext = $('btnNextQ');
@@ -2287,6 +2360,34 @@ function selectOpt(idx, el, val) {
   $('navInfo').textContent      = `${cnt}/${tot} đã trả lời`;
   $('progressBar').style.width  = (cnt/tot*100)+'%';
   renderSegBar(idx);
+
+  // Practice mode: hiện feedback ngay
+  if (quizMode === 'practice') {
+    const q = examQuestions[idx];
+    const isCorrect = val === q.correctAnswer;
+    // Highlight tất cả options
+    document.querySelectorAll('#optionsContainer .option-btn').forEach(btn => {
+      const btnVal = btn.getAttribute('data-val') || btn.querySelector('span:last-child')?.textContent;
+      btn.classList.add('opt-disabled');
+      if (btn === el && !isCorrect) btn.classList.add('opt-wrong');
+    });
+    // Tìm option đúng và highlight
+    document.querySelectorAll('#optionsContainer .option-btn').forEach(btn => {
+      const spans = btn.querySelectorAll('span');
+      const optText = spans[spans.length-1]?.textContent;
+      if (optText === q.correctAnswer) btn.classList.add('opt-correct');
+    });
+    // Feedback message
+    const fb = $('practiceFeedback');
+    if (fb) {
+      fb.style.display = 'block';
+      fb.className = isCorrect ? 'correct' : 'wrong';
+      fb.textContent = isCorrect
+        ? '✓ Chính xác!'
+        : `✗ Đáp án đúng là: ${q.correctAnswer}`;
+    }
+  }
+
   updateNavGrids();
   updateSidebarStats();
 }
@@ -2352,6 +2453,15 @@ function doSubmit(auto=false) {
 
   let correct = 0;
   examQuestions.forEach((q,i) => { if (userAnswers[i] === q.correctAnswer) correct++; });
+
+  // GA4
+  const _pct2 = Math.round(correct/examQuestions.length*100);
+  if (typeof gtag === 'function') gtag('event', quizMode==='practice' ? 'practice_complete' : 'quiz_complete',
+    {module_id: selectedModule, score_pct: _pct2, auto_submit: auto||false});
+
+  // Restore timer display nếu đang ở practice mode
+  const _td = $('timerDisplay');
+  if (_td) _td.style.display = '';
 
   const total  = examQuestions.length;
   const pct    = Math.round(correct/total*100);
@@ -2477,6 +2587,7 @@ function hideReview() {
 
 // ── NAVIGATION ──
 function backToStart() {
+  quizMode = 'exam';
   selectedModule = null;
   const from = $('resultScreen');
   from.classList.add('screen-exit');
