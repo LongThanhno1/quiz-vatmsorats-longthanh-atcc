@@ -657,6 +657,14 @@ body { margin:0; padding:0; font-family:"Segoe UI",system-ui,-apple-system,sans-
           <div id="qAnsweredBadge" class="hidden text-xs px-2 py-1 rounded-lg font-bold text-emerald-400"
                style="background:rgba(16,185,129,0.1)">✓ Đã trả lời</div>
         </div>
+        <!-- Segmented Progress Bar -->
+        <div style="margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+            <span style="font-size:11px;color:#475569;">Câu <span id="segCurrent" style="color:#38bdf8;font-weight:600;">1</span> / <span id="segTotal">50</span></span>
+            <span style="font-size:11px;color:#475569;"><span id="segAnswered" style="color:#34d399;font-weight:600;">0</span> đã trả lời·<span id="segRemaining" style="color:#94a3b8;font-weight:600;">50</span> chưa</span>
+          </div>
+          <div id="segBar" style="display:flex;gap:2px;height:6px;"></div>
+        </div>
         <p id="questionText" class="text-base font-semibold leading-relaxed text-white mb-5"></p>
         <div id="optionsContainer" class="space-y-2.5"></div>
       </div>
@@ -2221,8 +2229,33 @@ function _doRenderQ(idx) {
     }
   }
 
+  renderSegBar(idx);
   updateNavGrids();
   updateSidebarStats();
+}
+
+function renderSegBar(currentIdx) {
+  var tot = examQuestions.length;
+  var cnt = Object.keys(userAnswers).length;
+  var bar = $('segBar');
+  if (!bar) return;
+  bar.innerHTML = '';
+  for (var i = 0; i < tot; i++) {
+    var seg = document.createElement('div');
+    seg.style.cssText = 'flex:1;min-width:0;height:6px;border-radius:2px;transition:background 0.15s;';
+    if (userAnswers[i] !== undefined) {
+      seg.style.background = '#0ea5e9';
+    } else if (i === currentIdx) {
+      seg.style.background = '#f59e0b';
+    } else {
+      seg.style.background = 'rgba(255,255,255,0.1)';
+    }
+    bar.appendChild(seg);
+  }
+  var sc = $('segCurrent');   if (sc) sc.textContent = currentIdx + 1;
+  var st = $('segTotal');     if (st) st.textContent = tot;
+  var sa = $('segAnswered');  if (sa) sa.textContent = cnt;
+  var sr = $('segRemaining'); if (sr) sr.textContent = tot - cnt;
 }
 
 function selectOpt(idx, el, val) {
@@ -2235,6 +2268,7 @@ function selectOpt(idx, el, val) {
   $('progressText').textContent = `${cnt}/${tot} đã trả lời`;
   $('navInfo').textContent      = `${cnt}/${tot} đã trả lời`;
   $('progressBar').style.width  = (cnt/tot*100)+'%';
+  renderSegBar(idx);
   updateNavGrids();
   updateSidebarStats();
 }
