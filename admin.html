@@ -7,7 +7,7 @@
   <!-- Admin Access Control -->
   <script>
   (function() {
-    const PASS = 'longthanhtwr';
+    const PASS = btoa('longthanhtwr');
     const KEY  = 'admin_auth';
     if (sessionStorage.getItem(KEY) === 'ok') return;
     const overlay = document.createElement('div');
@@ -41,6 +41,7 @@
             background:rgba(0,0,0,0.3);color:#e2e8f0;
             font-size:0.9rem;outline:none;margin-bottom:12px;
             text-align:center;letter-spacing:.1em;
+            transition:all 0.1s ease;
           "
         />
         <div id="auth-err" style="
@@ -52,6 +53,7 @@
           background:linear-gradient(135deg,#0369a1,#0ea5e9);
           border:none;color:#fff;font-size:0.9rem;font-weight:600;
           cursor:pointer;letter-spacing:.05em;
+          transition:background 0.2s;
         ">XÁC NHẬN</button>
         <div style="margin-top:16px">
           <a href="index.html" style="
@@ -62,9 +64,14 @@
       </div>
     `;
     document.documentElement.appendChild(overlay);
+    function shake() {
+      const input = document.getElementById('auth-input');
+      input.style.animation = 'shake 0.3s ease-in-out 2';
+      setTimeout(() => { input.style.animation = ''; }, 600);
+    }
     function check() {
       const val = document.getElementById('auth-input').value.trim();
-      if (val === PASS) {
+      if (btoa(val) === PASS) {
         sessionStorage.setItem(KEY, 'ok');
         overlay.remove();
       } else {
@@ -72,10 +79,20 @@
         err.textContent = '❌ Mã không đúng — thử lại';
         document.getElementById('auth-input').value = '';
         document.getElementById('auth-input').focus();
+        shake();
         setTimeout(() => { err.textContent = ''; }, 3000);
       }
     }
     document.addEventListener('DOMContentLoaded', function() {
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-10px); }
+          75% { transform: translateX(10px); }
+        }
+      `;
+      document.head.appendChild(style);
       document.getElementById('auth-btn').addEventListener('click', check);
       document.getElementById('auth-input').addEventListener('keydown', function(e) {
         if (e.key === 'Enter') check();
@@ -118,8 +135,13 @@
     }
     .header h1 { font-size: 1.1rem; font-weight: 700; color: #00b9ff; letter-spacing: 0.04em; }
     .header p  { font-size: 0.72rem; color: rgba(255,255,255,0.38); margin-top: 3px; }
-    .back-btn {
+    .header-actions {
       margin-left: auto;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .nav-btn {
       padding: 8px 16px;
       background: rgba(0,185,255,0.08);
       border: 1px solid rgba(0,185,255,0.25);
@@ -129,8 +151,24 @@
       font-size: 0.78rem;
       font-weight: 600;
       transition: background 0.2s;
+      cursor: pointer;
+      white-space: nowrap;
     }
-    .back-btn:hover { background: rgba(0,185,255,0.18); }
+    .nav-btn:hover { background: rgba(0,185,255,0.18); }
+
+    .logout-btn {
+      padding: 8px 16px;
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      border-radius: 8px;
+      color: #f87171;
+      font-size: 0.78rem;
+      font-weight: 600;
+      transition: background 0.2s;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .logout-btn:hover { background: rgba(239, 68, 68, 0.18); }
 
     .container { padding: 28px 32px; max-width: 1100px; margin: 0 auto; }
 
@@ -139,6 +177,85 @@
       color: rgba(255,255,255,0.3);
       letter-spacing: 0.14em; text-transform: uppercase;
       margin: 28px 0 12px;
+    }
+
+    /* ── Stats Snapshot ── */
+    .stats-snapshot {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(0,185,255,0.2);
+      border-radius: 14px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+    }
+    .stats-snapshot h2 {
+      font-size: 0.9rem; font-weight: 700; color: #00b9ff;
+      margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .stats-header {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: rgba(0,185,255,0.08);
+      border: 1px solid rgba(0,185,255,0.15);
+      border-radius: 10px;
+      padding: 14px 16px;
+      text-align: center;
+    }
+    .stat-card .stat-value {
+      font-size: 1.8rem; font-weight: 700; color: #7ff0c4;
+      font-family: 'Courier New', monospace;
+    }
+    .stat-card .stat-label {
+      font-size: 0.7rem; color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 6px;
+    }
+    .modules-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+      margin-bottom: 16px;
+    }
+    .modules-table th {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(0,185,255,0.2);
+      color: #7ff0c4;
+      font-weight: 700;
+      font-family: 'Courier New', monospace;
+    }
+    .modules-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.7);
+    }
+    .modules-table tr:last-child td {
+      border-bottom: none;
+    }
+    .bar-container {
+      background: rgba(0,0,0,0.2);
+      border-radius: 4px;
+      height: 20px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      min-width: 60px;
+    }
+    .bar-fill {
+      background: linear-gradient(90deg, #0ea5e9, #7ff0c4);
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 6px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #fff;
     }
 
     /* ── Alert / notice ── */
@@ -233,6 +350,7 @@
       border: 1px solid rgba(255,255,255,0.07);
       border-radius: 16px;
       overflow: hidden;
+      position: relative;
     }
     .embed-placeholder {
       padding: 56px 32px; text-align: center;
@@ -242,6 +360,40 @@
       display: block; font-size: 0.68rem;
       color: rgba(255,255,255,0.12); margin-top: 6px;
     }
+    .embed-loading {
+      display: none;
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15,23,42,0.9);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 10;
+    }
+    .embed-loading.active {
+      display: flex;
+    }
+    .spinner {
+      width: 30px; height: 30px;
+      border: 2px solid rgba(0,185,255,0.2);
+      border-top-color: #00b9ff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .embed-fallback {
+      margin-top: 12px;
+    }
+    .embed-fallback a {
+      color: #38bdf8;
+      text-decoration: none;
+      font-size: 0.8rem;
+    }
+    .embed-fallback a:hover { text-decoration: underline; }
 
     /* ── Footer ── */
     .footer {
@@ -249,6 +401,17 @@
       border-top: 1px solid rgba(255,255,255,0.06);
       font-size: 0.68rem; color: rgba(255,255,255,0.2);
       text-align: center; letter-spacing: 0.05em;
+    }
+    .footer-line {
+      margin: 6px 0;
+    }
+
+    @media (max-width: 640px) {
+      .header { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .header-actions { width: 100%; margin-left: 0; gap: 8px; flex-wrap: wrap; }
+      .nav-btn, .logout-btn { flex: 1; min-width: 120px; }
+      .modules-table { font-size: 0.7rem; }
+      .modules-table th, .modules-table td { padding: 8px 10px; }
     }
   </style>
 </head>
@@ -261,117 +424,39 @@
     <h1>Admin Dashboard — CNS Quiz</h1>
     <p>VATMSORATS Long Thành ATCC · Dữ liệu từ Google Analytics 4 · Property: G-1R40HNGQ7V</p>
   </div>
-  <a href="index.html" class="back-btn">← Về trang Quiz</a>
+  <div class="header-actions">
+    <a href="check.html" class="nav-btn" target="_blank">🔍 Kiểm tra ngân hàng đề</a>
+    <a href="index.html" class="nav-btn">← Về trang Quiz</a>
+    <button class="logout-btn" id="logout-btn">🚪 Đăng xuất</button>
+  </div>
 </div>
 
 <div class="container">
 
-
-  <!-- EVENTS REFERENCE -->
-  <div class="section-label">📡 Custom Events đã tích hợp</div>
-
-  <div class="events-grid">
-    <div class="event-card">
-      <div class="event-name">quiz_start</div>
-      <div class="event-desc">Gửi khi user bấm "Vào làm bài" và bài thi bắt đầu. Dùng để đếm số lượt thi theo module.</div>
-      <div class="params">
-        <div><span class="param-key">module_id</span> <span class="param-val">— ID kỹ thuật (VHF, Radar...)</span></div>
-        <div><span class="param-key">module_name</span> <span class="param-val">— Tên đầy đủ của module</span></div>
-        <div><span class="param-key">vi_tri</span> <span class="param-val">— Long Thành / Tân Sơn Nhất</span></div>
-        <div><span class="param-key">timestamp</span> <span class="param-val">— ISO 8601</span></div>
+  <!-- STATS SNAPSHOT -->
+  <div class="stats-snapshot">
+    <h2>📚 Ngân hàng đề — Snapshot</h2>
+    <div class="stats-header">
+      <div class="stat-card">
+        <div class="stat-value" id="total-questions">0</div>
+        <div class="stat-label">Tổng câu hỏi</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="total-modules">0</div>
+        <div class="stat-label">Số Module</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">v2.0-2026</div>
+        <div class="stat-label">Phiên bản</div>
       </div>
     </div>
-
-    <div class="event-card">
-      <div class="event-name">quiz_complete</div>
-      <div class="event-desc">Gửi khi nộp bài (bấm nút hoặc hết giờ). Dùng để phân tích điểm số và tỷ lệ đạt/không đạt.</div>
-      <div class="params">
-        <div><span class="param-key">module_id / module_name</span></div>
-        <div><span class="param-key">score_percent</span> <span class="param-val">— 0–100</span></div>
-        <div><span class="param-key">correct_answers</span> <span class="param-val">— Số câu đúng</span></div>
-        <div><span class="param-key">total_questions</span> <span class="param-val">— Tổng số câu</span></div>
-        <div><span class="param-key">result</span> <span class="param-val">— "pass" / "fail"</span></div>
-        <div><span class="param-key">auto_submit</span> <span class="param-val">— true nếu hết giờ</span></div>
-      </div>
-    </div>
-
-    <div class="event-card">
-      <div class="event-name">quiz_abandon</div>
-      <div class="event-desc">Gửi khi user đóng tab / rời trang trong khi đang thi. Dùng để tính tỷ lệ bỏ giữa chừng.</div>
-      <div class="params">
-        <div><span class="param-key">module_id / module_name</span></div>
-        <div><span class="param-key">question_reached</span> <span class="param-val">— Câu đang làm (1-based)</span></div>
-        <div><span class="param-key">questions_answered</span> <span class="param-val">— Số câu đã trả lời</span></div>
-        <div><span class="param-key">time_remaining</span> <span class="param-val">— Giây còn lại</span></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- BIỂU ĐỒ GỢI Ý -->
-  <div class="section-label">📈 Biểu đồ gợi ý cho Looker Studio</div>
-
-  <div class="charts-grid">
-    <div class="chart-placeholder">
-      <div class="chart-icon">👥</div>
-      <div class="chart-name">Tổng người truy cập</div>
-      <div class="chart-desc">Scorecard · Metric: Total Users</div>
-    </div>
-    <div class="chart-placeholder">
-      <div class="chart-icon">🎯</div>
-      <div class="chart-name">Lượt bắt đầu thi</div>
-      <div class="chart-desc">Scorecard · Event: quiz_start · Count</div>
-    </div>
-    <div class="chart-placeholder">
-      <div class="chart-icon">✅</div>
-      <div class="chart-name">Lượt hoàn thành</div>
-      <div class="chart-desc">Scorecard · Event: quiz_complete · Count</div>
-    </div>
-    <div class="chart-placeholder">
-      <div class="chart-icon">📊</div>
-      <div class="chart-name">Lượt thi theo module</div>
-      <div class="chart-desc">Cột · Event: quiz_start · Dimension: module_name</div>
-    </div>
-    <div class="chart-placeholder">
-      <div class="chart-icon">🏆</div>
-      <div class="chart-name">Điểm TB theo module</div>
-      <div class="chart-desc">Bảng · Event: quiz_complete · avg(score_percent)</div>
-    </div>
-    <div class="chart-placeholder">
-      <div class="chart-icon">📉</div>
-      <div class="chart-name">Tỷ lệ bỏ giữa chừng</div>
-      <div class="chart-desc">Tính: quiz_abandon ÷ quiz_start × 100%</div>
-    </div>
-    <div class="chart-placeholder">
-      <div class="chart-icon">📅</div>
-      <div class="chart-name">Lượt truy cập theo ngày</div>
-      <div class="chart-desc">Đường · Dimension: Date · Metric: Sessions</div>
-    </div>
-    <div class="chart-placeholder">
-      <div class="chart-icon">🗺️</div>
-      <div class="chart-name">Phân bổ Đạt / Không đạt</div>
-      <div class="chart-desc">Tròn · Event: quiz_complete · Dimension: result</div>
-    </div>
-  </div>
-
-  <!-- EMBED LOOKER STUDIO -->
-  <div class="section-label">🔗 Looker Studio Dashboard</div>
-
-  <div class="embed-wrap">
-    <iframe
-      width="100%"
-      height="800"
-      src="https://datastudio.google.com/embed/reporting/55b16826-03f7-49b2-8b88-ed35470ecead/page/v1VzF"
-      frameborder="0"
-      style="border:0;display:block;width:100%;min-height:800px"
-      allowfullscreen
-      sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
-    </iframe>
-  </div>
-
-  <div class="footer">
-    CNS Quiz Admin · VATMSORATS Long Thành ATCC · GA4 Property: G-1R40HNGQ7V · Không chia sẻ trang này ra ngoài
-  </div>
-
-</div>
-</body>
-</html>
+    <table class="modules-table">
+      <thead>
+        <tr>
+          <th>Module</th>
+          <th>Vị trí</th>
+          <th style="text-align: right;">Câu hỏi</th>
+          <th style="width: 180px;">Phân bổ</th>
+        </tr>
+      </thead>
+      <tbody id="modules-tbod
