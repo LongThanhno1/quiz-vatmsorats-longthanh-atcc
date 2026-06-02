@@ -591,6 +591,14 @@
     location.reload();
   });
 
+  // Auto-hide iframe loading placeholder after 3 seconds (fallback)
+  setTimeout(function() {
+    const embedLoading = document.getElementById('embed-loading');
+    if (embedLoading && embedLoading.classList.contains('active')) {
+      embedLoading.classList.remove('active');
+    }
+  }, 3000);
+
   // Load stats from questionBank
   function loadStats() {
     if (typeof questionBank === 'undefined') {
@@ -603,14 +611,12 @@
 
     // Parse questionBank to extract module data
     for (const q of questionBank) {
-      const moduleId = q.module_id || 'Unknown';
-      const moduleName = q.module_name || moduleId;
-      const viTri = q.vi_tri || 'N/A';
+      const moduleId = q.module || 'Unknown';
+      const moduleName = q.moduleName || moduleId;
 
       if (!modules[moduleId]) {
         modules[moduleId] = {
           name: moduleName,
-          viTri: viTri,
           count: 0
         };
       }
@@ -633,7 +639,7 @@
       const row = document.createElement('tr');
       row.innerHTML = `
         <td><strong>${data.name}</strong></td>
-        <td>${data.viTri}</td>
+        <td style="font-size: 0.75rem; color: rgba(255,255,255,0.4);">—</td>
         <td style="text-align: right; font-weight: 600; color: #7ff0c4;">${data.count}</td>
         <td>
           <div class="bar-container">
