@@ -607,11 +607,12 @@ function retakeModule() {
 
 // ── INIT ──
 const QUIZ_SAVE_KEY = 'cns_quiz_state_v3';
+const RESULT_SAVE_KEY = 'cns_result_v3';
 
 function saveQuizState() {
   if (!selectedModule || !examQuestions.length) return;
   try {
-    sessionStorage.setItem(QUIZ_SAVE_KEY, JSON.stringify({
+    localStorage.setItem(QUIZ_SAVE_KEY, JSON.stringify({
       module: selectedModule,
       questions: examQuestions,
       answers: userAnswers,
@@ -622,11 +623,62 @@ function saveQuizState() {
   } catch(e) {}
 }
 
-function clearQuizState() { sessionStorage.removeItem(QUIZ_SAVE_KEY); }
+function clearQuizState() { localStorage.removeItem(QUIZ_SAVE_KEY); }
+
+function saveResult(resultData) {
+  try {
+    localStorage.setItem(RESULT_SAVE_KEY, JSON.stringify({
+      ...resultData,
+      savedAt: Date.now()
+    }));
+  } catch(e) {}
+}
+
+function checkResult() {
+  let resultSnap = null;
+  try { resultSnap = JSON.parse(localStorage.getItem(RESULT_SAVE_KEY)); } catch(e) {}
+  if (!resultSnap) return false;
+
+  // Expiry: 2 hours
+  if (Date.now() - resultSnap.savedAt > 2 * 3600 * 1000) {
+    localStorage.removeItem(RESULT_SAVE_KEY);
+    return false;
+  }
+
+  // Restore exam state from saved result data
+  selectedModule = resultSnap.module;
+  quizMode       = resultSnap.quizMode || 'exam';
+  examQuestions  = resultSnap.questions;
+  userAnswers    = resultSnap.answers || {};
+
+  const resultScreen = $('resultScreen');
+  if (!resultScreen) return false;
+
+  const startScreen = $('startScreen');
+  const examScreen = $('examScreen');
+  if (startScreen) startScreen.classList.add('hidden');
+  if (examScreen) examScreen.classList.add('hidden');
+  resultScreen.classList.remove('hidden');
+
+  const mc = getMC(selectedModule);
+  const correct = Object.keys(userAnswers).filter(i => userAnswers[i] === examQuestions[i].correctAnswer).length;
+  const total = examQuestions.length;
+  const pct = Math.round(correct/total*100);
+
+  $('resultModuleName').textContent = mc.name;
+  $('resultModuleName').style.color = mc.color;
+  $('scorePct').textContent = pct+'%';
+  $('scoreDetail').textContent = `${correct}/${total}`;
+  const ps = $('passStatus');
+  ps.textContent = pct >= 70 ? '✓ ĐẠT' : '✗ KHÔNG ĐẠT';
+  ps.className = 'result-tag ' + (pct >= 70 ? 'pass' : 'fail');
+
+  return true;
+}
 
 function checkResume() {
   try {
-    const raw = sessionStorage.getItem(QUIZ_SAVE_KEY);
+    const raw = localStorage.getItem(QUIZ_SAVE_KEY);
     if (!raw) return false;
     const snap = JSON.parse(raw);
     if (Date.now() - snap.savedAt > 3 * 3600 * 1000) { clearQuizState(); return false; }
@@ -661,7 +713,17 @@ function checkResume() {
   };
   const _origDoSubmit = window.doSubmit;
   if (_origDoSubmit) window.doSubmit = function(auto) {
-    clearQuizState(); _origDoSubmit(auto);
+    _origDoSubmit(auto);
+    // Save result screen data for 2-hour restore on reload
+    if (selectedModule && examQuestions.length) {
+      saveResult({
+        module: selectedModule,
+        questions: examQuestions,
+        answers: userAnswers,
+        quizMode: quizMode
+      });
+    }
+    clearQuizState();
   };
 })();
 
@@ -681,8 +743,10 @@ document.addEventListener('DOMContentLoaded', function() {
     onChucDanhChange();
   }
 
-  // Resume bài thi nếu có
-  checkResume();
+  // Check result screen first (2-hour expiry), then resume exam if no result
+  if (!checkResult()) {
+    checkResume();
+  }
 });
 
 // ── SCROLL TO TOP ──
