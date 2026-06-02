@@ -52,12 +52,12 @@ Website ôn tập trắc nghiệm **CNS/ATM** (Communication · Navigation · Su
 | Module | Số câu | Vị trí | Nguồn |
 |---|---|---|---|
 | 📡 VHF | 428 | Long Thành + Tân Sơn Nhất | NGÂN HÀNG VHF 2026 (KTTWRTSN) — 6 sheet |
-| 📻 Radar (PSR/SSR) | 77 | Long Thành | Giữ nguyên |
+| 📻 Radar (PSR/SSR) | 251 | Long Thành | Giữ nguyên |
 | 🛡️ SMS & Báo cáo | 17 | Long Thành + Tân Sơn Nhất | Giữ nguyên |
 | 🛰️ ADS-B (Leonardo) | 30 | Long Thành | Giữ nguyên |
 | 🎙️ Ghi âm | 66 | Tân Sơn Nhất | Giữ nguyên |
 | 🛰️ ADS-B (Thales) | 298 | Tân Sơn Nhất | Giữ nguyên |
-| 🖥️ RDP/FDP | 141 | Long Thành | Trắc nghiệm mạng + ĐGNL 2026 |
+| 🖥️ RDP/FDP | 365 | Long Thành | Trắc nghiệm mạng + ĐGNL 2026 |
 | ☎️ VCCS | 237 | Tân Sơn Nhất | VCCS 2026 (KTTWRTSN) |
 | 📻 Radar-TSN (PSR/SSR) | 111 | Tân Sơn Nhất | Giữ nguyên |
 | 🧑‍💼 Kíp trưởng CNS | 230 | Tân Sơn Nhất | Giữ nguyên |
