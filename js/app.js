@@ -175,6 +175,7 @@ function startExam(moduleId) {
   renderNavGrids();
   showQ(0);
   startTimer();
+  saveQuizState();
 }
 
 // ── TIMER ──
@@ -690,6 +691,15 @@ function checkResume() {
     userAnswers    = snap.answers || {};
     currentIdx     = snap.currentQ  || 0;
     secondsLeft    = snap.timeLeft  || 50 * 60;
+
+    // Practice mode: ẩn timer
+    const timerDisp = $('timerDisplay');
+    if (quizMode === 'practice') {
+      if (timerDisp) timerDisp.style.display = 'none';
+    } else {
+      if (timerDisp) timerDisp.style.display = '';
+    }
+
     const ss = $('startScreen');
     const es = $('examScreen');
     if (ss) ss.classList.add('hidden');
