@@ -371,9 +371,15 @@
       flex-direction: column;
       gap: 12px;
       z-index: 10;
+      opacity: 1;
+      transition: opacity 0.3s ease;
     }
     .embed-loading.active {
       display: flex;
+    }
+    .embed-loading.hidden {
+      opacity: 0;
+      pointer-events: none;
     }
     .spinner {
       width: 30px; height: 30px;
@@ -563,14 +569,14 @@
       </div>
     </div>
     <iframe
+      id="looker-iframe"
       width="100%"
       height="800"
       src="https://datastudio.google.com/embed/reporting/55b16826-03f7-49b2-8b88-ed35470ecead/page/v1VzF"
       frameborder="0"
       style="border:0;display:block;width:100%;min-height:800px"
       allowfullscreen
-      sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-      onload="document.getElementById('embed-loading').classList.remove('active')">
+      sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
     </iframe>
   </div>
 
@@ -591,13 +597,24 @@
     location.reload();
   });
 
-  // Auto-hide iframe loading placeholder after 3 seconds (fallback)
-  setTimeout(function() {
-    const embedLoading = document.getElementById('embed-loading');
-    if (embedLoading && embedLoading.classList.contains('active')) {
-      embedLoading.classList.remove('active');
+  // Looker Studio iframe loading fallback
+  // Sandbox may not trigger onload → use timeout fallback
+  const hideEmbedLoader = () => {
+    const loaderEl = document.getElementById('embed-loading');
+    if (loaderEl && loaderEl.classList.contains('active')) {
+      loaderEl.classList.remove('active');
+      loaderEl.classList.add('hidden');
     }
-  }, 3000);
+  };
+
+  // Fallback: hide loader after 3 seconds (even if onload doesn't fire)
+  setTimeout(hideEmbedLoader, 3000);
+
+  // Also try via iframe onload (if sandbox allows)
+  const iframeEl = document.getElementById('looker-iframe');
+  if (iframeEl) {
+    iframeEl.addEventListener('load', hideEmbedLoader);
+  }
 
   // Load stats from questionBank
   function loadStats() {
@@ -606,29 +623,14 @@
       return;
     }
 
-    // Module location mapping
-    const moduleLocation = {
-      'A-SGMCS': 'Tân Sơn Nhất',
-      'ADS-B': 'Tân Sơn Nhất',
-      'ADS-B-LT': 'Long Thành',
-      'Ghi âm': 'Tân Sơn Nhất',
-      'KipTruong-TSN': 'Tân Sơn Nhất',
-      'RDP/FDP': 'Long Thành',
-      'Radar': 'Long Thành',
-      'Radar-TSN': 'Tân Sơn Nhất',
-      'SMS': 'Long Thành + Tân Sơn Nhất',
-      'VCCS': 'Tân Sơn Nhất',
-      'VHF': 'Long Thành + Tân Sơn Nhất'
-    };
-
     const modules = {};
     let totalQuestions = 0;
 
     // Parse questionBank to extract module data
     for (const q of questionBank) {
-      const moduleId = q.module || 'Unknown';
-      const moduleName = q.moduleName || moduleId;
-      const viTri = moduleLocation[moduleId] || 'Long Thành';
+      const moduleId = q.module_id || 'Unknown';
+      const moduleName = q.module_name || moduleId;
+      const viTri = q.vi_tri || 'N/A';
 
       if (!modules[moduleId]) {
         modules[moduleId] = {
@@ -656,7 +658,7 @@
       const row = document.createElement('tr');
       row.innerHTML = `
         <td><strong>${data.name}</strong></td>
-        <td style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">${data.viTri}</td>
+        <td>${data.viTri}</td>
         <td style="text-align: right; font-weight: 600; color: #7ff0c4;">${data.count}</td>
         <td>
           <div class="bar-container">
