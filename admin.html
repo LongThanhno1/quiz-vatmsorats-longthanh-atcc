@@ -614,9 +614,18 @@
       const moduleId = q.module || 'Unknown';
       const moduleName = q.moduleName || moduleId;
 
+      // Extract location from moduleName
+      let viTri = '—';
+      if (moduleName.includes('Long Thành')) {
+        viTri = 'Long Thành';
+      } else if (moduleName.includes('Tân Sơn Nhất') || moduleName.includes('TSN')) {
+        viTri = 'Tân Sơn Nhất';
+      }
+
       if (!modules[moduleId]) {
         modules[moduleId] = {
           name: moduleName,
+          viTri: viTri,
           count: 0
         };
       }
@@ -639,7 +648,7 @@
       const row = document.createElement('tr');
       row.innerHTML = `
         <td><strong>${data.name}</strong></td>
-        <td style="font-size: 0.75rem; color: rgba(255,255,255,0.4);">—</td>
+        <td style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">${data.viTri}</td>
         <td style="text-align: right; font-weight: 600; color: #7ff0c4;">${data.count}</td>
         <td>
           <div class="bar-container">
