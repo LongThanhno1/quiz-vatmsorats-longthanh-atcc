@@ -675,6 +675,7 @@ function checkResult() {
   ps.textContent = pct >= 70 ? '✓ ĐẠT' : '✗ KHÔNG ĐẠT';
   ps.className = 'result-tag ' + (pct >= 70 ? 'pass' : 'fail');
 
+  setTimeout(() => { if (typeof renderReview==='function') renderReview('all'); }, 100);
   return true;
 }
 
@@ -755,9 +756,9 @@ document.addEventListener('DOMContentLoaded', function() {
     onChucDanhChange();
   }
 
-  // Check result screen first (2-hour expiry), then resume exam if no result
-  if (!checkResult()) {
-    checkResume();
+  // Resume active quiz first, then show result screen if no active quiz
+  if (!checkResume()) {
+    checkResult();
   }
 });
 
