@@ -591,6 +591,14 @@
     location.reload();
   });
 
+  // Auto-hide iframe loading placeholder after 3 seconds (fallback)
+  setTimeout(function() {
+    const embedLoading = document.getElementById('embed-loading');
+    if (embedLoading && embedLoading.classList.contains('active')) {
+      embedLoading.classList.remove('active');
+    }
+  }, 3000);
+
   // Load stats from questionBank
   function loadStats() {
     if (typeof questionBank === 'undefined') {
@@ -598,14 +606,29 @@
       return;
     }
 
+    // Module location mapping
+    const moduleLocation = {
+      'A-SGMCS': 'Tân Sơn Nhất',
+      'ADS-B': 'Tân Sơn Nhất',
+      'ADS-B-LT': 'Long Thành',
+      'Ghi âm': 'Tân Sơn Nhất',
+      'KipTruong-TSN': 'Tân Sơn Nhất',
+      'RDP/FDP': 'Long Thành',
+      'Radar': 'Long Thành',
+      'Radar-TSN': 'Tân Sơn Nhất',
+      'SMS': 'Long Thành + Tân Sơn Nhất',
+      'VCCS': 'Tân Sơn Nhất',
+      'VHF': 'Long Thành + Tân Sơn Nhất'
+    };
+
     const modules = {};
     let totalQuestions = 0;
 
     // Parse questionBank to extract module data
     for (const q of questionBank) {
-      const moduleId = q.module_id || 'Unknown';
-      const moduleName = q.module_name || moduleId;
-      const viTri = q.vi_tri || 'N/A';
+      const moduleId = q.module || 'Unknown';
+      const moduleName = q.moduleName || moduleId;
+      const viTri = moduleLocation[moduleId] || 'Long Thành';
 
       if (!modules[moduleId]) {
         modules[moduleId] = {
@@ -633,7 +656,7 @@
       const row = document.createElement('tr');
       row.innerHTML = `
         <td><strong>${data.name}</strong></td>
-        <td>${data.viTri}</td>
+        <td style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">${data.viTri}</td>
         <td style="text-align: right; font-weight: 600; color: #7ff0c4;">${data.count}</td>
         <td>
           <div class="bar-container">

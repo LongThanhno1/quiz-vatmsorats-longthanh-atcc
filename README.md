@@ -3,9 +3,9 @@
 > Website ôn tập trắc nghiệm CNS/ATM dành cho ATSEP tại Trung tâm Kiểm soát không lưu Long Thành (Long Thanh ATCC) - Công ty quản lý bay miền nam (VATMSORATS) - Tổng công ty Quản lý bay Việt Nam (VATM).
 
 [![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Truy_cập_ngay-0078d4?style=for-the-badge)](https://longthanhno1.github.io/quiz-vatmsorats-longthanh-atcc/)
-[![Câu hỏi](https://img.shields.io/badge/📚_Câu_hỏi-1780_câu-10b981?style=for-the-badge)](#)
-[![Phiên bản](https://img.shields.io/badge/Phiên_bản-v2.0--2026-f59e0b?style=for-the-badge)](#)
-[![Analytics](https://img.shields.io/badge/📊_Analytics-GA4-orange?style=for-the-badge)](#)
+[![Câu hỏi](https://img.shields.io/badge/📚_Câu_hỏi-1780_câu-10b981?style=for-the-badge)](https://longthanhno1.github.io/quiz-vatmsorats-longthanh-atcc/check.html)
+[![Phiên bản](https://img.shields.io/badge/Phiên_bản-v2.0--2026-f59e0b?style=for-the-badge)](https://github.com/LongThanhno1/quiz-vatmsorats-longthanh-atcc/releases)
+[![Analytics](https://img.shields.io/badge/📊_Analytics-GA4-orange?style=for-the-badge)](https://longthanhno1.github.io/quiz-vatmsorats-longthanh-atcc/admin.html)
 
 ---
 
@@ -52,15 +52,15 @@ Website ôn tập trắc nghiệm **CNS/ATM** (Communication · Navigation · Su
 | Module | Số câu | Vị trí | Nguồn |
 |---|---|---|---|
 | 📡 VHF | 428 | Long Thành + Tân Sơn Nhất | NGÂN HÀNG VHF 2026 (KTTWRTSN) — 6 sheet |
-| 📻 Radar | 77 | Long Thành | Giữ nguyên |
-| 🛡️ SMS | 17 | Long Thành | Giữ nguyên |
-| 🛰️ ADS-B-LT | 30 | Long Thành | Giữ nguyên |
+| 📻 Radar (PSR/SSR) | 251 | Long Thành | Giữ nguyên |
+| 🛡️ SMS & Báo cáo | 17 | Long Thành + Tân Sơn Nhất | Giữ nguyên |
+| 🛰️ ADS-B (Leonardo) | 30 | Long Thành | Giữ nguyên |
 | 🎙️ Ghi âm | 66 | Tân Sơn Nhất | Giữ nguyên |
-| 🛰️ ADS-B | 298 | Tân Sơn Nhất | Giữ nguyên |
-| 🖥️ RDP/FDP | 141 | Long Thành + Tân Sơn Nhất | Trắc nghiệm mạng + ĐGNL 2026 |
+| 🛰️ ADS-B (Thales) | 298 | Tân Sơn Nhất | Giữ nguyên |
+| 🖥️ RDP/FDP | 365 | Long Thành | Trắc nghiệm mạng + ĐGNL 2026 |
 | ☎️ VCCS | 237 | Tân Sơn Nhất | VCCS 2026 (KTTWRTSN) |
-| 📻 Radar-TSN | 111 | Tân Sơn Nhất | Giữ nguyên |
-| 🧑‍💼 Kíp trưởng | 230 | Tân Sơn Nhất | Giữ nguyên |
+| 📻 Radar-TSN (PSR/SSR) | 111 | Tân Sơn Nhất | Giữ nguyên |
+| 🧑‍💼 Kíp trưởng CNS | 230 | Tân Sơn Nhất | Giữ nguyên |
 | ⚙️ A-SGMCS | 145 | Tân Sơn Nhất | A-SMGCS TSN 2026 |
 | **Tổng** | **1.780** | | |
 
@@ -188,16 +188,16 @@ Mỗi câu hỏi cần đủ 7 trường: `id · module · moduleName · questio
 | Key | Tên đầy đủ | Vị trí |
 |---|---|---|
 | `VHF` | VHF (Thông tin vô tuyến VHF) | Long Thành + Tân Sơn Nhất |
-| `Radar` | Radar Long Thành (PSR/SSR) | Long Thành |
-| `SMS` | SMS & Báo cáo an toàn | Long Thành |
-| `ADS-B-LT` | ADS-B Long Thành | Long Thành |
-| `Ghi âm` | Ghi âm chuyên dụng | Tân Sơn Nhất |
-| `ADS-B` | ADS-B Tân Sơn Nhất | Tân Sơn Nhất |
-| `RDP/FDP` | RDP/FDP (Xử lý dữ liệu) | Long Thành + Tân Sơn Nhất |
-| `VCCS` | VCCS (Điều khiển thoại) | Tân Sơn Nhất |
-| `Radar-TSN` | Radar Tân Sơn Nhất | Tân Sơn Nhất |
+| `Radar` | Radar (PSR/SSR Sơ cấp & Thứ cấp) | Long Thành |
+| `SMS` | SMS & Báo cáo an toàn | Long Thành + Tân Sơn Nhất |
+| `ADS-B-LT` | ADS-B Long Thành (Leonardo - VATM) | Long Thành |
+| `Ghi âm` | Ghi âm (Hệ thống ghi âm chuyên dụng) | Tân Sơn Nhất |
+| `ADS-B` | ADS-B (Giám sát tự động phụ thuộc - Thales) | Tân Sơn Nhất |
+| `RDP/FDP` | RDP/FDP (Xử lý dữ liệu Radar/Bay) | Long Thành |
+| `VCCS` | VCCS (Điều khiển thoại không dây) | Tân Sơn Nhất |
+| `Radar-TSN` | Radar Tân Sơn Nhất (PSR/SSR) | Tân Sơn Nhất |
 | `KipTruong-TSN` | Kíp trưởng CNS Tân Sơn Nhất | Tân Sơn Nhất |
-| `A-SGMCS` | A-SMGCS Tân Sơn Nhất | Tân Sơn Nhất |
+| `A-SGMCS` | A-SMGCS Tân Sơn Nhất (Hệ thống giám sát mặt đất) | Tân Sơn Nhất |
 
 **Bước 2** — Backup trước khi sửa
 
