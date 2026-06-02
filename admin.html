@@ -606,6 +606,21 @@
       return;
     }
 
+    // Module location mapping
+    const moduleLocation = {
+      'A-SGMCS': 'Tân Sơn Nhất',
+      'ADS-B': 'Tân Sơn Nhất',
+      'ADS-B-LT': 'Long Thành',
+      'Ghi âm': 'Tân Sơn Nhất',
+      'KipTruong-TSN': 'Tân Sơn Nhất',
+      'RDP/FDP': 'Long Thành',
+      'Radar': 'Long Thành',
+      'Radar-TSN': 'Tân Sơn Nhất',
+      'SMS': 'Long Thành + Tân Sơn Nhất',
+      'VCCS': 'Tân Sơn Nhất',
+      'VHF': 'Long Thành + Tân Sơn Nhất'
+    };
+
     const modules = {};
     let totalQuestions = 0;
 
@@ -613,14 +628,7 @@
     for (const q of questionBank) {
       const moduleId = q.module || 'Unknown';
       const moduleName = q.moduleName || moduleId;
-
-      // Extract location from moduleName
-      let viTri = '—';
-      if (moduleName.includes('Long Thành')) {
-        viTri = 'Long Thành';
-      } else if (moduleName.includes('Tân Sơn Nhất') || moduleName.includes('TSN')) {
-        viTri = 'Tân Sơn Nhất';
-      }
+      const viTri = moduleLocation[moduleId] || 'Long Thành';
 
       if (!modules[moduleId]) {
         modules[moduleId] = {
