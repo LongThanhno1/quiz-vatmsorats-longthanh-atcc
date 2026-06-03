@@ -720,6 +720,8 @@ function checkResume() {
     userAnswers    = snap.answers || {};
     currentIdx     = snap.currentQ  || 0;
     secondsLeft    = snap.timeLeft  || 50 * 60;
+    // Update UI để hiển thị đúng mode
+    setQuizMode(quizMode);
     const ss = $('startScreen');
     const es = $('examScreen');
     if (ss) ss.classList.add('hidden');
