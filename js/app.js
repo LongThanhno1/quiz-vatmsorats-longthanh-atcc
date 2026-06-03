@@ -695,6 +695,7 @@ function saveQuizState() {
   try {
     sessionStorage.setItem(QUIZ_SAVE_KEY, JSON.stringify({
       module: selectedModule,
+      quizMode: quizMode,
       questions: examQuestions,
       answers: userAnswers,
       currentQ: currentIdx,
@@ -714,6 +715,7 @@ function checkResume() {
     if (Date.now() - snap.savedAt > 3 * 3600 * 1000) { clearQuizState(); return false; }
     // Restore state
     selectedModule = snap.module;
+    quizMode = snap.quizMode || 'exam';
     examQuestions  = snap.questions;
     userAnswers    = snap.answers || {};
     currentIdx     = snap.currentQ  || 0;
@@ -743,7 +745,7 @@ function checkResume() {
   };
   const _origDoSubmit = window.doSubmit;
   if (_origDoSubmit) window.doSubmit = function(auto) {
-    clearQuizState(); _origDoSubmit(auto);
+    _origDoSubmit(auto); clearQuizState();
   };
 })();
 
