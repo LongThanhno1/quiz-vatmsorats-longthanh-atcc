@@ -115,6 +115,16 @@ function setQuizMode(mode) {
         ? '✅ Hoàn thành'
         : '✈ Nộp Bài';
     }
+    // Ẩn/hiện timer theo mode khi resume
+    const timerDisp = $('timerDisplay');
+    if (timerDisp) {
+      timerDisp.style.display = mode === 'practice' ? 'none' : '';
+    }
+    // Ẩn/hiện nút thoát ôn tập
+    const exitBtn = $('btnExitPractice');
+    if (exitBtn) {
+      exitBtn.style.display = mode === 'practice' ? 'inline-block' : 'none';
+    }
   }
 }
 
