@@ -105,6 +105,17 @@ function setQuizMode(mode) {
   if (lbl) lbl.textContent = mode === 'practice' ? 'BẮT ĐẦU ÔN TẬP' : 'VÀO LÀM BÀI';
   // Cập nhật lại dropdown module nếu đã chọn vị trí
   if ($('selViTri') && $('selViTri').value) onViTriChange();
+
+  // Nếu đang trong exam screen, cập nhật nút submit label
+  const examScreen = $('examScreen');
+  if (examScreen && !examScreen.classList.contains('hidden')) {
+    const submitBtn = $('btnSubmit');
+    if (submitBtn) {
+      submitBtn.innerHTML = mode === 'practice'
+        ? '✅ Hoàn thành'
+        : '✈ Nộp Bài';
+    }
+  }
 }
 
 // ── WELCOME SCREEN: VÀO LÀM BÀI handler ──
@@ -171,6 +182,18 @@ function startExam(moduleId) {
   badge.style.background  = mc.bg;
   badge.style.color       = mc.color;
   badge.style.border      = `1px solid ${mc.color}55`;
+
+  // Update submit button label theo mode
+  const submitBtn = $('btnSubmit');
+  if (submitBtn) {
+    submitBtn.innerHTML = quizMode === 'practice'
+      ? '✅ Hoàn thành'
+      : '✈ Nộp Bài';
+  }
+
+  // Show/hide exit button cho practice mode
+  const exitBtn = $('btnExitPractice');
+  if (exitBtn) exitBtn.style.display = quizMode === 'practice' ? 'inline-block' : 'none';
 
   renderNavGrids();
   showQ(0);
@@ -382,7 +405,14 @@ function selectOpt(idx, el, val) {
 
 function prevQ() { showQ(currentIdx-1); }
 function nextQ() {
-  if (currentIdx >= examQuestions.length - 1) { confirmSubmit(); return; }
+  if (currentIdx >= examQuestions.length - 1) {
+    if (quizMode === 'practice') {
+      doSubmit(false); // Hoàn thành thẳng, không modal
+    } else {
+      confirmSubmit(); // Exam: hiện modal confirm
+    }
+    return;
+  }
   showQ(currentIdx+1);
 }
 
@@ -425,6 +455,12 @@ function toggleDrawer() {
 
 // ── SUBMIT ──
 function confirmSubmit() {
+  // Practice mode: không cần confirm, submit thẳng
+  if (quizMode === 'practice') {
+    doSubmit(false);
+    return;
+  }
+  // Exam mode: hiện modal confirm
   const a = Object.keys(userAnswers).length, t = examQuestions.length;
   $('modalStats').innerHTML = `<div>Đã trả lời: <b style="color:#10b981">${a}</b> / ${t}</div>
     ${t-a>0 ? `<div style="color:#f59e0b;margin-top:4px">⚠ Còn ${t-a} câu chưa trả lời</div>`
@@ -481,6 +517,26 @@ function doSubmit(auto=false) {
   }, 100);
 
   renderReview('all');
+}
+
+// ── EXIT PRACTICE ──
+function exitPractice() {
+  if (!confirm('Thoát ôn tập? Kết quả sẽ không được lưu.')) return;
+  clearInterval(timerInterval);
+  clearQuizState();
+  const es = $('examScreen');
+  const ss = $('startScreen');
+  if (es) es.classList.add('hidden');
+  if (ss) {
+    ss.classList.remove('hidden');
+    ss.classList.add('screen-enter');
+    setTimeout(() => ss.classList.remove('screen-enter'), TR_DUR + 20);
+  }
+  quizMode = 'exam';
+  selectedModule = null;
+  examQuestions = [];
+  userAnswers = {};
+  onChucDanhChange();
 }
 
 // ── REVIEW ──
