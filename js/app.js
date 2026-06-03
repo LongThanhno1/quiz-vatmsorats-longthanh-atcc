@@ -472,6 +472,32 @@ function closeSubmitModal() { $('submitModal').classList.add('hidden'); }
 function doSubmit(auto=false) {
   clearInterval(timerInterval);
   closeSubmitModal();
+
+  // Practice mode: về thẳng menu sau khi hoàn thành
+  if (quizMode === 'practice') {
+    clearInterval(timerInterval);
+    clearQuizState();
+    if (typeof RESULT_SAVE_KEY !== 'undefined') {
+      localStorage.removeItem(RESULT_SAVE_KEY);
+    }
+    const es = $('examScreen');
+    const ss = $('startScreen');
+    const td = $('timerDisplay');
+    if (es) es.classList.add('hidden');
+    if (td) td.style.display = '';
+    if (ss) {
+      ss.classList.remove('hidden');
+      ss.classList.add('screen-enter');
+      setTimeout(() => ss.classList.remove('screen-enter'), TR_DUR + 20);
+    }
+    quizMode       = 'exam';
+    selectedModule = null;
+    examQuestions  = [];
+    userAnswers    = {};
+    if (typeof onChucDanhChange === 'function') onChucDanhChange();
+    return;
+  }
+
   $('examScreen').classList.add('hidden');
   $('resultScreen').classList.remove('hidden');
   // Luôn hiện scroll-to-top trên màn hình kết quả
