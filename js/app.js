@@ -115,6 +115,16 @@ function setQuizMode(mode) {
         ? '✅ Hoàn thành'
         : '✈ Nộp Bài';
     }
+    // Ẩn/hiện timer theo mode khi resume
+    const timerDisp = $('timerDisplay');
+    if (timerDisp) {
+      timerDisp.style.display = mode === 'practice' ? 'none' : '';
+    }
+    // Ẩn/hiện nút thoát ôn tập
+    const exitBtn = $('btnExitPractice');
+    if (exitBtn) {
+      exitBtn.style.display = mode === 'practice' ? 'inline-block' : 'none';
+    }
   }
 }
 
@@ -695,6 +705,7 @@ function saveQuizState() {
   try {
     sessionStorage.setItem(QUIZ_SAVE_KEY, JSON.stringify({
       module: selectedModule,
+      quizMode: quizMode,
       questions: examQuestions,
       answers: userAnswers,
       currentQ: currentIdx,
@@ -714,6 +725,7 @@ function checkResume() {
     if (Date.now() - snap.savedAt > 3 * 3600 * 1000) { clearQuizState(); return false; }
     // Restore state
     selectedModule = snap.module;
+    quizMode = snap.quizMode || 'exam';
     examQuestions  = snap.questions;
     userAnswers    = snap.answers || {};
     currentIdx     = snap.currentQ  || 0;
@@ -723,6 +735,7 @@ function checkResume() {
     if (ss) ss.classList.add('hidden');
     if (es) {
       es.classList.remove('hidden');
+      setQuizMode(quizMode);
       renderNavGrids();
       showQInstant(currentIdx);
       startTimer();
@@ -743,7 +756,7 @@ function checkResume() {
   };
   const _origDoSubmit = window.doSubmit;
   if (_origDoSubmit) window.doSubmit = function(auto) {
-    clearQuizState(); _origDoSubmit(auto);
+    _origDoSubmit(auto); clearQuizState();
   };
 })();
 
