@@ -1,0 +1,63 @@
+{
+  "name": "quiz-vatmsorats-longthanh-atcc",
+  "id": "quiz-vatmsorats-longthanh-atcc",
+  "createdAt": "2026-06-06T07:54:56.746979Z",
+  "settings": {
+    "defaultPriority": "medium",
+    "gitTrackingMode": "git-tracked",
+    "gitTracking": {
+      "tasks": true,
+      "docs": true,
+      "templates": true,
+      "memories": false
+    },
+    "statuses": [
+      "todo",
+      "in-progress",
+      "in-review",
+      "done",
+      "blocked",
+      "on-hold",
+      "urgent"
+    ],
+    "statusColors": {
+      "blocked": "red",
+      "done": "green",
+      "in-progress": "blue",
+      "in-review": "purple",
+      "on-hold": "yellow",
+      "todo": "gray",
+      "urgent": "orange"
+    },
+    "visibleColumns": [
+      "todo",
+      "in-progress",
+      "blocked",
+      "done",
+      "in-review"
+    ],
+    "semanticSearch": {
+      "enabled": true,
+      "model": "multilingual-e5-small",
+      "huggingFaceId": "Xenova/multilingual-e5-small",
+      "dimensions": 384,
+      "maxTokens": 512
+    },
+    "platforms": [
+      "claude-code",
+      "agents"
+    ],
+    "enableChatUI": false,
+    "lsp": {
+      "enabled": true,
+      "languages": {
+        "javascript": {
+          "enabled": true
+        },
+        "scss": {
+          "enabled": true
+        }
+      }
+    }
+  }
+}
