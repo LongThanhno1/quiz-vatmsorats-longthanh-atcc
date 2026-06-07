@@ -39,7 +39,9 @@ const $ = (id) => document.getElementById(id);
 
 function showScreen(id) {
   document.querySelectorAll('.vd-screen').forEach(s => {
-    s.classList.toggle('active', s.id === id);
+    const isActive = s.id === id;
+    s.classList.toggle('active', isActive);
+    s.classList.toggle('hidden', !isActive);
   });
 }
 
