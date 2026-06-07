@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0b1f3a">
+  <title>🎯 Vấn Đáp VHF — CNS Quiz VATMSORATS</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/vandap.css">
+</head>
+<body>
+  <div id="vdApp">
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- SCREEN 1 — MENU CHÍNH (3 Loại hình luyện tập)      -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section id="vdMenu" class="vd-screen active">
+      <div class="vd-container">
+        <div class="vd-header">
+          <button class="vd-header-btn" id="btnMenuHome" onclick="goHome()" title="Về trang chủ">
+            🏠
+          </button>
+          <div class="vd-header-title">🎯 VẤN ĐÁP VHF</div>
+          <div style="width: 40px;"></div>
+        </div>
+
+        <div style="text-align: center; color: rgba(255,255,255,0.7); font-size: 14px; margin-bottom: 30px;">
+          Chọn hình thức luyện tập
+        </div>
+
+        <div class="vd-menu-grid">
+          <!-- Flashcard Mode -->
+          <div class="vd-menu-card flashcard" onclick="startMode('flashcard')">
+            <div class="vd-menu-icon">📇</div>
+            <div class="vd-menu-title">FLASHCARD</div>
+            <div class="vd-menu-subtitle">Thẻ lật<br>Keyword Matching</div>
+            <div class="vd-menu-badge" id="flashcardCount">0 câu hỏi</div>
+          </div>
+
+          <!-- Procedure Mode -->
+          <div class="vd-menu-card procedure" onclick="startMode('procedure')">
+            <div class="vd-menu-icon">🔧</div>
+            <div class="vd-menu-title">QUY TRÌNH</div>
+            <div class="vd-menu-subtitle">Sắp xếp<br>Drag & Drop</div>
+            <div class="vd-menu-badge" id="procedureCount">0 quy trình</div>
+          </div>
+
+          <!-- Incident Mode -->
+          <div class="vd-menu-card incident" onclick="startMode('incident')">
+            <div class="vd-menu-icon">🚨</div>
+            <div class="vd-menu-title">SỰ CỐ</div>
+            <div class="vd-menu-subtitle">Ứng phó<br>Khẩn cấp</div>
+            <div class="vd-menu-badge" id="incidentCount">0 tình huống</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- SCREEN 2 — DANH SÁCH QUY TRÌNH / SỰ CỐ              -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section id="vdList" class="vd-screen hidden">
+      <div class="vd-container">
+        <div class="vd-header">
+          <button class="vd-header-btn" id="btnListBack" onclick="goMenu()">
+            ← Menu
+          </button>
+          <div class="vd-header-title" id="listTitle">Danh Sách</div>
+          <div style="width: 40px;"></div>
+        </div>
+
+        <div id="vdListContent" class="vd-list-container">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- SCREEN 3 — EXAM (Drag & Drop)                      -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section id="vdExam" class="vd-screen hidden">
+      <div class="vd-container">
+        <div class="vd-header">
+          <button class="vd-header-btn" id="btnExamBack" onclick="goList()">
+            ← Quay lại
+          </button>
+          <div style="flex: 1;"></div>
+          <button class="vd-header-btn" id="btnExamReset" onclick="retryItem()" title="Làm lại">
+            ↺
+          </button>
+        </div>
+
+        <div class="vd-exam-header">
+          <div class="vd-exam-title" id="examTitle">Quy trình</div>
+          <div class="vd-exam-subtitle" id="examSubtitle">0/0 bước</div>
+          <div class="vd-progress-bar">
+            <div class="vd-progress-fill" id="progressFill"></div>
+          </div>
+        </div>
+
+        <div class="vd-safety-banner" id="safetyBanner">
+          ⚠️ <strong>CẢNH BÁO AN TOÀN:</strong> <span id="safetyText"></span>
+        </div>
+
+        <div class="vd-exam-body">
+          <!-- Step Pool (Bước xáo trộn) -->
+          <div>
+            <div style="font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.3px;">
+              📦 Các bước
+            </div>
+            <div class="vd-step-pool" id="vdStepPool" ondrop="onDrop(event)" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+
+          <!-- Drop Slots (Ô thả) -->
+          <div>
+            <div style="font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.3px;">
+              📍 Thứ tự đúng
+            </div>
+            <div class="vd-drop-zones" id="vdDropZones">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+        </div>
+
+        <div class="vd-button-group">
+          <button class="vd-btn primary" id="btnCheck" onclick="checkOrder()">
+            ✓ Kiểm tra
+          </button>
+          <button class="vd-btn" id="btnRetry" onclick="retryItem()" style="display: none;">
+            ↺ Làm lại
+          </button>
+          <button class="vd-btn" id="btnNext" onclick="nextItem()" style="display: none;">
+            Tiếp theo →
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- SCREEN 4 — RESULT (Kết quả)                         -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section id="vdResult" class="vd-screen hidden">
+      <div class="vd-container">
+        <div class="vd-header">
+          <button class="vd-header-btn" id="btnResultBack" onclick="goList()">
+            ← Danh sách
+          </button>
+          <div style="flex: 1;"></div>
+          <div style="width: 40px;"></div>
+        </div>
+
+        <div class="vd-result-header">
+          <div class="vd-score-display" id="scoreDisplay">0%</div>
+          <div class="vd-score-label" id="scoreLabel">0/0 bước đúng</div>
+          <div class="vd-result-bar">
+            <div class="vd-result-bar-fill" id="resultBarFill"></div>
+          </div>
+        </div>
+
+        <div class="vd-correct-order" id="correctOrderContainer">
+          <div class="vd-correct-order-title">✓ Thứ tự đúng</div>
+          <div id="correctOrderList">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <div class="vd-rating-section">
+          <div class="vd-rating-label">Đánh giá bản thân</div>
+          <div class="vd-rating-buttons">
+            <button class="vd-rating-btn" onclick="saveRating('unknown')">😰 Chưa thuộc</button>
+            <button class="vd-rating-btn" onclick="saveRating('partial')">🤔 Một phần</button>
+            <button class="vd-rating-btn" onclick="saveRating('mastered')">✅ Thuần thục</button>
+          </div>
+        </div>
+
+        <div class="vd-button-group">
+          <button class="vd-btn" onclick="goList()">← Danh sách</button>
+          <button class="vd-btn" onclick="retryItem()">↺ Làm lại</button>
+          <button class="vd-btn" id="btnNextItem" onclick="nextItem()" style="display: none;">→ Tiếp theo</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- SCREEN 5 — FLASHCARD (Keyword Matching)             -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section id="vdFlash" class="vd-screen hidden">
+      <div class="vd-container">
+        <div class="vd-header">
+          <button class="vd-header-btn" id="btnFlashBack" onclick="goList()">
+            ← Quay lại
+          </button>
+          <div style="flex: 1;"></div>
+          <button class="vd-header-btn" id="btnFlashReset" onclick="retryFlashcard()">
+            ↺
+          </button>
+        </div>
+
+        <div class="vd-flashcard-container">
+          <div class="vd-flashcard-question" id="flashcardQuestion">
+            Câu hỏi
+          </div>
+          <textarea id="flashcardInput" class="vd-flashcard-input" placeholder="Gõ câu trả lời..."></textarea>
+          <button class="vd-btn primary" onclick="checkFlashcard()" style="width: 100%;">
+            ✓ Kiểm tra đáp án
+          </button>
+
+          <div id="flashcardResult" style="display: none; margin-top: 24px;">
+            <div class="vd-rating-label">Từ khóa cần tìm</div>
+            <div class="vd-keyword-list" id="keywordList">
+              <!-- Rendered by JS -->
+            </div>
+            <div class="vd-button-group" style="margin-top: 24px;">
+              <button class="vd-btn" onclick="goList()">← Danh sách</button>
+              <button class="vd-btn" onclick="retryFlashcard()">↺ Làm lại</button>
+              <button class="vd-btn" id="btnFlashNext" onclick="nextFlashcard()" style="display: none;">→ Tiếp theo</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/vandap-vhf.js"></script>
+  <script src="js/vandap-app.js"></script>
+</body>
+</html>
