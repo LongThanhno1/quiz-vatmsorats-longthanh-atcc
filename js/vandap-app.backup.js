@@ -63,7 +63,7 @@ function retryItem() {
   if (vdState.mode === 'flashcard') {
     retryFlashcard();
   } else {
-    startItem(vdState.currentIndex);
+    startItem(vdState.currentItem);
   }
 }
 
@@ -74,7 +74,7 @@ function nextItem() {
     const list = getList(vdState.mode);
     const idx = list.findIndex(i => i.id === vdState.currentItem.id);
     if (idx < list.length - 1) {
-      startItem(idx + 1);
+      startItem(list[idx + 1]);
     } else {
       goList();
     }
@@ -185,9 +185,9 @@ function renderList(mode) {
     }
 
     let criticalBadge = '';
-    if (item.criticalLevel === 'CRITICAL') {
+    if (item.criticalLevel === 'critical') {
       criticalBadge = '<div class="vd-badge critical">CRITICAL</div>';
-    } else if (item.criticalLevel === 'HIGH') {
+    } else if (item.criticalLevel === 'high') {
       criticalBadge = '<div class="vd-badge critical" style="background: rgba(245,158,11,0.3); color: #fcd34d;">HIGH</div>';
     }
 
@@ -195,7 +195,7 @@ function renderList(mode) {
     const time = item.estimatedTime ? `⏱ ${item.estimatedTime}` : '';
 
     return `
-      <div class="vd-proc-card ${(item.criticalLevel || '').toLowerCase()}" onclick="startItem(${idx})">
+      <div class="vd-proc-card ${item.criticalLevel || ''}" onclick="startItem(${idx})">
         <div class="vd-card-header">
           <div class="vd-card-title">${item.title || item.question}</div>
           <div class="vd-card-badges">
@@ -293,7 +293,7 @@ function renderDropZones() {
 
   // Add touch support
   document.querySelectorAll('.vd-drop-slot').forEach(slot => {
-    // touchover is not a valid event; touch handled via touchmove
+    slot.addEventListener('touchover', onTouchOver);
     slot.addEventListener('touchmove', onTouchMove, { passive: false });
   });
 }
@@ -502,7 +502,7 @@ function checkFlashcard() {
 // RATING & SPACED REPETITION
 // ═══════════════════════════════════════════════════════════
 
-function onRatingClick(rating) {
+function saveRating(rating) {
   saveRating(vdState.currentItem.id, rating, vdState.score.correct);
   goList();
 }
