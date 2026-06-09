@@ -164,10 +164,6 @@
         <span id="btnStartLabel">V&Agrave;O L&Agrave;M B&Agrave;I</span>
       </button>
 
-      <button id="btnVandap" class="btn-neon" onclick="goToVandap()" style="display:none;background:linear-gradient(135deg,#7ff0c4,#5fd9a5)">
-        🎯 VẤN ĐÁP
-      </button>
-
       <div class="card-footer">Communication &middot; Navigation &middot; Surveillance &middot; VATMSORATS &copy; 2026</div>
 
     </div>
@@ -395,30 +391,6 @@
      ====================================================== -->
 <script src="js/questions.js?v=1.2"></script>
 <script src="js/app.js?v=1.2"></script>
-
-<!-- Vấn Đáp Module Support -->
-<script>
-const VANDAP_SUPPORTED = ['VHF'];
-
-function checkVandapBtn() {
-  const mod = document.getElementById('selModule');
-  const btn = document.getElementById('btnVandap');
-  if (!mod || !btn) return;
-  btn.style.display = VANDAP_SUPPORTED.includes(mod.value) ? 'inline-flex' : 'none';
-}
-
-function goToVandap() {
-  const mod = document.getElementById('selModule').value;
-  const vitri = document.getElementById('selViTri').value;
-  if (!mod) return;
-  window.location.href = 'vandap.html?module=' + mod + '&vitri=' + encodeURIComponent(vitri);
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  const sel = document.getElementById('selModule');
-  if (sel) sel.addEventListener('change', checkVandapBtn);
-});
-</script>
 
 <!-- Scroll-to-top -->
 <button id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Cuộn lên đầu trang">
