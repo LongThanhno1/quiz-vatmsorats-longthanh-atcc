@@ -602,11 +602,11 @@ function doSubmit(auto=false) {
       ss.classList.add('screen-enter');
       setTimeout(() => ss.classList.remove('screen-enter'), TR_DUR + 20);
     }
-    quizMode       = 'exam';
     selectedModule = null;
     examQuestions  = [];
     userAnswers    = {};
     if (typeof onChucDanhChange === 'function') onChucDanhChange();
+    setQuizMode('exam'); // [FIX] Reset visual mode buttons + label về "Thi thử"
     return;
   }
 
@@ -676,11 +676,11 @@ function exitPractice() {
     ss.classList.add('screen-enter');
     setTimeout(() => ss.classList.remove('screen-enter'), TR_DUR + 20);
   }
-  quizMode = 'exam';
   selectedModule = null;
   examQuestions = [];
   userAnswers = {};
   onChucDanhChange();
+  setQuizMode('exam'); // [FIX] Reset visual mode buttons + label về "Thi thử"
 }
 
 // ── REVIEW ──
