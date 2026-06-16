@@ -19,6 +19,100 @@ const fmt = s => `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).pad
 const getMC = id => MODULE_CONFIG.find(m=>m.id===id)||{color:'#64748b',name:id,icon:'?',grd:'',bg:'',label:id};
 const $ = id => document.getElementById(id);
 
+
+// ════════════════════════════════════════════════════════════════════════════
+// ── SRS HISTORY MODULE (localStorage key: 'cns_history_v1') ──────────────
+// Lưu lịch sử ôn tập persist qua các session. Không reset nếu đã có data.
+// Cấu trúc: { seen: {id: count}, wrong: {id: count}, lastSeen: {id: ms} }
+// ════════════════════════════════════════════════════════════════════════════
+const HISTORY_KEY = 'cns_history_v1';
+
+// Đọc history từ localStorage; khởi tạo cấu trúc mới nếu chưa tồn tại
+function loadHistory() {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    if (raw) {
+      const h = JSON.parse(raw);
+      // Đảm bảo 3 key chính luôn tồn tại (backward compat)
+      if (!h.seen)     h.seen     = {};
+      if (!h.wrong)    h.wrong    = {};
+      if (!h.lastSeen) h.lastSeen = {};
+      return h;
+    }
+  } catch(e) {}
+  // Khởi tạo mới nếu chưa có hoặc lỗi JSON.parse
+  return { seen: {}, wrong: {}, lastSeen: {} };
+}
+
+// Ghi history vào localStorage (silent fail nếu storage quota đầy)
+function saveHistory(h) {
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(h)); } catch(e) {}
+}
+
+// Ghi nhận câu đã gặp: tăng seen[id]++ và cập nhật lastSeen[id]
+// Gọi khi người dùng chọn đáp án bất kỳ (cả exam & practice mode)
+function srsRecordSeen(id) {
+  if (!id) return;
+  const h = loadHistory();
+  h.seen[id]     = (h.seen[id]     || 0) + 1;
+  h.lastSeen[id] = Date.now();   // ms timestamp để tính daysSinceLastSeen
+  saveHistory(h);
+}
+
+// Ghi nhận câu sai: tăng wrong[id]++ — gọi sau khi nộp bài exam
+function srsRecordWrong(id) {
+  if (!id) return;
+  const h = loadHistory();
+  h.wrong[id] = (h.wrong[id] || 0) + 1;
+  saveHistory(h);
+}
+
+// ── SRS SELECTION ALGORITHM ──────────────────────────────────────────────
+// Chọn tối đa 50 câu theo thuật toán SRS thay random thuần túy.
+//   Bước 1: Lấy toàn bộ câu của module (rawPool)
+//   Bước 2: Tính score = (wrong[id]*3) + (seen===0 ? 5 : 0) - (daysSince*0.5)
+//           → Câu chưa gặp: +5 | Mỗi lần sai: +3 | Lâu chưa ôn: giảm dần
+//   Bước 3: Sort giảm dần → lấy top 25 câu ưu tiên cao nhất
+//   Bước 4: Random 25 câu từ phần còn lại (đảm bảo đa dạng)
+//   Bước 5: Shuffle toàn bộ 50 câu trước khi hiển thị
+function srsSelectQuestions(rawPool) {
+  const h          = loadHistory();
+  const NOW        = Date.now();
+  const MS_PER_DAY = 86400000; // 1 ngày = 86400000 ms
+  const MAX_DRAW   = 50;
+  const TOP_N      = Math.ceil(MAX_DRAW / 2); // 25 câu ưu tiên
+
+  // Bước 2: Tính score ưu tiên SRS cho từng câu trong pool
+  const scored = rawPool.map(function(q) {
+    const id        = String(q.id);
+    const seenCnt   = h.seen[id]     || 0;
+    const wrongCnt  = h.wrong[id]    || 0;
+    const lastMs    = h.lastSeen[id] || 0;
+    // Câu chưa từng gặp → daysSince = 9999 (ưu tiên tuyệt đối)
+    const daysSince = lastMs ? (NOW - lastMs) / MS_PER_DAY : 9999;
+
+    const score = (wrongCnt * 3)
+                + (seenCnt === 0 ? 5 : 0)
+                - (daysSince * 0.5);
+    return { q: q, score: score };
+  });
+
+  // Bước 3: Sort giảm dần → top 25 câu có score cao nhất
+  scored.sort(function(a, b) { return b.score - a.score; });
+  const topPool = scored.slice(0, TOP_N).map(function(s) { return s.q; });
+
+  // Bước 4: Shuffle phần còn lại, lấy 25 câu ngẫu nhiên để đảm bảo đa dạng
+  const restPool     = scored.slice(TOP_N).map(function(s) { return s.q; });
+  const shuffledRest = shuffle(restPool);
+  const pickRest     = shuffledRest.slice(0, MAX_DRAW - topPool.length);
+
+  // Bước 5: Gộp và shuffle toàn bộ 50 câu trước khi thi
+  const combined = shuffle(topPool.concat(pickRest));
+  return combined.slice(0, MAX_DRAW).map(function(q) {
+    return Object.assign({}, q, { options: shuffle(q.options) });
+  });
+}
+
 // ── CASCADE DROPDOWN LOGIC ──
 function onChucDanhChange() {
   const cd = $('selChucDanh').value;
@@ -167,6 +261,12 @@ function startExam(moduleId) {
   const pool     = shuffle(rawPool);
   const count    = quizMode === 'practice' ? pool.length : Math.min(MAX_DRAW, pool.length);
   examQuestions  = pool.slice(0, count).map(q => ({ ...q, options: shuffle(q.options) }));
+
+  // [SRS] Exam mode: override selection bằng SRS algorithm (thay random thuần túy)
+  // Practice mode giữ nguyên logic cũ (toàn bộ pool, shuffle)
+  if (quizMode === 'exam') {
+    examQuestions = srsSelectQuestions(rawPool);
+  }
 
   userAnswers  = {};
   currentIdx   = 0;
@@ -372,6 +472,8 @@ function renderSegBar(currentIdx) {
 
 function selectOpt(idx, el, val) {
   userAnswers[idx] = val;
+  // [SRS] Ghi nhận câu đã gặp khi người dùng chọn đáp án (cả exam & practice)
+  srsRecordSeen(examQuestions[idx].id);
   document.querySelectorAll('#optionsContainer .option-btn').forEach(b => b.classList.remove('selected'));
   el.classList.add('selected');
   $('qAnsweredBadge').classList.remove('hidden');
@@ -516,6 +618,12 @@ function doSubmit(auto=false) {
 
   let correct = 0;
   examQuestions.forEach((q,i) => { if (userAnswers[i] === q.correctAnswer) correct++; });
+
+  // [SRS] Ghi nhận câu sai vào lịch sử sau khi nộp bài (chỉ chạy ở exam mode)
+  // Đây là dữ liệu cốt lõi để SRS ưu tiên câu hay sai cho lần thi tiếp theo
+  examQuestions.forEach(function(q, i) {
+    if (userAnswers[i] !== q.correctAnswer) srsRecordWrong(q.id);
+  });
 
   // GA4
   const _pct2 = Math.round(correct/examQuestions.length*100);
