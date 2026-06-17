@@ -608,6 +608,7 @@ function doSubmit(auto=false) {
     if (typeof onChucDanhChange === 'function') onChucDanhChange();
     setQuizMode('exam'); // [FIX] Reset visual mode buttons + label về "Thi thử"
     // [FIX-2] Chặn ghost-click (delayed touch event) đánh vào nút mode sau khi transition
+    // Tăng lên 1500ms vì ghost-click có thể đến sau 500ms trên một số thiết bị/browser
     (function() {
       var _bE = $('btnModeExam'), _bP = $('btnModePractice');
       if (_bE) _bE.style.pointerEvents = 'none';
@@ -615,7 +616,7 @@ function doSubmit(auto=false) {
       setTimeout(function() {
         if (_bE) _bE.style.pointerEvents = '';
         if (_bP) _bP.style.pointerEvents = '';
-      }, 500);
+      }, 1500);
     })();
     return;
   }
@@ -692,6 +693,7 @@ function exitPractice() {
   onChucDanhChange();
   setQuizMode('exam'); // [FIX] Reset visual mode buttons + label về "Thi thử"
   // [FIX-2] Chặn ghost-click sau khi thoát ôn tập giữa chừng
+  // Tăng lên 1500ms vì ghost-click có thể đến sau 500ms trên một số thiết bị/browser
   (function() {
     var _bE = $('btnModeExam'), _bP = $('btnModePractice');
     if (_bE) _bE.style.pointerEvents = 'none';
@@ -699,7 +701,7 @@ function exitPractice() {
     setTimeout(function() {
       if (_bE) _bE.style.pointerEvents = '';
       if (_bP) _bP.style.pointerEvents = '';
-    }, 500);
+    }, 1500);
   })();
 }
 
