@@ -607,6 +607,16 @@ function doSubmit(auto=false) {
     userAnswers    = {};
     if (typeof onChucDanhChange === 'function') onChucDanhChange();
     setQuizMode('exam'); // [FIX] Reset visual mode buttons + label về "Thi thử"
+    // [FIX-2] Chặn ghost-click (delayed touch event) đánh vào nút mode sau khi transition
+    (function() {
+      var _bE = $('btnModeExam'), _bP = $('btnModePractice');
+      if (_bE) _bE.style.pointerEvents = 'none';
+      if (_bP) _bP.style.pointerEvents = 'none';
+      setTimeout(function() {
+        if (_bE) _bE.style.pointerEvents = '';
+        if (_bP) _bP.style.pointerEvents = '';
+      }, 500);
+    })();
     return;
   }
 
@@ -681,6 +691,16 @@ function exitPractice() {
   userAnswers = {};
   onChucDanhChange();
   setQuizMode('exam'); // [FIX] Reset visual mode buttons + label về "Thi thử"
+  // [FIX-2] Chặn ghost-click sau khi thoát ôn tập giữa chừng
+  (function() {
+    var _bE = $('btnModeExam'), _bP = $('btnModePractice');
+    if (_bE) _bE.style.pointerEvents = 'none';
+    if (_bP) _bP.style.pointerEvents = 'none';
+    setTimeout(function() {
+      if (_bE) _bE.style.pointerEvents = '';
+      if (_bP) _bP.style.pointerEvents = '';
+    }, 500);
+  })();
 }
 
 // ── REVIEW ──
