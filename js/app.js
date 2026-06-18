@@ -14,7 +14,7 @@ const Q_DUR  = 100;
 let   _qBusy = false;
 
 // ── WEBHOOK ANALYTICS (fire-and-forget, ẩn danh) ──
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwAGIiMLmAErHxDFGNbROgMocNOcoVpI67lh6DfnIEpTfvwsQzb2pF6ekFRs2JG-_KY5A/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyTHnhK8qMxpPUtaL8Ezvi3_iDcEVpb9vWFe6lV87IR5Tr68MPfjD9NruMJ77ylWQuUVg/exec';
 let   currentViTri = ''; // Capture từ selViTri khi startExam(), dùng trong payload
 
 // ── Helpers ──
