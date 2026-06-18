@@ -78,6 +78,10 @@
         <div class="sys-dot"></div>
         <span class="sys-txt">SYSTEM ONLINE</span>
         <span class="sys-time" id="sysTime">UTC+7</span>
+        <button class="theme-toggle-btn" onclick="toggleTheme()" title="Chuyển chế độ sáng/tối" aria-label="Toggle theme">
+          <span class="theme-icon-day">☀️</span>
+          <span class="theme-icon-night">🌙</span>
+        </button>
       </div>
 
       <!-- Header -->
@@ -138,15 +142,19 @@
         </div>
       </div>
 
-      <!-- Start button -->
       <!-- Mode selector -->
-      <div style="display:flex;gap:8px;margin-bottom:10px">
-        <button id="btnModeExam" class="mode-btn active-exam" onclick="setQuizMode('exam')">
-          ⏱ Thi thử
-        </button>
-        <button id="btnModePractice" class="mode-btn" onclick="setQuizMode('practice')">
-          📚 Ôn tập
-        </button>
+      <div class="mode-selector-wrap">
+        <div class="mode-selector-label">CHẾ ĐỘ LÀM BÀI</div>
+        <div class="mode-selector-track">
+          <button id="btnModeExam" class="mode-btn active-exam" onclick="setQuizMode('exam')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Thi thử
+          </button>
+          <button id="btnModePractice" class="mode-btn" onclick="setQuizMode('practice')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            Ôn tập
+          </button>
+        </div>
       </div>
       <button id="btnStart" class="btn-neon" onclick="onStartExam()" disabled>
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
@@ -182,6 +190,13 @@
                 onmouseout="this.style.background='rgba(239,68,68,0.15)'"
                 onclick="exitPractice()">
           ✕ Thoát ôn tập
+        </button>
+        <button onclick="toggleTheme()" title="Chuyển chế độ sáng/tối"
+                style="padding:6px 10px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:8px;cursor:pointer;font-size:14px;line-height:1;transition:background 0.2s;display:flex;align-items:center"
+                onmouseover="this.style.background='rgba(255,255,255,0.14)'"
+                onmouseout="this.style.background='rgba(255,255,255,0.07)'">
+          <span class="theme-icon-day">☀️</span>
+          <span class="theme-icon-night">🌙</span>
         </button>
         <div id="timerDisplay" class="flex items-center gap-2 px-4 py-2 rounded-xl font-mono font-bold"
              style="background:rgba(14,165,233,0.1);border:1px solid rgba(14,165,233,0.22)">
@@ -313,8 +328,11 @@
     <path class="fp f4" d="M-50, 750 C350,350 700,900 1100,550 S1600,200 1900,650"/>
   </svg>
 
-  <!-- ── MAIN SCORE CARD ── -->
-  <div class="result-card" style="margin-top:24px">
+  <!-- ── RESULT LAYOUT: score card + heatmap side by side ── -->
+  <div class="result-layout">
+
+    <!-- Cột trái: Score Card -->
+    <div class="result-card">
     <!-- Module badge -->
     <div style="text-align:center;margin-bottom:18px">
       <div id="resultModuleName" style="font-size:0.88rem;font-weight:700;color:rgba(255,255,255,0.82);line-height:1.4"></div>
@@ -359,47 +377,49 @@
         📋 Ôn lại câu sai
       </button>
     </div>
-  </div>
+    </div><!-- /result-card -->
 
-  <!-- ── NHẬT KÝ ÔN TẬP (Study Heatmap) ── -->
-  <div id="heatmapPanel">
-    <div class="hm-header">
-      <div>
-        <div class="hm-title">📅 Nhật ký ôn tập</div>
-        <div class="hm-subtitle">365 ngày gần nhất</div>
-      </div>
-      <div class="hm-stats">
-        <div class="hm-stat">
-          <div class="hm-stat-val" id="hmTotal">0</div>
-          <div class="hm-stat-lbl">Tổng câu đã ôn</div>
+    <!-- Cột phải: Nhật ký ôn tập -->
+    <div id="heatmapPanel">
+      <div class="hm-header">
+        <div>
+          <div class="hm-title">📅 Nhật ký ôn tập</div>
+          <div class="hm-subtitle" id="hmSubtitle">365 ngày gần nhất</div>
         </div>
-        <div class="hm-stat">
-          <div class="hm-stat-val" id="hmDays">0</div>
-          <div class="hm-stat-lbl">Ngày hoạt động</div>
-        </div>
-        <div class="hm-stat">
-          <div class="hm-stat-val" id="hmStreak">0</div>
-          <div class="hm-stat-lbl">Chuỗi liên tiếp</div>
+        <div class="hm-stats">
+          <div class="hm-stat">
+            <div class="hm-stat-val" id="hmTotal">0</div>
+            <div class="hm-stat-lbl">Tổng câu đã ôn</div>
+          </div>
+          <div class="hm-stat">
+            <div class="hm-stat-val" id="hmDays">0</div>
+            <div class="hm-stat-lbl">Ngày hoạt động</div>
+          </div>
+          <div class="hm-stat">
+            <div class="hm-stat-val" id="hmStreak">0</div>
+            <div class="hm-stat-lbl">Chuỗi liên tiếp</div>
+          </div>
         </div>
       </div>
-    </div>
-    <div id="hmGrid"></div>
-    <div class="hm-legend">
-      <span>Ít</span>
-      <div class="hm-legend-cells">
-        <div class="hm-legend-cell hm-l0"></div>
-        <div class="hm-legend-cell hm-l1"></div>
-        <div class="hm-legend-cell hm-l2"></div>
-        <div class="hm-legend-cell hm-l3"></div>
-        <div class="hm-legend-cell hm-l4"></div>
+      <div id="hmGrid"></div>
+      <div class="hm-legend">
+        <span>Ít</span>
+        <div class="hm-legend-cells">
+          <div class="hm-legend-cell hm-l0"></div>
+          <div class="hm-legend-cell hm-l1"></div>
+          <div class="hm-legend-cell hm-l2"></div>
+          <div class="hm-legend-cell hm-l3"></div>
+          <div class="hm-legend-cell hm-l4"></div>
+        </div>
+        <span>Nhiều</span>
       </div>
-      <span>Nhiều</span>
-    </div>
-    <div class="hm-footer">
-      <span id="hmFooter"></span>
-      <button class="hm-btn-clear" onclick="StudyHeatmap.clearData()">Xóa dữ liệu cục bộ</button>
-    </div>
-  </div>
+      <div class="hm-footer">
+        <span id="hmFooter"></span>
+        <button class="hm-btn-clear" onclick="StudyHeatmap.clearData()">Xóa dữ liệu cục bộ</button>
+      </div>
+    </div><!-- /heatmapPanel -->
+
+  </div><!-- /result-layout -->
 
   <!-- ── REVIEW SECTION ── -->
   <div class="review-wrap">
@@ -424,7 +444,7 @@
 <script src="js/questions.js?v=1.3"></script>
 <script src="js/app.js?v=1.4"></script>
 
-<!-- Tooltip heatmap — position:fixed, đặt ngoài #resultScreen -->
+<!-- Tooltip heatmap - position:fixed -->
 <div id="hmTooltip"></div>
 
 <!-- Scroll-to-top -->
