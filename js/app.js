@@ -13,12 +13,45 @@ const TR_DUR = 180;
 const Q_DUR  = 100;
 let   _qBusy = false;
 
+// ── WEBHOOK ANALYTICS (fire-and-forget, ẩn danh) ──
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwAGIiMLmAErHxDFGNbROgMocNOcoVpI67lh6DfnIEpTfvwsQzb2pF6ekFRs2JG-_KY5A/exec';
+let   currentViTri = ''; // Capture từ selViTri khi startExam(), dùng trong payload
+
 // ── Helpers ──
 const shuffle = arr => { let a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a; };
 const fmt = s => `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
 const getMC = id => MODULE_CONFIG.find(m=>m.id===id)||{color:'#64748b',name:id,icon:'?',grd:'',bg:'',label:id};
 const $ = id => document.getElementById(id);
 
+
+// ── WEBHOOK HELPERS ──────────────────────────────────────────────────────
+// Trả về timestamp ISO 8601 theo múi giờ UTC+7 (Việt Nam)
+function getTimestampVN() {
+  var d  = new Date();
+  var vn = new Date(d.getTime() + 7 * 3600 * 1000);
+  return vn.toISOString().replace('Z', '+07:00');
+}
+
+// Gửi 1 sự kiện câu hỏi lên Google Sheet webhook — async, không chặn UI
+// Payload hoàn toàn ẩn danh: không gửi tên, email, hay định danh cá nhân
+function sendQuestionWebhook(q, isWrong) {
+  if (!WEBHOOK_URL) return;
+  try {
+    // GET + query params: không CORS preflight, không bị mất body qua redirect
+    // Apps Script nhận qua e.parameter (doGet handler)
+    var params = new URLSearchParams({
+      ts:  getTimestampVN(),
+      mod: q.module,
+      vt:  currentViTri,
+      qid: String(q.id),
+      err: isWrong ? '1' : '0'
+    });
+    fetch(WEBHOOK_URL + '?' + params.toString(), {
+      method: 'GET',
+      mode:   'no-cors'
+    }).catch(function() {});
+  } catch(e) {}
+}
 
 // ════════════════════════════════════════════════════════════════════════════
 // ── SRS HISTORY MODULE (localStorage key: 'cns_history_v1') ──────────────
@@ -241,6 +274,7 @@ function onStartExam() {
 // Nếu pool < 50 → lấy toàn bộ; nếu pool >= 50 → bốc ngẫu nhiên đúng 50 câu.
 function startExam(moduleId) {
   selectedModule = moduleId;
+  currentViTri   = ($('selViTri') && $('selViTri').value) || ''; // [WEBHOOK] Lưu vị trí thi
   const mc       = getMC(moduleId);
 
   // --- STRICT POOL: chỉ câu thuộc đúng module này ---
@@ -509,6 +543,8 @@ function selectOpt(idx, el, val) {
         ? '✓ Chính xác!'
         : `✗ Đáp án đúng là: ${q.correctAnswer}`;
     }
+    // [WEBHOOK] Practice mode: gửi ngay vì đã biết đúng/sai
+    sendQuestionWebhook(q, !isCorrect);
   }
 
   updateNavGrids();
@@ -607,17 +643,6 @@ function doSubmit(auto=false) {
     userAnswers    = {};
     if (typeof onChucDanhChange === 'function') onChucDanhChange();
     setQuizMode('exam'); // [FIX] Reset visual mode buttons + label về "Thi thử"
-    // [FIX-2] Chặn ghost-click (delayed touch event) đánh vào nút mode sau khi transition
-    // Tăng lên 1500ms vì ghost-click có thể đến sau 500ms trên một số thiết bị/browser
-    (function() {
-      var _bE = $('btnModeExam'), _bP = $('btnModePractice');
-      if (_bE) _bE.style.pointerEvents = 'none';
-      if (_bP) _bP.style.pointerEvents = 'none';
-      setTimeout(function() {
-        if (_bE) _bE.style.pointerEvents = '';
-        if (_bP) _bP.style.pointerEvents = '';
-      }, 1500);
-    })();
     return;
   }
 
@@ -629,6 +654,12 @@ function doSubmit(auto=false) {
 
   let correct = 0;
   examQuestions.forEach((q,i) => { if (userAnswers[i] === q.correctAnswer) correct++; });
+
+  // [WEBHOOK] Exam mode: gửi batch sau khi nộp bài (đã biết đúng/sai toàn bộ)
+  examQuestions.forEach(function(q, i) {
+    if (userAnswers[i] === undefined) return; // Bỏ câu chưa trả lời
+    sendQuestionWebhook(q, userAnswers[i] !== q.correctAnswer);
+  });
 
   // [SRS] Ghi nhận câu sai vào lịch sử sau khi nộp bài (chỉ chạy ở exam mode)
   // Đây là dữ liệu cốt lõi để SRS ưu tiên câu hay sai cho lần thi tiếp theo
@@ -692,17 +723,6 @@ function exitPractice() {
   userAnswers = {};
   onChucDanhChange();
   setQuizMode('exam'); // [FIX] Reset visual mode buttons + label về "Thi thử"
-  // [FIX-2] Chặn ghost-click sau khi thoát ôn tập giữa chừng
-  // Tăng lên 1500ms vì ghost-click có thể đến sau 500ms trên một số thiết bị/browser
-  (function() {
-    var _bE = $('btnModeExam'), _bP = $('btnModePractice');
-    if (_bE) _bE.style.pointerEvents = 'none';
-    if (_bP) _bP.style.pointerEvents = 'none';
-    setTimeout(function() {
-      if (_bE) _bE.style.pointerEvents = '';
-      if (_bP) _bP.style.pointerEvents = '';
-    }, 1500);
-  })();
 }
 
 // ── REVIEW ──

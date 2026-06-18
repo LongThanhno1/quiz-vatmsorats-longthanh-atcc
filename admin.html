@@ -7,9 +7,11 @@
   <!-- Admin Access Control -->
   <script>
   (function() {
-    const PASS = btoa('longthanhtwr');
+    const PASS = 'longthanhtwr';
     const KEY  = 'admin_auth';
+    // Đã xác thực trong session này → vào luôn
     if (sessionStorage.getItem(KEY) === 'ok') return;
+    // Tạo overlay
     const overlay = document.createElement('div');
     overlay.id = 'auth-overlay';
     overlay.style.cssText = `
@@ -41,7 +43,6 @@
             background:rgba(0,0,0,0.3);color:#e2e8f0;
             font-size:0.9rem;outline:none;margin-bottom:12px;
             text-align:center;letter-spacing:.1em;
-            transition:all 0.1s ease;
           "
         />
         <div id="auth-err" style="
@@ -52,8 +53,7 @@
           width:100%;padding:12px;border-radius:10px;
           background:linear-gradient(135deg,#0369a1,#0ea5e9);
           border:none;color:#fff;font-size:0.9rem;font-weight:600;
-          cursor:pointer;letter-spacing:.05em;
-          transition:background 0.2s;
+          cursor:pointer;letter-spacing:.05em;transition:opacity .2s;
         ">XÁC NHẬN</button>
         <div style="margin-top:16px">
           <a href="index.html" style="
@@ -64,14 +64,9 @@
       </div>
     `;
     document.documentElement.appendChild(overlay);
-    function shake() {
-      const input = document.getElementById('auth-input');
-      input.style.animation = 'shake 0.3s ease-in-out 2';
-      setTimeout(() => { input.style.animation = ''; }, 600);
-    }
     function check() {
       const val = document.getElementById('auth-input').value.trim();
-      if (btoa(val) === PASS) {
+      if (val === PASS) {
         sessionStorage.setItem(KEY, 'ok');
         overlay.remove();
       } else {
@@ -79,20 +74,10 @@
         err.textContent = '❌ Mã không đúng — thử lại';
         document.getElementById('auth-input').value = '';
         document.getElementById('auth-input').focus();
-        shake();
         setTimeout(() => { err.textContent = ''; }, 3000);
       }
     }
     document.addEventListener('DOMContentLoaded', function() {
-      const style = document.createElement('style');
-      style.textContent = `
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-10px); }
-          75% { transform: translateX(10px); }
-        }
-      `;
-      document.head.appendChild(style);
       document.getElementById('auth-btn').addEventListener('click', check);
       document.getElementById('auth-input').addEventListener('keydown', function(e) {
         if (e.key === 'Enter') check();
@@ -135,13 +120,8 @@
     }
     .header h1 { font-size: 1.1rem; font-weight: 700; color: #00b9ff; letter-spacing: 0.04em; }
     .header p  { font-size: 0.72rem; color: rgba(255,255,255,0.38); margin-top: 3px; }
-    .header-actions {
+    .back-btn {
       margin-left: auto;
-      display: flex;
-      gap: 12px;
-      align-items: center;
-    }
-    .nav-btn {
       padding: 8px 16px;
       background: rgba(0,185,255,0.08);
       border: 1px solid rgba(0,185,255,0.25);
@@ -151,24 +131,8 @@
       font-size: 0.78rem;
       font-weight: 600;
       transition: background 0.2s;
-      cursor: pointer;
-      white-space: nowrap;
     }
-    .nav-btn:hover { background: rgba(0,185,255,0.18); }
-
-    .logout-btn {
-      padding: 8px 16px;
-      background: rgba(239, 68, 68, 0.08);
-      border: 1px solid rgba(239, 68, 68, 0.25);
-      border-radius: 8px;
-      color: #f87171;
-      font-size: 0.78rem;
-      font-weight: 600;
-      transition: background 0.2s;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    .logout-btn:hover { background: rgba(239, 68, 68, 0.18); }
+    .back-btn:hover { background: rgba(0,185,255,0.18); }
 
     .container { padding: 28px 32px; max-width: 1100px; margin: 0 auto; }
 
@@ -177,85 +141,6 @@
       color: rgba(255,255,255,0.3);
       letter-spacing: 0.14em; text-transform: uppercase;
       margin: 28px 0 12px;
-    }
-
-    /* ── Stats Snapshot ── */
-    .stats-snapshot {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(0,185,255,0.2);
-      border-radius: 14px;
-      padding: 20px 24px;
-      margin-bottom: 24px;
-    }
-    .stats-snapshot h2 {
-      font-size: 0.9rem; font-weight: 700; color: #00b9ff;
-      margin-bottom: 16px;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .stats-header {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 16px;
-      margin-bottom: 20px;
-    }
-    .stat-card {
-      background: rgba(0,185,255,0.08);
-      border: 1px solid rgba(0,185,255,0.15);
-      border-radius: 10px;
-      padding: 14px 16px;
-      text-align: center;
-    }
-    .stat-card .stat-value {
-      font-size: 1.8rem; font-weight: 700; color: #7ff0c4;
-      font-family: 'Courier New', monospace;
-    }
-    .stat-card .stat-label {
-      font-size: 0.7rem; color: rgba(255,255,255,0.5);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-top: 6px;
-    }
-    .modules-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.8rem;
-      margin-bottom: 16px;
-    }
-    .modules-table th {
-      text-align: left;
-      padding: 10px 12px;
-      border-bottom: 1px solid rgba(0,185,255,0.2);
-      color: #7ff0c4;
-      font-weight: 700;
-      font-family: 'Courier New', monospace;
-    }
-    .modules-table td {
-      padding: 10px 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-      color: rgba(255,255,255,0.7);
-    }
-    .modules-table tr:last-child td {
-      border-bottom: none;
-    }
-    .bar-container {
-      background: rgba(0,0,0,0.2);
-      border-radius: 4px;
-      height: 20px;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      min-width: 60px;
-    }
-    .bar-fill {
-      background: linear-gradient(90deg, #0ea5e9, #7ff0c4);
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      padding-right: 6px;
-      font-size: 0.65rem;
-      font-weight: 700;
-      color: #fff;
     }
 
     /* ── Alert / notice ── */
@@ -350,7 +235,6 @@
       border: 1px solid rgba(255,255,255,0.07);
       border-radius: 16px;
       overflow: hidden;
-      position: relative;
     }
     .embed-placeholder {
       padding: 56px 32px; text-align: center;
@@ -360,40 +244,71 @@
       display: block; font-size: 0.68rem;
       color: rgba(255,255,255,0.12); margin-top: 6px;
     }
-    .embed-loading {
-      display: none;
-      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(15,23,42,0.9);
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 12px;
-      z-index: 10;
+
+    /* ── Team Readiness Dashboard ── */
+    .readiness-topbar {
+      display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;
     }
-    .embed-loading.active {
-      display: flex;
+    .readiness-meta { font-size:0.65rem; color:rgba(255,255,255,0.25); margin-top:3px; }
+    .btn-refresh {
+      padding:7px 16px; border-radius:8px;
+      background:rgba(0,185,255,0.08); border:1px solid rgba(0,185,255,0.25);
+      color:#00b9ff; font-size:0.75rem; font-weight:600;
+      cursor:pointer; transition:background .2s;
     }
-    .spinner {
-      width: 30px; height: 30px;
-      border: 2px solid rgba(0,185,255,0.2);
-      border-top-color: #00b9ff;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+    .btn-refresh:hover { background:rgba(0,185,255,0.18); }
+    .btn-refresh:disabled { opacity:0.4; cursor:not-allowed; }
+
+    .stats-row {
+      display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px;
     }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    .stat-card {
+      background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07);
+      border-radius:12px; padding:16px 20px; text-align:center;
     }
-    .embed-fallback {
-      margin-top: 12px;
+    .stat-num  { font-size:2rem; font-weight:800; color:#00b9ff; line-height:1.1; }
+    .stat-label{ font-size:0.65rem; color:rgba(255,255,255,0.32); margin-top:5px;
+                 text-transform:uppercase; letter-spacing:.1em; }
+
+    .module-grid {
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr));
+      gap:12px; margin-bottom:24px;
     }
-    .embed-fallback a {
-      color: #38bdf8;
-      text-decoration: none;
-      font-size: 0.8rem;
+    .module-card {
+      background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07);
+      border-radius:12px; padding:14px 16px;
     }
-    .embed-fallback a:hover { text-decoration: underline; }
+    .module-name  { font-size:0.76rem; font-weight:700; color:rgba(255,255,255,0.8);
+                    margin-bottom:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .mastery-bar  { height:5px; background:rgba(255,255,255,0.08); border-radius:3px;
+                    overflow:hidden; margin-bottom:8px; }
+    .mastery-fill { height:100%; border-radius:3px; transition:width .6s ease; }
+    .mastery-num  { font-size:1.35rem; font-weight:800; line-height:1; }
+    .mastery-sub  { font-size:0.63rem; color:rgba(255,255,255,0.3); margin-top:3px; }
+
+    .wrong-table {
+      width:100%; border-collapse:collapse; font-size:0.75rem; margin-bottom:24px;
+    }
+    .wrong-table th {
+      text-align:left; padding:8px 12px; font-size:0.63rem;
+      color:rgba(255,255,255,0.3); font-weight:600; text-transform:uppercase;
+      letter-spacing:.1em; border-bottom:1px solid rgba(255,255,255,0.07);
+    }
+    .wrong-table td {
+      padding:8px 12px; color:rgba(255,255,255,0.6);
+      border-bottom:1px solid rgba(255,255,255,0.04);
+    }
+    .wrong-table tr:hover td { background:rgba(255,255,255,0.02); }
+    .badge { display:inline-block; padding:2px 9px; border-radius:20px;
+             font-size:0.7rem; font-weight:700; }
+    .badge-red    { background:rgba(239,68,68,0.15);  color:#f87171; }
+    .badge-amber  { background:rgba(245,158,11,0.15); color:#fbbf24; }
+    .badge-green  { background:rgba(16,185,129,0.15); color:#34d399; }
+
+    .empty-state {
+      text-align:center; padding:40px 20px;
+      color:rgba(255,255,255,0.2); font-size:0.82rem; line-height:2;
+    }
 
     /* ── Footer ── */
     .footer {
@@ -401,17 +316,6 @@
       border-top: 1px solid rgba(255,255,255,0.06);
       font-size: 0.68rem; color: rgba(255,255,255,0.2);
       text-align: center; letter-spacing: 0.05em;
-    }
-    .footer-line {
-      margin: 6px 0;
-    }
-
-    @media (max-width: 640px) {
-      .header { flex-direction: column; align-items: flex-start; gap: 12px; }
-      .header-actions { width: 100%; margin-left: 0; gap: 8px; flex-wrap: wrap; }
-      .nav-btn, .logout-btn { flex: 1; min-width: 120px; }
-      .modules-table { font-size: 0.7rem; }
-      .modules-table th, .modules-table td { padding: 8px 10px; }
     }
   </style>
 </head>
@@ -424,46 +328,11 @@
     <h1>Admin Dashboard — CNS Quiz</h1>
     <p>VATMSORATS Long Thành ATCC · Dữ liệu từ Google Analytics 4 · Property: G-1R40HNGQ7V</p>
   </div>
-  <div class="header-actions">
-    <a href="check.html" class="nav-btn" target="_blank">🔍 Kiểm tra ngân hàng đề</a>
-    <a href="index.html" class="nav-btn">← Về trang Quiz</a>
-    <button class="logout-btn" id="logout-btn">🚪 Đăng xuất</button>
-  </div>
+  <a href="index.html" class="back-btn">← Về trang Quiz</a>
 </div>
 
 <div class="container">
 
-  <!-- STATS SNAPSHOT -->
-  <div class="stats-snapshot">
-    <h2>📚 Ngân hàng đề — Snapshot</h2>
-    <div class="stats-header">
-      <div class="stat-card">
-        <div class="stat-value" id="total-questions">0</div>
-        <div class="stat-label">Tổng câu hỏi</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="total-modules">0</div>
-        <div class="stat-label">Số Module</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value">v2.0-2026</div>
-        <div class="stat-label">Phiên bản</div>
-      </div>
-    </div>
-    <table class="modules-table">
-      <thead>
-        <tr>
-          <th>Module</th>
-          <th>Vị trí</th>
-          <th style="text-align: right;">Câu hỏi</th>
-          <th style="width: 180px;">Phân bổ</th>
-        </tr>
-      </thead>
-      <tbody id="modules-tbody">
-        <tr><td colspan="4" style="text-align: center; padding: 20px;">Đang tải dữ liệu...</td></tr>
-      </tbody>
-    </table>
-  </div>
 
   <!-- EVENTS REFERENCE -->
   <div class="section-label">📡 Custom Events đã tích hợp</div>
@@ -551,17 +420,77 @@
     </div>
   </div>
 
+  <!-- ═══════════════════════════════════════════════════
+       TEAM READINESS DASHBOARD — dữ liệu từ Google Sheet
+  ════════════════════════════════════════════════════ -->
+  <div class="section-label">🎯 Team Readiness Dashboard</div>
+
+  <div class="readiness-topbar">
+    <div>
+      <div id="rdMeta" class="readiness-meta">Đang tải dữ liệu từ Google Sheet…</div>
+    </div>
+    <button class="btn-refresh" id="btnRefresh" onclick="loadReadiness()">↺ Làm mới</button>
+  </div>
+
+  <!-- Loading state -->
+  <div id="rdLoading" style="text-align:center;padding:40px 0;color:rgba(255,255,255,0.25);font-size:0.82rem;">
+    ⏳ Đang kết nối Google Sheet…
+  </div>
+
+  <!-- Dashboard content (hidden until loaded) -->
+  <div id="rdContent" style="display:none">
+
+    <!-- Summary scorecards -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-num" id="rdTotal">—</div>
+        <div class="stat-label">Tổng lượt trả lời</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="rdModules">—</div>
+        <div class="stat-label">Module theo dõi</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="rdMastery">—</div>
+        <div class="stat-label">Thành thạo TB</div>
+      </div>
+    </div>
+
+    <!-- Module mastery cards -->
+    <div style="font-size:0.7rem;color:rgba(255,255,255,0.3);margin-bottom:10px;letter-spacing:.05em;">
+      MODULE · Sắp xếp theo % thành thạo thấp → cao
+    </div>
+    <div class="module-grid" id="rdModuleGrid"></div>
+
+    <!-- Top wrong questions -->
+    <div style="font-size:0.7rem;color:rgba(255,255,255,0.3);margin-bottom:10px;letter-spacing:.05em;">
+      TOP CÂU SAI NHIỀU NHẤT · Tối thiểu 3 lượt trả lời
+    </div>
+    <table class="wrong-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Question ID</th>
+          <th>Module</th>
+          <th>Lượt</th>
+          <th>Sai</th>
+          <th>% Sai</th>
+        </tr>
+      </thead>
+      <tbody id="rdWrongBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Error state -->
+  <div id="rdError" style="display:none" class="empty-state">
+    ⚠️ Không kết nối được Google Sheet.<br>
+    <span>Kiểm tra WEBHOOK_URL trong admin.html hoặc thử lại sau.</span>
+  </div>
+
   <!-- EMBED LOOKER STUDIO -->
   <div class="section-label">🔗 Looker Studio Dashboard</div>
 
   <div class="embed-wrap">
-    <div class="embed-loading active" id="embed-loading">
-      <div class="spinner"></div>
-      <div>Đang tải dashboard...</div>
-      <div class="embed-fallback">
-        <a href="https://datastudio.google.com/embed/reporting/55b16826-03f7-49b2-8b88-ed35470ecead/page/v1VzF" target="_blank">Mở Looker Studio →</a>
-      </div>
-    </div>
     <iframe
       width="100%"
       height="800"
@@ -569,110 +498,132 @@
       frameborder="0"
       style="border:0;display:block;width:100%;min-height:800px"
       allowfullscreen
-      sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-      onload="document.getElementById('embed-loading').classList.remove('active')">
+      sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
     </iframe>
   </div>
 
   <div class="footer">
-    <div class="footer-line">CNS Quiz Admin · VATMSORATS Long Thành ATCC · GA4 Property: G-1R40HNGQ7V</div>
-    <div class="footer-line">Cập nhật lần cuối: 02 June 2026 · Version: v2.0-2026</div>
-    <div class="footer-line">⚠️ Không chia sẻ trang này ra ngoài</div>
+    CNS Quiz Admin · VATMSORATS Long Thành ATCC · GA4 Property: G-1R40HNGQ7V · Không chia sẻ trang này ra ngoài
   </div>
 
 </div>
 
-<!-- Load Questions Bank & Initialize Stats -->
-<script src="js/questions.js"></script>
 <script>
-  // Logout button
-  document.getElementById('logout-btn').addEventListener('click', function() {
-    sessionStorage.removeItem('admin_auth');
-    location.reload();
-  });
+// ── Team Readiness Dashboard ─────────────────────────────
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwAGIiMLmAErHxDFGNbROgMocNOcoVpI67lh6DfnIEpTfvwsQzb2pF6ekFRs2JG-_KY5A/exec';
 
-  // Auto-hide iframe loading placeholder after 3 seconds (fallback)
-  setTimeout(function() {
-    const embedLoading = document.getElementById('embed-loading');
-    if (embedLoading && embedLoading.classList.contains('active')) {
-      embedLoading.classList.remove('active');
-    }
-  }, 3000);
+function masteryColor(pct) {
+  if (pct >= 80) return '#10b981';
+  if (pct >= 60) return '#f59e0b';
+  return '#ef4444';
+}
+function masteryBadgeClass(pct) {
+  if (pct >= 80) return 'badge-green';
+  if (pct >= 60) return 'badge-amber';
+  return 'badge-red';
+}
 
-  // Load stats from questionBank
-  function loadStats() {
-    if (typeof questionBank === 'undefined') {
-      console.warn('questionBank not loaded');
-      return;
-    }
+async function loadReadiness() {
+  const btn = document.getElementById('btnRefresh');
+  btn.disabled = true;
+  btn.textContent = '⏳ Đang tải…';
+  document.getElementById('rdLoading').style.display = 'block';
+  document.getElementById('rdContent').style.display  = 'none';
+  document.getElementById('rdError').style.display    = 'none';
 
-    // Module location mapping
-    const moduleLocation = {
-      'A-SGMCS': 'Tân Sơn Nhất',
-      'ADS-B': 'Tân Sơn Nhất',
-      'ADS-B-LT': 'Long Thành',
-      'Ghi âm': 'Tân Sơn Nhất',
-      'KipTruong-TSN': 'Tân Sơn Nhất',
-      'RDP/FDP': 'Long Thành',
-      'Radar': 'Long Thành',
-      'Radar-TSN': 'Tân Sơn Nhất',
-      'SMS': 'Long Thành + Tân Sơn Nhất',
-      'VCCS': 'Tân Sơn Nhất',
-      'VHF': 'Long Thành + Tân Sơn Nhất'
-    };
+  try {
+    const res  = await fetch(WEBHOOK_URL + '?action=summary');
+    const data = await res.json();
 
-    const modules = {};
-    let totalQuestions = 0;
+    if (data.status !== 'ok') throw new Error(data.message || 'Unknown error');
 
-    // Parse questionBank to extract module data
-    for (const q of questionBank) {
-      const moduleId = q.module || 'Unknown';
-      const moduleName = q.moduleName || moduleId;
-      const viTri = moduleLocation[moduleId] || 'Long Thành';
+    renderReadiness(data);
 
-      if (!modules[moduleId]) {
-        modules[moduleId] = {
-          name: moduleName,
-          viTri: viTri,
-          count: 0
-        };
-      }
-      modules[moduleId].count++;
-      totalQuestions++;
-    }
+    // Meta line
+    const upd = data.updatedAt ? new Date(data.updatedAt).toLocaleString('vi-VN') : '—';
+    document.getElementById('rdMeta').textContent = `Cập nhật lúc: ${upd} · ${data.totalRows} dòng log`;
 
-    // Update total stats
-    document.getElementById('total-questions').textContent = totalQuestions;
-    document.getElementById('total-modules').textContent = Object.keys(modules).length;
+    document.getElementById('rdLoading').style.display = 'none';
+    document.getElementById('rdContent').style.display  = 'block';
+  } catch(err) {
+    document.getElementById('rdLoading').style.display = 'none';
+    document.getElementById('rdError').style.display   = 'block';
+    document.getElementById('rdMeta').textContent = '⚠ Lỗi: ' + err.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '↺ Làm mới';
+  }
+}
 
-    // Build modules table
-    const tbody = document.getElementById('modules-tbody');
-    tbody.innerHTML = '';
+function renderReadiness(data) {
+  const modules  = data.modules  || [];
+  const topWrong = data.topWrong || [];
 
-    const maxCount = Math.max(...Object.values(modules).map(m => m.count));
+  // ── Scorecards ──
+  document.getElementById('rdTotal').textContent = data.totalRows || 0;
+  document.getElementById('rdModules').textContent = modules.length;
 
-    for (const [moduleId, data] of Object.entries(modules)) {
-      const percent = Math.round((data.count / maxCount) * 100);
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td><strong>${data.name}</strong></td>
-        <td style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">${data.viTri}</td>
-        <td style="text-align: right; font-weight: 600; color: #7ff0c4;">${data.count}</td>
-        <td>
-          <div class="bar-container">
-            <div class="bar-fill" style="width: ${percent}%; min-width: 40px;">
-              ${data.count > 0 ? percent + '%' : ''}
-            </div>
+  const avgMastery = modules.length
+    ? Math.round(modules.reduce((s, m) => s + m.mastery, 0) / modules.length)
+    : 0;
+  const mastEl = document.getElementById('rdMastery');
+  mastEl.textContent = avgMastery + '%';
+  mastEl.style.color = masteryColor(avgMastery);
+
+  // ── Module cards ──
+  const grid = document.getElementById('rdModuleGrid');
+  if (!modules.length) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1">Chưa có dữ liệu module</div>';
+  } else {
+    grid.innerHTML = modules.map(m => {
+      const clr = masteryColor(m.mastery);
+      return `
+        <div class="module-card">
+          <div class="module-name" title="${m.module}">${m.module}</div>
+          <div class="mastery-bar">
+            <div class="mastery-fill" style="width:${m.mastery}%;background:${clr}"></div>
           </div>
-        </td>
-      `;
-      tbody.appendChild(row);
-    }
+          <div class="mastery-num" style="color:${clr}">${m.mastery}%</div>
+          <div class="mastery-sub">${m.total - m.wrong} đúng / ${m.total} lượt</div>
+        </div>`;
+    }).join('');
   }
 
-  // Initialize on page load
-  document.addEventListener('DOMContentLoaded', loadStats);
-</script>
+  // ── Top wrong questions ──
+  const tbody = document.getElementById('rdWrongBody');
+  if (!topWrong.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,0.2);padding:24px">Chưa đủ dữ liệu (cần ≥ 3 lượt/câu)</td></tr>';
+  } else {
+    tbody.innerHTML = topWrong.map((q, i) => `
+      <tr>
+        <td style="color:rgba(255,255,255,0.3)">${i + 1}</td>
+        <td style="font-family:monospace;color:#7dd3fc">#${q.qid}</td>
+        <td>${q.mod}</td>
+        <td>${q.total}</td>
+        <td>${q.wrong}</td>
+        <td><span class="badge ${masteryBadgeClass(100 - q.pct)}">${q.pct}%</span></td>
+      </tr>`).join('');
+  }
+}
 
+// Auto-load sau khi auth overlay biến mất
+document.addEventListener('DOMContentLoaded', function() {
+  // Đợi auth xong (auth overlay tự xóa khi đúng pass)
+  const observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(m) {
+      m.removedNodes.forEach(function(n) {
+        if (n.id === 'auth-overlay') { loadReadiness(); observer.disconnect(); }
+      });
+    });
+  });
+  observer.observe(document.documentElement, { childList: true });
+
+  // Nếu đã auth sẵn (sessionStorage), load thẳng
+  if (sessionStorage.getItem('admin_auth') === 'ok') {
+    loadReadiness();
+    observer.disconnect();
+  }
+});
+</script>
 </body>
 </html>
