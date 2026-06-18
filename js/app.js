@@ -15,6 +15,7 @@ let   _qBusy = false;
 
 // ── WEBHOOK ANALYTICS (fire-and-forget, ẩn danh) ──
 const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyTHnhK8qMxpPUtaL8Ezvi3_iDcEVpb9vWFe6lV87IR5Tr68MPfjD9NruMJ77ylWQuUVg/exec';
+const TEAM_WEBHOOK_URL = "ANH_LONG_DIEN_URL_SAU_KHI_DEPLOY_APPS_SCRIPT";
 let   currentViTri = ''; // Capture từ selViTri khi startExam(), dùng trong payload
 
 // ── Helpers ──
@@ -51,6 +52,28 @@ function sendQuestionWebhook(q, isWrong) {
       mode:   'no-cors'
     }).catch(function() {});
   } catch(e) {}
+}
+
+// Gửi dữ liệu ẩn danh lên Team Dashboard webhook (GET, fire-and-forget)
+// Chỉ gửi 4 trường: module, viTri, questionId, isWrong — không có PII
+// Dùng GET + URLSearchParams để tránh mất body qua Apps Script 302 redirect
+function logToTeamDashboard(module, viTri, questionId, isWrong) {
+  if (!TEAM_WEBHOOK_URL || TEAM_WEBHOOK_URL.includes("ANH_LONG_DIEN")) return;
+  try {
+    var params = new URLSearchParams({
+      ts:  new Date().toISOString(),
+      mod: module,
+      vt:  viTri,
+      qid: String(questionId),
+      err: isWrong ? '1' : '0'
+    });
+    fetch(TEAM_WEBHOOK_URL + '?' + params.toString(), {
+      method: 'GET',
+      mode:   'no-cors'
+    }).catch(function() {});
+  } catch(e) {
+    console.warn("Không gửi được dữ liệu team dashboard:", e);
+  }
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -545,6 +568,7 @@ function selectOpt(idx, el, val) {
     }
     // [WEBHOOK] Practice mode: gửi ngay vì đã biết đúng/sai
     sendQuestionWebhook(q, !isCorrect);
+    logToTeamDashboard(q.module, currentViTri, q.id, !isCorrect);
   }
 
   updateNavGrids();
@@ -659,6 +683,7 @@ function doSubmit(auto=false) {
   examQuestions.forEach(function(q, i) {
     if (userAnswers[i] === undefined) return; // Bỏ câu chưa trả lời
     sendQuestionWebhook(q, userAnswers[i] !== q.correctAnswer);
+    logToTeamDashboard(q.module, currentViTri, q.id, userAnswers[i] !== q.correctAnswer);
   });
 
   // [SRS] Ghi nhận câu sai vào lịch sử sau khi nộp bài (chỉ chạy ở exam mode)
