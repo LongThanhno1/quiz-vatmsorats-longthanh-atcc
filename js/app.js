@@ -1,3 +1,15 @@
+// ── Theme (day / night) ──
+function applyTheme(t) {
+  document.body.setAttribute('data-theme', t);
+  localStorage.setItem('cns_theme', t);
+}
+function toggleTheme() {
+  const current = document.body.getAttribute('data-theme') || 'day';
+  applyTheme(current === 'night' ? 'day' : 'night');
+}
+// Apply saved theme on load
+(function() { applyTheme(localStorage.getItem('cns_theme') || 'night'); })();
+
 // ── State ──
 let selectedModule = null;
 let quizMode       = 'exam';
@@ -296,6 +308,10 @@ function onStartExam() {
 // SECURITY: chỉ lấy câu từ questionBank đã nạp sẵn — không tạo câu mới.
 // Nếu pool < 50 → lấy toàn bộ; nếu pool >= 50 → bốc ngẫu nhiên đúng 50 câu.
 function startExam(moduleId) {
+  // [HEATMAP] Ẩn panel khi bắt đầu bài mới
+  var _hpHide = $('heatmapPanel');
+  if (_hpHide) _hpHide.style.display = 'none';
+
   selectedModule = moduleId;
   currentViTri   = ($('selViTri') && $('selViTri').value) || ''; // [WEBHOOK] Lưu vị trí thi
   const mc       = getMC(moduleId);
@@ -451,10 +467,12 @@ function _doRenderQ(idx) {
     const esc = opt.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
     return `<div class="option-btn ${sel?'selected':''}"
                  onclick="selectOpt(${idx},this,'${esc}')">
-      <span style="min-width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,0.07);
+      <span style="min-width:26px;width:26px;height:26px;border-radius:50%;
+                   background:rgba(56,189,248,0.18);border:1px solid rgba(56,189,248,0.35);
                    display:flex;align-items:center;justify-content:center;
-                   font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px">${labels[i]}</span>
-      <span style="font-size:14px;line-height:1.5">${opt}</span>
+                   font-size:11px;font-weight:800;flex-shrink:0;color:#7dd3fc;
+                   letter-spacing:0">${labels[i]}</span>
+      <span style="font-size:14px;line-height:1.5;color:rgba(255,255,255,0.92)">${opt}</span>
     </div>`;
   }).join('');
 
@@ -569,6 +587,8 @@ function selectOpt(idx, el, val) {
     // [WEBHOOK] Practice mode: gửi ngay vì đã biết đúng/sai
     sendQuestionWebhook(q, !isCorrect);
     logToTeamDashboard(q.module, currentViTri, q.id, !isCorrect);
+    // [HEATMAP] Ghi nhận câu trả lời vào nhật ký ôn tập hôm nay
+    StudyHeatmap.logAnswer(!isCorrect);
   }
 
   updateNavGrids();
@@ -667,11 +687,19 @@ function doSubmit(auto=false) {
     userAnswers    = {};
     if (typeof onChucDanhChange === 'function') onChucDanhChange();
     setQuizMode('exam'); // [FIX] Reset visual mode buttons + label về "Thi thử"
+    // [HEATMAP] Hiện nhật ký ôn tập bên dưới startScreen
+    StudyHeatmap.render();
+    var _hp = $('heatmapPanel');
+    if (_hp) _hp.style.display = 'block';
     return;
   }
 
   $('examScreen').classList.add('hidden');
   $('resultScreen').classList.remove('hidden');
+  // [HEATMAP] Render và hiện panel sau khi nộp bài thi thử
+  StudyHeatmap.render();
+  var _hp2 = $('heatmapPanel');
+  if (_hp2) _hp2.style.display = 'block';
   // Luôn hiện scroll-to-top trên màn hình kết quả
   const _sb = $('scrollTopBtn');
   if (_sb) _sb.classList.add('visible');
@@ -679,11 +707,14 @@ function doSubmit(auto=false) {
   let correct = 0;
   examQuestions.forEach((q,i) => { if (userAnswers[i] === q.correctAnswer) correct++; });
 
-  // [WEBHOOK] Exam mode: gửi batch sau khi nộp bài (đã biết đúng/sai toàn bộ)
+  // [WEBHOOK + HEATMAP] Exam mode: gửi batch sau khi nộp bài (đã biết đúng/sai toàn bộ)
   examQuestions.forEach(function(q, i) {
     if (userAnswers[i] === undefined) return; // Bỏ câu chưa trả lời
-    sendQuestionWebhook(q, userAnswers[i] !== q.correctAnswer);
-    logToTeamDashboard(q.module, currentViTri, q.id, userAnswers[i] !== q.correctAnswer);
+    var _isWrong = userAnswers[i] !== q.correctAnswer;
+    sendQuestionWebhook(q, _isWrong);
+    logToTeamDashboard(q.module, currentViTri, q.id, _isWrong);
+    // [HEATMAP] Ghi nhận từng câu vào nhật ký ôn tập hôm nay
+    StudyHeatmap.logAnswer(_isWrong);
   });
 
   // [SRS] Ghi nhận câu sai vào lịch sử sau khi nộp bài (chỉ chạy ở exam mode)
@@ -936,6 +967,9 @@ function checkResume() {
 })();
 
 document.addEventListener('DOMContentLoaded', function() {
+  // [HEATMAP] Khởi tạo module nhật ký ôn tập
+  StudyHeatmap.init();
+
   // Clock
   setInterval(function() {
     const el = $('sysTime');
@@ -1054,47 +1088,269 @@ document.addEventListener('DOMContentLoaded', updateScrollBtn);
         b.heading += rand(-40, 40);
         b.changeTimer = Math.floor(rand(800, 1500));
         // Update tag arrow
-        b.tag.innerHTML = b.call + '<br>' + b.fl + ' ' + headingArrow(b.heading) + ' ' + b.spd;
+        var h2 = b.heading;
+        b.tag.innerHTML = b.call + '<br>' + b.fl + ' ' + headingArrow(h2) + ' ' + b.spd;
       }
 
-      // Sweep sync — PSR/SSR behavior
-      const targetAngle = ((Math.atan2(b.y - cy, b.x - cx) * 180 / Math.PI) + 360) % 360;
-      let diff = Math.abs(sweepAngle - targetAngle);
+      // Fade blip với sweep proximity
+      var bdx = b.x - cx;
+      var bdy = b.y - cy;
+      var blipAngle = (Math.atan2(bdy, bdx) * 180 / Math.PI + 360) % 360;
+      var diff = Math.abs(sweepAngle - blipAngle);
       if (diff > 180) diff = 360 - diff;
-
-      let opacity, shadow;
-      if (diff < 8) {
-        // FLASH: vệt sweep đang quét qua
-        opacity = 1.0;
-        shadow = '0 0 14px rgba(150,230,255,1), 0 0 28px rgba(150,210,255,0.7), 0 0 6px #fff';
-      } else if (diff < 60) {
-        // FADE: đuôi vệt — giảm tuyến tính 1→0
-        opacity = 1 - (diff - 8) / 52;
-        const glow = Math.round(opacity * 255);
-        shadow = '0 0 ' + Math.round(opacity * 14) + 'px rgba(150,230,255,' + opacity.toFixed(2) + ')';
-      } else {
-        // ẨN hoàn toàn
-        opacity = 0;
-        shadow = '';
-      }
-
-      b.dot.style.opacity = opacity;
-      b.dot.style.boxShadow = shadow;
-      // blip-tag chỉ hiện khi đủ sáng
-      b.tag.style.opacity = opacity > 0.3 ? opacity : 0;
+      b.opacity = 0.15 + Math.max(0, 1 - diff / 90) * 0.85;
+      b.el.style.opacity = b.opacity;
     }
-
     rafId = requestAnimationFrame(radarLoop);
   }
 
-  document.addEventListener('visibilitychange', function() {
-    if (!document.hidden) {
-      if (rafId) cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(radarLoop);
-    } else {
-      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-    }
-  });
-
   document.addEventListener('DOMContentLoaded', radarInit);
+})();
+
+// ════════════════════════════════════════════════════════════════════════════
+// === Study Heatmap Module ===
+// Nhật ký ôn tập dạng heatmap kiểu GitHub contribution graph
+// localStorage key: "cns_heatmap_v1"
+// Cấu trúc: { "YYYY-MM-DD": { count: số câu trả lời, wrong: số câu sai } }
+// Độc lập hoàn toàn với cns_history_v1, cns_quiz_state_v3, cns_result_v3
+// ════════════════════════════════════════════════════════════════════════════
+const StudyHeatmap = (function() {
+  const STORAGE_KEY = 'cns_heatmap_v1';
+  var currentRange = 365; // hiển thị 365 ngày — GitHub style
+
+  // Đọc dữ liệu nhật ký từ localStorage
+  function loadData() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch(e) { return {}; }
+  }
+
+  // Ghi dữ liệu nhật ký vào localStorage (silent fail nếu đầy)
+  function saveData(data) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+  }
+
+  // Lấy ngày hôm nay dạng "YYYY-MM-DD" theo múi giờ local
+  function todayKey() {
+    var d = new Date();
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + day;
+  }
+
+  // Mức màu 0-4 dựa trên số câu đã trả lời trong ngày
+  // 0=không có | 1=<5 | 2=5-14 | 3=15-29 | 4=≥30
+  function levelFor(count) {
+    if (!count || count === 0) return 0;
+    if (count < 5)  return 1;
+    if (count < 15) return 2;
+    if (count < 30) return 3;
+    return 4;
+  }
+
+  // Tính số ngày liên tiếp có hoạt động (chuỗi streak)
+  // "Khoan dung": nếu hôm nay chưa ôn thì vẫn tính chuỗi từ hôm qua trở về
+  function computeStreak(data) {
+    var checkDate = new Date();
+    checkDate.setHours(0, 0, 0, 0);
+
+    // Nếu hôm nay chưa có dữ liệu → bắt đầu kiểm tra từ hôm qua
+    var tk = todayKey();
+    if (!data[tk] || data[tk].count === 0) {
+      checkDate.setDate(checkDate.getDate() - 1);
+    }
+
+    var streak = 0;
+    while (true) {
+      var y = checkDate.getFullYear();
+      var mo = String(checkDate.getMonth() + 1).padStart(2, '0');
+      var dy = String(checkDate.getDate()).padStart(2, '0');
+      var key = y + '-' + mo + '-' + dy;
+      if (data[key] && data[key].count > 0) {
+        streak++;
+        checkDate.setDate(checkDate.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+    return streak;
+  }
+
+  // Dựng mảng ngày tuyến tính cho n ngày gần nhất (mới nhất ở cuối)
+  function buildDaysGrid(data, days) {
+    var result = [];
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    for (var i = days - 1; i >= 0; i--) {
+      var d = new Date(today);
+      d.setDate(d.getDate() - i);
+      var y  = d.getFullYear();
+      var mo = String(d.getMonth() + 1).padStart(2, '0');
+      var dy = String(d.getDate()).padStart(2, '0');
+      var key = y + '-' + mo + '-' + dy;
+      result.push({
+        key:   key,
+        date:  new Date(d),
+        count: data[key] ? (data[key].count || 0) : 0,
+        wrong: data[key] ? (data[key].wrong || 0) : 0,
+        dow:   d.getDay(),
+      });
+    }
+    return result;
+  }
+
+
+  // Ghi nhận 1 câu trả lời vào ngày hôm nay
+  function logAnswer(isWrong) {
+    var data = loadData();
+    var key  = todayKey();
+    if (!data[key]) data[key] = { count: 0, wrong: 0 };
+    data[key].count += 1;
+    if (isWrong) data[key].wrong += 1;
+    saveData(data);
+  }
+
+    function render() {
+    var data     = loadData();
+    var grid     = document.getElementById('hmGrid');
+    var elTotal  = document.getElementById('hmTotal');
+    var elDays   = document.getElementById('hmDays');
+    var elStreak = document.getElementById('hmStreak');
+    var elFooter = document.getElementById('hmFooter');
+    if (!grid) return;
+
+    var totalCount = 0, activeDays = 0;
+    Object.keys(data).forEach(function(k) {
+      if (data[k].count > 0) { totalCount += data[k].count; activeDays++; }
+    });
+    var streak = computeStreak(data);
+    if (elTotal)  elTotal.textContent  = totalCount.toLocaleString('vi-VN');
+    if (elDays)   elDays.textContent   = activeDays;
+    if (elStreak) elStreak.textContent = streak + ' ngày';
+    if (elFooter) {
+      if (streak === 0)     elFooter.textContent = 'Hôm nay bắt đầu chuỗi ôn tập mới!';
+      else if (streak < 3)  elFooter.textContent = streak + ' ngày liên tiếp — tiếp tục!';
+      else if (streak < 7)  elFooter.textContent = streak + ' ngày liên tiếp — phong độ tốt!';
+      else if (streak < 30) elFooter.textContent = streak + ' ngày liên tiếp — đừng gián đoạn!';
+      else                  elFooter.textContent = streak + ' ngày liên tiếp — kỷ lục! 🎖️';
+    }
+
+    var days_arr = buildDaysGrid(data, 365);
+    var startDow = days_arr[0].dow;
+    var padded = [];
+    for (var p = 0; p < startDow; p++) padded.push(null);
+    days_arr.forEach(function(d) { padded.push(d); });
+    while (padded.length % 7 !== 0) padded.push(null);
+
+    var weeks = [];
+    for (var w = 0; w < padded.length / 7; w++) {
+      weeks.push(padded.slice(w * 7, w * 7 + 7));
+    }
+
+    // GitHub-style: hiện tất cả 7 ngày trong tuần
+    var DAY_LABELS = ['CN','T2','T3','T4','T5','T6','T7'];
+
+    var MONTH_VI = ['Th1','Th2','Th3','Th4','Th5','Th6',
+                    'Th7','Th8','Th9','T10','T11','T12'];
+    var lastMonth = -1;
+    var monthMap  = {};
+    weeks.forEach(function(wk, wi) {
+      var firstReal = null;
+      for (var x = 0; x < wk.length; x++) { if (wk[x]) { firstReal = wk[x]; break; } }
+      if (firstReal) {
+        var mo = firstReal.date.getMonth();
+        if (mo !== lastMonth) { monthMap[wi] = MONTH_VI[mo]; lastMonth = mo; }
+      }
+    });
+
+    var h = '<div class="hm-gh-graph">';
+    h += '<div class="hm-gh-daylabels"><div class="hm-gh-month-spacer"></div>';
+    for (var r = 0; r < 7; r++) {
+      h += '<div class="hm-gh-daylbl">' + DAY_LABELS[r] + '</div>';
+    }
+    h += '</div>';
+
+    h += '<div class="hm-gh-right">';
+    h += '<div class="hm-gh-months">';
+    weeks.forEach(function(wk, wi) {
+      h += '<div class="hm-gh-month-cell">' + (monthMap[wi] || '') + '</div>';
+    });
+    h += '</div>';
+
+    h += '<div class="hm-gh-weeks">';
+    weeks.forEach(function(wk) {
+      h += '<div class="hm-gh-week">';
+      wk.forEach(function(cell) {
+        if (!cell) {
+          h += '<div class="hm-gh-cell hm-empty"></div>';
+        } else {
+          var lv  = levelFor(cell.count);
+          var dd  = String(cell.date.getDate()).padStart(2,'0');
+          var mm  = String(cell.date.getMonth()+1).padStart(2,'0');
+          var tip = dd + '/' + mm + ': ' + cell.count + ' câu'
+                  + (cell.wrong > 0 ? ', ' + cell.wrong + ' sai' : '');
+          var cls = 'hm-gh-cell hm-l' + lv + (cell.wrong > 0 ? ' hm-has-wrong' : '');
+          h += '<div class="' + cls + '" data-tip="' + tip + '"'
+             + ' onmouseenter="StudyHeatmap._showTip(event,this)"'
+             + ' onmouseleave="StudyHeatmap._hideTip()"></div>';
+        }
+      });
+      h += '</div>';
+    });
+    h += '</div></div></div>';
+
+    grid.innerHTML = h;
+  }
+
+  // Hiện tooltip khi hover ô
+  function showTip(event, el) {
+    var tip = document.getElementById('hmTooltip');
+    if (!tip) return;
+    tip.textContent = el.getAttribute('data-tip');
+    tip.style.display = 'block';
+    tip.style.left = (event.clientX + 8) + 'px';
+    tip.style.top  = (event.clientY - 34) + 'px';
+  }
+
+  // Ẩn tooltip
+  function hideTip() {
+    var tip = document.getElementById('hmTooltip');
+    if (tip) tip.style.display = 'none';
+  }
+
+  // Xóa toàn bộ nhật ký — có confirm trước
+  // Đổi khoảng thời gian hiển thị và re-render
+  function setRange(n) {
+    currentRange = n;
+    // Cập nhật active tab
+    document.querySelectorAll('#hmRangeTabs .hm-tab').forEach(function(btn) {
+      btn.classList.toggle('hm-tab-active', parseInt(btn.getAttribute('data-r')) === n);
+    });
+    // Cập nhật subtitle
+    var sub = document.getElementById('hmSubtitle');
+    if (sub) sub.textContent = n + ' ngày gần nhất';
+    render();
+  }
+
+  function clearData() {
+    if (!confirm('Xóa toàn bộ nhật ký ôn tập? Hành động này không thể hoàn tác.')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    render();
+  }
+
+  function init() { /* no-op */ }
+
+  return {
+    logAnswer:     logAnswer,
+    render:        render,
+    init:          init,
+    clearData:     clearData,
+    setRange:      setRange,
+    levelFor:      levelFor,
+    computeStreak: computeStreak,
+    _showTip:      showTip,
+    _hideTip:      hideTip,
+  };
 })();
