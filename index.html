@@ -83,15 +83,7 @@
       <!-- Header -->
       <div style="text-align:center">
         <div class="logo-ring">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
-               stroke="rgba(0,185,255,0.92)" stroke-width="2"
-               stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/>
-            <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/>
-            <circle cx="12" cy="12" r="2"/>
-            <path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/>
-            <path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/>
-          </svg>
+          <img src="logo/logoVATM.jpg" alt="Logo VATM" draggable="false"/>
         </div>
         <div class="header-badge">VATMSORATS &middot; Long Th&agrave;nh ATCC</div>
         <h1 class="main-title">TRUNG T&Acirc;M KI&#7874;M SO&Aacute;T<br>KH&Ocirc;NG L&#431;U LONG TH&Agrave;NH</h1>
@@ -369,6 +361,46 @@
     </div>
   </div>
 
+  <!-- ── NHẬT KÝ ÔN TẬP (Study Heatmap) ── -->
+  <div id="heatmapPanel">
+    <div class="hm-header">
+      <div>
+        <div class="hm-title">📅 Nhật ký ôn tập</div>
+        <div class="hm-subtitle">365 ngày gần nhất</div>
+      </div>
+      <div class="hm-stats">
+        <div class="hm-stat">
+          <div class="hm-stat-val" id="hmTotal">0</div>
+          <div class="hm-stat-lbl">Tổng câu đã ôn</div>
+        </div>
+        <div class="hm-stat">
+          <div class="hm-stat-val" id="hmDays">0</div>
+          <div class="hm-stat-lbl">Ngày hoạt động</div>
+        </div>
+        <div class="hm-stat">
+          <div class="hm-stat-val" id="hmStreak">0</div>
+          <div class="hm-stat-lbl">Chuỗi liên tiếp</div>
+        </div>
+      </div>
+    </div>
+    <div id="hmGrid"></div>
+    <div class="hm-legend">
+      <span>Ít</span>
+      <div class="hm-legend-cells">
+        <div class="hm-legend-cell hm-l0"></div>
+        <div class="hm-legend-cell hm-l1"></div>
+        <div class="hm-legend-cell hm-l2"></div>
+        <div class="hm-legend-cell hm-l3"></div>
+        <div class="hm-legend-cell hm-l4"></div>
+      </div>
+      <span>Nhiều</span>
+    </div>
+    <div class="hm-footer">
+      <span id="hmFooter"></span>
+      <button class="hm-btn-clear" onclick="StudyHeatmap.clearData()">Xóa dữ liệu cục bộ</button>
+    </div>
+  </div>
+
   <!-- ── REVIEW SECTION ── -->
   <div class="review-wrap">
     <div id="reviewHeader" style="display:none;padding:16px 0 8px;">
@@ -390,7 +422,10 @@
      JAVASCRIPT
      ====================================================== -->
 <script src="js/questions.js?v=1.3"></script>
-<script src="js/app.js?v=1.3"></script>
+<script src="js/app.js?v=1.4"></script>
+
+<!-- Tooltip heatmap — position:fixed, đặt ngoài #resultScreen -->
+<div id="hmTooltip"></div>
 
 <!-- Scroll-to-top -->
 <button id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Cuộn lên đầu trang">

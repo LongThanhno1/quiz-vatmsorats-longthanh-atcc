@@ -569,6 +569,8 @@ function selectOpt(idx, el, val) {
     // [WEBHOOK] Practice mode: gửi ngay vì đã biết đúng/sai
     sendQuestionWebhook(q, !isCorrect);
     logToTeamDashboard(q.module, currentViTri, q.id, !isCorrect);
+    // [HEATMAP] Ghi nhận câu trả lời vào nhật ký ôn tập hôm nay
+    StudyHeatmap.logAnswer(!isCorrect);
   }
 
   updateNavGrids();
@@ -672,6 +674,8 @@ function doSubmit(auto=false) {
 
   $('examScreen').classList.add('hidden');
   $('resultScreen').classList.remove('hidden');
+  // [HEATMAP] Render sau khi section kết quả hiển thị (tránh thao tác DOM khi còn ẩn)
+  StudyHeatmap.render();
   // Luôn hiện scroll-to-top trên màn hình kết quả
   const _sb = $('scrollTopBtn');
   if (_sb) _sb.classList.add('visible');
@@ -679,11 +683,14 @@ function doSubmit(auto=false) {
   let correct = 0;
   examQuestions.forEach((q,i) => { if (userAnswers[i] === q.correctAnswer) correct++; });
 
-  // [WEBHOOK] Exam mode: gửi batch sau khi nộp bài (đã biết đúng/sai toàn bộ)
+  // [WEBHOOK + HEATMAP] Exam mode: gửi batch sau khi nộp bài (đã biết đúng/sai toàn bộ)
   examQuestions.forEach(function(q, i) {
     if (userAnswers[i] === undefined) return; // Bỏ câu chưa trả lời
-    sendQuestionWebhook(q, userAnswers[i] !== q.correctAnswer);
-    logToTeamDashboard(q.module, currentViTri, q.id, userAnswers[i] !== q.correctAnswer);
+    var _isWrong = userAnswers[i] !== q.correctAnswer;
+    sendQuestionWebhook(q, _isWrong);
+    logToTeamDashboard(q.module, currentViTri, q.id, _isWrong);
+    // [HEATMAP] Ghi nhận từng câu vào nhật ký ôn tập hôm nay
+    StudyHeatmap.logAnswer(_isWrong);
   });
 
   // [SRS] Ghi nhận câu sai vào lịch sử sau khi nộp bài (chỉ chạy ở exam mode)
@@ -936,6 +943,9 @@ function checkResume() {
 })();
 
 document.addEventListener('DOMContentLoaded', function() {
+  // [HEATMAP] Khởi tạo module nhật ký ôn tập
+  StudyHeatmap.init();
+
   // Clock
   setInterval(function() {
     const el = $('sysTime');
@@ -1054,47 +1064,262 @@ document.addEventListener('DOMContentLoaded', updateScrollBtn);
         b.heading += rand(-40, 40);
         b.changeTimer = Math.floor(rand(800, 1500));
         // Update tag arrow
-        b.tag.innerHTML = b.call + '<br>' + b.fl + ' ' + headingArrow(b.heading) + ' ' + b.spd;
+        var h2 = b.heading;
+        b.tag.innerHTML = b.call + '<br>' + b.fl + ' ' + headingArrow(h2) + ' ' + b.spd;
       }
 
-      // Sweep sync — PSR/SSR behavior
-      const targetAngle = ((Math.atan2(b.y - cy, b.x - cx) * 180 / Math.PI) + 360) % 360;
-      let diff = Math.abs(sweepAngle - targetAngle);
+      // Fade blip với sweep proximity
+      var bdx = b.x - cx;
+      var bdy = b.y - cy;
+      var blipAngle = (Math.atan2(bdy, bdx) * 180 / Math.PI + 360) % 360;
+      var diff = Math.abs(sweepAngle - blipAngle);
       if (diff > 180) diff = 360 - diff;
-
-      let opacity, shadow;
-      if (diff < 8) {
-        // FLASH: vệt sweep đang quét qua
-        opacity = 1.0;
-        shadow = '0 0 14px rgba(150,230,255,1), 0 0 28px rgba(150,210,255,0.7), 0 0 6px #fff';
-      } else if (diff < 60) {
-        // FADE: đuôi vệt — giảm tuyến tính 1→0
-        opacity = 1 - (diff - 8) / 52;
-        const glow = Math.round(opacity * 255);
-        shadow = '0 0 ' + Math.round(opacity * 14) + 'px rgba(150,230,255,' + opacity.toFixed(2) + ')';
-      } else {
-        // ẨN hoàn toàn
-        opacity = 0;
-        shadow = '';
-      }
-
-      b.dot.style.opacity = opacity;
-      b.dot.style.boxShadow = shadow;
-      // blip-tag chỉ hiện khi đủ sáng
-      b.tag.style.opacity = opacity > 0.3 ? opacity : 0;
+      b.opacity = 0.15 + Math.max(0, 1 - diff / 90) * 0.85;
+      b.el.style.opacity = b.opacity;
     }
-
     rafId = requestAnimationFrame(radarLoop);
   }
 
-  document.addEventListener('visibilitychange', function() {
-    if (!document.hidden) {
-      if (rafId) cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(radarLoop);
-    } else {
-      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-    }
-  });
-
   document.addEventListener('DOMContentLoaded', radarInit);
+})();
+
+// ════════════════════════════════════════════════════════════════════════════
+// === Study Heatmap Module ===
+// Nhật ký ôn tập dạng heatmap kiểu GitHub contribution graph
+// localStorage key: "cns_heatmap_v1"
+// Cấu trúc: { "YYYY-MM-DD": { count: số câu trả lời, wrong: số câu sai } }
+// Độc lập hoàn toàn với cns_history_v1, cns_quiz_state_v3, cns_result_v3
+// ════════════════════════════════════════════════════════════════════════════
+const StudyHeatmap = (function() {
+  const STORAGE_KEY = 'cns_heatmap_v1';
+
+  // Đọc dữ liệu nhật ký từ localStorage
+  function loadData() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch(e) { return {}; }
+  }
+
+  // Ghi dữ liệu nhật ký vào localStorage (silent fail nếu đầy)
+  function saveData(data) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+  }
+
+  // Lấy ngày hôm nay dạng "YYYY-MM-DD" theo múi giờ local
+  function todayKey() {
+    var d = new Date();
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + day;
+  }
+
+  // Mức màu 0-4 dựa trên số câu đã trả lời trong ngày
+  // 0=không có | 1=<5 | 2=5-14 | 3=15-29 | 4=≥30
+  function levelFor(count) {
+    if (!count || count === 0) return 0;
+    if (count < 5)  return 1;
+    if (count < 15) return 2;
+    if (count < 30) return 3;
+    return 4;
+  }
+
+  // Tính số ngày liên tiếp có hoạt động (chuỗi streak)
+  // "Khoan dung": nếu hôm nay chưa ôn thì vẫn tính chuỗi từ hôm qua trở về
+  function computeStreak(data) {
+    var checkDate = new Date();
+    checkDate.setHours(0, 0, 0, 0);
+
+    // Nếu hôm nay chưa có dữ liệu → bắt đầu kiểm tra từ hôm qua
+    var tk = todayKey();
+    if (!data[tk] || data[tk].count === 0) {
+      checkDate.setDate(checkDate.getDate() - 1);
+    }
+
+    var streak = 0;
+    while (true) {
+      var y = checkDate.getFullYear();
+      var mo = String(checkDate.getMonth() + 1).padStart(2, '0');
+      var dy = String(checkDate.getDate()).padStart(2, '0');
+      var key = y + '-' + mo + '-' + dy;
+      if (data[key] && data[key].count > 0) {
+        streak++;
+        checkDate.setDate(checkDate.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+    return streak;
+  }
+
+  // Dựng lưới 53 tuần x 7 ngày của 365 ngày gần nhất
+  // Neo theo Chủ Nhật đầu tuần (CN = index 0)
+  function buildWeeksGrid(data) {
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Điểm bắt đầu: 364 ngày trước hôm nay, neo về Chủ Nhật
+    var startDate = new Date(today);
+    startDate.setDate(startDate.getDate() - 364);
+    var dow = startDate.getDay(); // 0=CN, 1=T2...
+    startDate.setDate(startDate.getDate() - dow); // lùi về CN đầu tuần
+
+    var weeks = [];
+    var current = new Date(startDate);
+
+    while (current <= today) {
+      var week = [];
+      for (var d = 0; d < 7; d++) {
+        if (current > today) {
+          week.push(null); // Ngày tương lai: ô trống
+        } else {
+          var y = current.getFullYear();
+          var mo = String(current.getMonth() + 1).padStart(2, '0');
+          var dy = String(current.getDate()).padStart(2, '0');
+          var key = y + '-' + mo + '-' + dy;
+          week.push({
+            key:   key,
+            date:  new Date(current),
+            count: data[key] ? (data[key].count || 0) : 0,
+            wrong: data[key] ? (data[key].wrong || 0) : 0,
+          });
+        }
+        current.setDate(current.getDate() + 1);
+      }
+      weeks.push(week);
+    }
+    return weeks;
+  }
+
+  // Ghi nhận 1 câu trả lời vào ngày hôm nay
+  // isWrong: true nếu trả lời sai
+  function logAnswer(isWrong) {
+    var data = loadData();
+    var key = todayKey();
+    if (!data[key]) data[key] = { count: 0, wrong: 0 };
+    data[key].count += 1;
+    if (isWrong) data[key].wrong += 1;
+    saveData(data);
+    // Không gọi render() ở đây vì heatmapPanel thường đang ẩn khi đang thi
+    // render() được gọi tường minh khi hiện #resultScreen
+  }
+
+  // Vẽ lại toàn bộ grid + cập nhật 3 chỉ số tổng quan
+  function render() {
+    var data    = loadData();
+    var grid    = document.getElementById('hmGrid');
+    var elTotal  = document.getElementById('hmTotal');
+    var elDays   = document.getElementById('hmDays');
+    var elStreak = document.getElementById('hmStreak');
+    var elFooter = document.getElementById('hmFooter');
+
+    if (!grid) return; // DOM chưa sẵn sàng
+
+    // Tính tổng quan
+    var totalCount = 0, activeDays = 0;
+    Object.keys(data).forEach(function(k) {
+      if (data[k].count > 0) { totalCount += data[k].count; activeDays++; }
+    });
+    var streak = computeStreak(data);
+
+    // Cập nhật chỉ số
+    if (elTotal)  elTotal.textContent  = totalCount.toLocaleString('vi-VN');
+    if (elDays)   elDays.textContent   = activeDays;
+    if (elStreak) elStreak.textContent = streak + ' ngày';
+
+    // Dòng động viên theo streak
+    if (elFooter) {
+      if (streak === 0)       elFooter.textContent = 'Hôm nay bắt đầu chuỗi ôn tập mới!';
+      else if (streak < 3)    elFooter.textContent = streak + ' ngày liên tiếp — tiếp tục duy trì!';
+      else if (streak < 7)    elFooter.textContent = streak + ' ngày liên tiếp — phong độ tốt!';
+      else if (streak < 30)   elFooter.textContent = streak + ' ngày liên tiếp — đừng làm gián đoạn!';
+      else                    elFooter.textContent = streak + ' ngày liên tiếp — kỷ lục xuất sắc! 🎖️';
+    }
+
+    // Nhãn thứ trong tuần (chỉ hiện T2, T4, T6 để đỡ rối)
+    var DAY_LABELS = ['CN','T2','T3','T4','T5','T6','T7'];
+
+    // Dựng grid HTML
+    var weeks = buildWeeksGrid(data);
+    var html = '<div class="hm-grid-inner">';
+
+    // Cột nhãn ngày (bên trái)
+    html += '<div class="hm-day-labels">';
+    DAY_LABELS.forEach(function(lbl, i) {
+      var show = (i === 1 || i === 3 || i === 5); // T2, T4, T6
+      html += '<div class="hm-day-lbl">' + (show ? lbl : '') + '</div>';
+    });
+    html += '</div>';
+
+    // Các cột tuần
+    html += '<div class="hm-weeks">';
+    weeks.forEach(function(week) {
+      html += '<div class="hm-week">';
+      week.forEach(function(cell) {
+        if (cell === null) {
+          html += '<div class="hm-cell hm-empty"></div>';
+          return;
+        }
+        var level    = levelFor(cell.count);
+        var hasWrong = cell.wrong > 0;
+        var dd = String(cell.date.getDate()).padStart(2,'0');
+        var mm = String(cell.date.getMonth()+1).padStart(2,'0');
+        var yyyy = cell.date.getFullYear();
+        var dateStr = dd + '/' + mm + '/' + yyyy;
+        var tip = dateStr + ': ' + cell.count + ' câu' + (hasWrong ? ', ' + cell.wrong + ' sai' : '');
+
+        html += '<div class="hm-cell hm-l' + level + (hasWrong ? ' hm-has-wrong' : '') + '"'
+              + ' data-tip="' + tip + '"'
+              + ' onmouseenter="StudyHeatmap._showTip(event,this)"'
+              + ' onmouseleave="StudyHeatmap._hideTip()">'
+              + '</div>';
+      });
+      html += '</div>';
+    });
+    html += '</div>'; // hm-weeks
+    html += '</div>'; // hm-grid-inner
+
+    grid.innerHTML = html;
+  }
+
+  // Hiện tooltip khi hover ô
+  function showTip(event, el) {
+    var tip = document.getElementById('hmTooltip');
+    if (!tip) return;
+    tip.textContent = el.getAttribute('data-tip');
+    tip.style.display = 'block';
+    tip.style.left = (event.clientX + 8) + 'px';
+    tip.style.top  = (event.clientY - 34) + 'px';
+  }
+
+  // Ẩn tooltip
+  function hideTip() {
+    var tip = document.getElementById('hmTooltip');
+    if (tip) tip.style.display = 'none';
+  }
+
+  // Xóa toàn bộ nhật ký — có confirm trước
+  function clearData() {
+    if (!confirm('Xóa toàn bộ nhật ký ôn tập? Hành động này không thể hoàn tác.')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    render();
+  }
+
+  // Khởi tạo — gọi trong DOMContentLoaded
+  function init() {
+    // Không cần làm gì thêm; render() gọi tường minh khi hiện resultScreen
+  }
+
+  // Public API
+  return {
+    logAnswer:     logAnswer,
+    render:        render,
+    init:          init,
+    clearData:     clearData,
+    levelFor:      levelFor,
+    computeStreak: computeStreak,
+    _showTip:      showTip,
+    _hideTip:      hideTip,
+  };
 })();

@@ -1,3 +1,8 @@
+/* ================================================================
+   CNS Quiz — Stylesheet
+   Tách từ index.html | Sky-Blue Glassmorphism Theme
+================================================================= */
+
 :root {
   --bg: #0b1f3a;
   --sky: #2d7ab5;
@@ -16,14 +21,16 @@ body { margin:0; padding:0; font-family:"Segoe UI",system-ui,-apple-system,sans-
 ═══════════════════════════════════════════════ */
 .start-screen {
   position:relative; min-height:100vh;
-  background:linear-gradient(145deg,#0b1f3a 0%,#143d6b 30%,#1f64a0 62%,#2d7ab5 100%);
+  background:
+    linear-gradient(145deg,rgba(5,15,45,0.42) 0%,rgba(5,15,45,0.42) 100%),
+    url('../Background Lotha.jpg') center center / cover no-repeat;
   display:flex; align-items:center; justify-content:center; overflow:hidden;
 }
 .start-screen::before {
   content:''; position:absolute; inset:0; pointer-events:none;
   background:
-    radial-gradient(ellipse 80% 70% at 50% 45%,rgba(90,170,255,0.18) 0%,transparent 60%),
-    radial-gradient(ellipse 45% 50% at 80% 85%,rgba(50,120,200,0.12) 0%,transparent 55%);
+    radial-gradient(ellipse 80% 70% at 50% 45%,rgba(90,170,255,0.10) 0%,transparent 60%),
+    radial-gradient(ellipse 45% 50% at 80% 85%,rgba(50,120,200,0.08) 0%,transparent 55%);
 }
 
 /* ── Flight paths background ── */
@@ -98,8 +105,7 @@ body { margin:0; padding:0; font-family:"Segoe UI",system-ui,-apple-system,sans-
   width:5px; height:5px; border-radius:50%;
   background:rgba(200,240,255,0.9);
   box-shadow:0 0 5px rgba(150,210,255,0.8), 0 0 10px rgba(150,210,255,0.4);
-  opacity:0; /* JS controls per-frame */
-  position:relative; /* opacity set by JS each frame — no transition */
+  animation:blipFade 3.5s ease-in-out infinite; position:relative;
 }
 .blip-dot::after {
   content:''; position:absolute; top:-4px; left:-4px; width:13px; height:13px;
@@ -110,16 +116,16 @@ body { margin:0; padding:0; font-family:"Segoe UI",system-ui,-apple-system,sans-
   position:absolute; top:-24px; left:9px; white-space:nowrap;
   font-family:'Courier New',monospace; font-size:9px; font-weight:700;
   color:rgba(200,240,255,0.78); letter-spacing:0.05em; line-height:1.35;
-  opacity:0;
 }
 @keyframes blipFade   { 0%,100%{opacity:1} 50%{opacity:0.3} }
 @keyframes blipExpand { 0%{transform:scale(1);opacity:0.6} 100%{transform:scale(3);opacity:0} }
 @keyframes blipFadeSlow { 0%,100%{opacity:0.7} 50%{opacity:0.15} }
 
-/* ── Tower silhouette ── */
+/* ── Tower silhouette ── (hidden — real tower visible in background photo) */
 .tower-layer {
   position:absolute; bottom:0; left:3%; z-index:3; pointer-events:none;
-  opacity:0.09; filter:blur(0.4px);
+  opacity:0; filter:blur(0.4px);
+  display:none;
 }
 
 /* ── Welcome container & card (WHITE GLASS) ── */
@@ -164,13 +170,13 @@ body { margin:0; padding:0; font-family:"Segoe UI",system-ui,-apple-system,sans-
 
 /* Logo ring */
 .logo-ring {
-  width:56px; height:56px; border-radius:16px; margin:0 auto 12px;
-  background:linear-gradient(135deg,rgba(255,255,255,0.18),rgba(100,180,255,0.15));
-  border:1px solid rgba(255,255,255,0.28);
-  box-shadow:0 8px 24px rgba(0,30,80,0.3),inset 0 1px 0 rgba(255,255,255,0.35);
-  display:flex;align-items:center;justify-content:center;position:relative;
+  width:100px; height:100px; border-radius:50%; margin:0 auto 14px;
+  background:transparent; border:none;
+  box-shadow:0 6px 28px rgba(0,20,90,0.55);
+  overflow:hidden; position:relative;
 }
-.logo-ring::before { content:'';position:absolute;inset:-4px;border-radius:20px;border:1px solid rgba(255,255,255,0.1); }
+.logo-ring img { display:block;width:100%;height:100%;border-radius:50%;object-fit:cover; }
+.logo-ring::before { display:none; }
 
 /* Header text */
 .header-badge { font-size:0.61rem;font-weight:800;letter-spacing:0.22em;text-transform:uppercase;color:rgba(255,255,255,0.68);text-align:center;margin-bottom:8px; }
@@ -403,18 +409,6 @@ body { margin:0; padding:0; font-family:"Segoe UI",system-ui,-apple-system,sans-
 .nav-btn.answered { background:#0ea5e9; color:white; }
 .nav-btn.current  { outline:2px solid white; outline-offset:2px; color:white; }
 
-/* Practice Mode */
-.mode-btn { flex:1; padding:10px 0; border-radius:10px; border:1px solid rgba(255,255,255,0.15);
-  background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.6); font-size:13px; font-weight:700;
-  cursor:pointer; transition:all 0.2s; }
-.mode-btn.active-exam { background:rgba(14,165,233,0.18); border-color:rgba(14,165,233,0.5); color:#38bdf8; }
-.mode-btn.active-practice { background:rgba(16,185,129,0.18); border-color:rgba(16,185,129,0.5); color:#34d399; }
-.opt-correct { background:rgba(16,185,129,0.18)!important; border-color:rgba(16,185,129,0.6)!important; color:#34d399!important; }
-.opt-wrong   { background:rgba(239,68,68,0.15)!important;   border-color:rgba(239,68,68,0.5)!important;   color:#f87171!important; }
-.opt-disabled { pointer-events:none; opacity:0.55; }
-#practiceFeedback { display:none; margin-top:12px; padding:10px 14px; border-radius:10px; font-size:13px; font-weight:700; }
-#practiceFeedback.correct { background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.35); color:#34d399; }
-#practiceFeedback.wrong   { background:rgba(239,68,68,0.1);   border:1px solid rgba(239,68,68,0.3);   color:#f87171; }
 /* Timer */
 .timer-warn { animation:blink 0.9s infinite; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.35} }
@@ -438,3 +432,285 @@ body { margin:0; padding:0; font-family:"Segoe UI",system-ui,-apple-system,sans-
 
 @media(min-width:1024px) { .fab,.drawer { display:none!important; } .lg-sidebar { display:block; } }
 @media(max-width:1023px)  { .lg-sidebar { display:none; } }
+
+/* ── Keyboard shortcut hint ──────────────────────────────────────── */
+.keyboard-hint {
+  text-align: center;
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.25);
+  margin-top: 8px;
+  letter-spacing: 0.05em;
+}
+.keyboard-hint kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 4px;
+  font-size: 0.65rem;
+  background: rgba(255,255,255,0.06);
+  margin: 0 2px;
+}
+
+/* ── Utility classes extracted from inline styles ─────────────────── */
+/* Semi-transparent glass panel background — used on questionCard, nav buttons, sidebar */
+.glass-panel { background: rgba(255,255,255,0.035); }
+
+/* Result screen — big stat number (score, time) */
+.res-stat-num {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: white;
+  letter-spacing: -0.02em;
+}
+
+/* Result screen — small stat label below the number */
+.res-stat-label {
+  font-size: 0.6rem;
+  color: rgba(255,255,255,0.4);
+  margin-top: 2px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ================================================================
+   === Study Heatmap Component ===
+   Nhật ký ôn tập — dùng đúng biến theme HUD/radar hiện có
+   localStorage key: "cns_heatmap_v1"
+================================================================= */
+
+/* Màu mức ô — dùng --sky2 (#56b4e9) theo palette đã audit */
+:root {
+  --hm-l0: rgba(255,255,255,0.06);
+  --hm-l1: rgba(86,180,233,0.22);
+  --hm-l2: rgba(86,180,233,0.48);
+  --hm-l3: rgba(86,180,233,0.74);
+  --hm-l4: #56b4e9;
+}
+
+#heatmapPanel {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  padding: 20px;
+  margin: 16px auto;
+  max-width: 860px;
+  position: relative;
+}
+
+.hm-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.hm-title {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: white;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.hm-subtitle {
+  font-family: 'Courier New', monospace;
+  font-size: 0.62rem;
+  color: var(--text-dim);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.hm-stats {
+  display: flex;
+  gap: 16px;
+}
+
+.hm-stat { text-align: center; }
+
+.hm-stat-val {
+  font-family: 'Courier New', monospace;
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: var(--sky2);
+  text-shadow: 0 0 12px rgba(86,180,233,0.55);
+  line-height: 1;
+}
+
+.hm-stat-lbl {
+  font-size: 0.55rem;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+
+#hmGrid {
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.hm-grid-inner {
+  display: flex;
+  gap: 4px;
+  min-width: max-content;
+}
+
+.hm-day-labels {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hm-day-lbl {
+  height: 13px;
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  color: var(--text-dim);
+  line-height: 13px;
+  width: 18px;
+  text-align: right;
+  padding-right: 4px;
+}
+
+.hm-weeks {
+  display: flex;
+  gap: 2px;
+}
+
+.hm-week {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hm-cell {
+  width: 13px;
+  height: 13px;
+  border-radius: 2px;
+  cursor: default;
+  position: relative;
+  transition: opacity 0.12s;
+  flex-shrink: 0;
+}
+
+.hm-cell:hover { opacity: 0.75; }
+.hm-empty { background: transparent !important; }
+
+.hm-l0 { background: var(--hm-l0); }
+.hm-l1 { background: var(--hm-l1); }
+.hm-l2 { background: var(--hm-l2); }
+.hm-l3 { background: var(--hm-l3); }
+.hm-l4 { background: var(--hm-l4); }
+
+/* Chấm đỏ góc trên-phải nếu ngày đó có câu sai */
+.hm-has-wrong::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #ef4444;
+  pointer-events: none;
+}
+
+#hmTooltip {
+  position: fixed;
+  background: rgba(11,31,58,0.96);
+  border: 1px solid var(--glass-border);
+  color: white;
+  font-size: 0.72rem;
+  padding: 5px 10px;
+  border-radius: 6px;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 9999;
+  display: none;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.04em;
+}
+
+.hm-legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 0.62rem;
+  color: var(--text-dim);
+  letter-spacing: 0.06em;
+}
+
+.hm-legend-cells { display: flex; gap: 2px; }
+
+.hm-legend-cell {
+  width: 13px;
+  height: 13px;
+  border-radius: 2px;
+}
+
+.hm-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+#hmFooter {
+  font-size: 0.72rem;
+  color: var(--sky2);
+  font-style: italic;
+  letter-spacing: 0.04em;
+}
+
+.hm-btn-clear {
+  font-size: 0.62rem;
+  color: var(--text-dim);
+  background: none;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 5px;
+  padding: 3px 10px;
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.hm-btn-clear:hover {
+  color: #ef4444;
+  border-color: rgba(239,68,68,0.4);
+}
+
+@media (max-width: 480px) {
+  .hm-header { flex-direction: column; }
+  .hm-stats  { gap: 12px; }
+}
+em;
+}
+
+.hm-btn-clear {
+  font-size: 0.62rem;
+  color: var(--text-dim);
+  background: none;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 5px;
+  padding: 3px 10px;
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.hm-btn-clear:hover {
+  color: #ef4444;
+  border-color: rgba(239,68,68,0.4);
+}
+
+/* Responsive mobile */
+@media (max-width: 480px) {
+  .hm-header { flex-direction: column; }
+  .hm-stats  { gap: 12px; }
+}
