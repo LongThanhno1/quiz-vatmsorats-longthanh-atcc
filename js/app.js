@@ -95,11 +95,13 @@ function logToTeamDashboard(module, viTri, questionId, isWrong) {
 //   seen:     {id: count}          — số lần hiển thị câu (exposure, giữ để thống kê)
 //   wrong:    {id: count}          — số lần trả lời sai (giữ để thống kê)
 //   lastSeen: {id: ms}             — timestamp lần cuối hiển thị
-//   srs:      {id: {ef,reps,interval,due,lastReviewed}} — lịch ôn tập interval-based
+//   srs:      {id: {ef,reps,interval,due,lastReviewed,lapses}} — lịch ôn tập interval-based
 // }
 // ════════════════════════════════════════════════════════════════════════════
-const HISTORY_KEY = 'cns_history_v1';
-const MS_PER_DAY  = 86400000; // 1 ngày tính bằng mili-giây — dùng chung cho cả module SRS
+const HISTORY_KEY       = 'cns_history_v1';
+const MS_PER_DAY        = 86400000; // 1 ngày tính bằng mili-giây — dùng chung cho cả module SRS
+const MAX_INTERVAL_DAYS = 90;       // [CAP] trần interval — không câu nào "biến mất" khỏi vòng ôn quá 90 ngày
+const LEECH_THRESHOLD   = 5;        // [LEECH] số lần sai (lapses) trở lên thì coi là câu khó dai dẳng
 
 // Đọc history từ localStorage; khởi tạo cấu trúc mới nếu chưa tồn tại
 function loadHistory() {
@@ -140,8 +142,8 @@ function srsRecordSeen(id) {
 //   - Practice mode: gọi ngay trong selectOpt() vì biết kết quả tức thì.
 //   - Exam mode: gọi trong doSubmit() sau khi chấm toàn bộ bài.
 // Công thức (SM-2 rút gọn, quality nhị phân thay vì thang 0-5):
-//   Đúng → reps++; interval: 1 → 6 → round(interval * ef); ef += 0.1 (cap 3.0)
-//   Sai  → reps=0; interval=1 (mai ôn lại ngay); ef -= 0.2 (sàn 1.3, chuẩn SM-2)
+//   Đúng → reps++; interval: 1 → 6 → round(interval * ef), trần MAX_INTERVAL_DAYS; ef += 0.1 (cap 3.0)
+//   Sai  → reps=0; interval=1 (mai ôn lại ngay); ef -= 0.2 (sàn 1.3, chuẩn SM-2); lapses++ (đếm leech)
 //   due  = now + interval ngày
 function srsGrade(id, isCorrect) {
   if (!id) return;
@@ -150,18 +152,21 @@ function srsGrade(id, isCorrect) {
   if (!isCorrect) h.wrong[id] = (h.wrong[id] || 0) + 1; // giữ thống kê wrong[] như cũ
 
   const NOW = Date.now();
-  let s = h.srs[id] || { ef: 2.5, reps: 0, interval: 0, due: 0, lastReviewed: 0 };
+  let s = h.srs[id] || { ef: 2.5, reps: 0, interval: 0, due: 0, lastReviewed: 0, lapses: 0 };
+  if (s.lapses === undefined) s.lapses = 0; // backward-compat: câu đã có srs từ trước nhưng chưa có field lapses
 
   if (isCorrect) {
     s.reps++;
     if (s.reps === 1)      s.interval = 1;
     else if (s.reps === 2) s.interval = 6;
     else                   s.interval = Math.round(s.interval * s.ef);
+    s.interval = Math.min(MAX_INTERVAL_DAYS, s.interval); // [CAP]
     s.ef = Math.min(3.0, s.ef + 0.1);
   } else {
     s.reps     = 0;
     s.interval = 1;
     s.ef       = Math.max(1.3, s.ef - 0.2);
+    s.lapses++; // [LEECH] mỗi lần trượt tính 1 lapse, tích lũy suốt vòng đời câu hỏi
   }
   s.due          = NOW + s.interval * MS_PER_DAY;
   s.lastReviewed = NOW;
@@ -169,44 +174,51 @@ function srsGrade(id, isCorrect) {
   saveHistory(h);
 }
 
-// ── SRS SELECTION ALGORITHM (interval-based) ─────────────────────────────
-// Chọn tối đa 50 câu ưu tiên theo lịch ôn tập thật (due date), thay vì score tĩnh.
-//   Bước 1: Phân loại từng câu trong pool theo trạng thái lịch ôn (h.srs[id]):
-//     - Chưa từng học (reps===0, kể cả câu mới hoặc vừa trả lời sai gần nhất)
-//       → ưu tiên TUYỆT ĐỐI (priority cao nhất, luôn được chọn trước).
-//     - Đã đến hạn ôn lại (due <= now) → ưu tiên theo mức độ QUÁ HẠN
-//       (quá hạn càng lâu càng được ưu tiên chọn trước).
-//     - Chưa đến hạn (due > now) → ưu tiên thấp nhất, chỉ lấy để lấp đầy chỗ trống.
-//   Bước 2: Nếu số câu "cần ôn" (mới + quá hạn) >= 50 → lấy đúng 50 câu quá hạn/mới
-//     nhất (không random thêm câu chưa đến hạn — đúng tinh thần SRS: ưu tiên tuyệt
-//     đối cho câu cần ôn trước khi học thêm câu mới khác).
-//   Bước 3: Nếu chưa đủ 50 → lấp đầy bằng câu CHƯA đến hạn, chọn ngẫu nhiên để đa dạng.
+// [LEECH] Câu bị sai >= LEECH_THRESHOLD lần → "leech": học mãi không thuộc. Thường là dấu
+// hiệu câu khó thật sự, nhưng cũng có thể là tín hiệu câu hỏi/đáp án bị lỗi nội dung cần rà soát.
+function srsIsLeech(id) {
+  const h = loadHistory();
+  const s = h.srs[String(id)];
+  return !!(s && s.lapses >= LEECH_THRESHOLD);
+}
+
+// ── Priority dùng chung cho selection (exam), đếm due (badge) và sắp thứ tự (practice) ──
+//   - Chưa từng học (reps===0, kể cả câu mới hoặc vừa trả lời sai gần nhất) → ưu tiên TUYỆT ĐỐI.
+//   - Đã đến hạn ôn lại (due <= now) → ưu tiên theo mức độ QUÁ HẠN (quá hạn càng lâu càng ưu tiên).
+//   - Chưa đến hạn (due > now) → ưu tiên thấp nhất.
+const SRS_DUE_BASE = 50000; // ngưỡng phân biệt "cần ôn" (>= ngưỡng) và "chưa cần" (< ngưỡng)
+function srsPriorityOf(h, id, NOW) {
+  const s = h.srs[String(id)];
+  if (!s || s.reps === 0) return 100000;
+  if (s.due <= NOW)       return SRS_DUE_BASE + (NOW - s.due) / MS_PER_DAY;
+  return -(s.due - NOW) / MS_PER_DAY;
+}
+
+// [BADGE] Đếm số câu "cần ôn" (mới + quá hạn) trong 1 pool — dùng cho badge "X câu đến hạn hôm nay"
+function srsCountDue(rawPool) {
+  const h = loadHistory(), NOW = Date.now();
+  return rawPool.reduce(function(n, q) {
+    return n + (srsPriorityOf(h, q.id, NOW) >= SRS_DUE_BASE ? 1 : 0);
+  }, 0);
+}
+
+// ── SRS SELECTION ALGORITHM (Exam mode — interval-based, giới hạn 50 câu) ────
+//   Nếu số câu "cần ôn" (mới + quá hạn) >= 50 → lấy đúng 50 câu quá hạn/mới nhất.
+//   Nếu chưa đủ 50 → lấp đầy bằng câu CHƯA đến hạn, chọn ngẫu nhiên để đa dạng.
 function srsSelectQuestions(rawPool) {
   const h        = loadHistory();
   const NOW      = Date.now();
   const MAX_DRAW = 50;
-  const DUE_BASE = 50000; // ngưỡng phân biệt "cần ôn" (>= DUE_BASE) và "chưa cần" (< DUE_BASE)
 
-  // Shuffle trước khi tính priority để các câu đồng hạng (vd. cùng "chưa từng học")
-  // được xáo ngẫu nhiên thay vì luôn giữ thứ tự cố định theo id gốc.
+  // Shuffle trước khi tính priority để các câu đồng hạng được xáo ngẫu nhiên
+  // thay vì luôn giữ thứ tự cố định theo id gốc.
   const scored = shuffle(rawPool).map(function(q) {
-    const id = String(q.id);
-    const s  = h.srs[id];
-    let priority;
-    if (!s || s.reps === 0) {
-      priority = 100000; // câu mới / vừa sai gần nhất → ưu tiên tuyệt đối
-    } else if (s.due <= NOW) {
-      priority = DUE_BASE + (NOW - s.due) / MS_PER_DAY; // đến hạn, quá hạn càng lâu càng ưu tiên
-    } else {
-      priority = -(s.due - NOW) / MS_PER_DAY; // chưa đến hạn, càng xa hạn càng thấp
-    }
-    return { q: q, priority: priority };
+    return { q: q, priority: srsPriorityOf(h, q.id, NOW) };
   });
-
   scored.sort(function(a, b) { return b.priority - a.priority; });
 
-  const duePool  = scored.filter(function(s) { return s.priority >= DUE_BASE; }).map(function(s) { return s.q; });
-  const restPool = scored.filter(function(s) { return s.priority <  DUE_BASE; }).map(function(s) { return s.q; });
+  const duePool  = scored.filter(function(s) { return s.priority >= SRS_DUE_BASE; }).map(function(s) { return s.q; });
+  const restPool = scored.filter(function(s) { return s.priority <  SRS_DUE_BASE; }).map(function(s) { return s.q; });
 
   let selected;
   if (duePool.length >= MAX_DRAW) {
@@ -218,6 +230,22 @@ function srsSelectQuestions(rawPool) {
 
   return shuffle(selected).map(function(q) {
     return Object.assign({}, q, { options: shuffle(q.options) });
+  });
+}
+
+// ── SRS ORDERING (Practice mode — KHÔNG giới hạn số câu, chỉ sắp thứ tự ưu tiên) ──
+// "Ôn tập" vẫn cho học toàn bộ pool đúng như trước, nhưng giờ câu cần ôn nhất
+// (mới/quá hạn) luôn xuất hiện TRƯỚC — nếu thoát giữa chừng vẫn ưu tiên đúng
+// phần quan trọng nhất thay vì random thuần túy như trước đây.
+function srsOrderForPractice(rawPool) {
+  const h   = loadHistory();
+  const NOW = Date.now();
+  const scored = shuffle(rawPool).map(function(q) {
+    return { q: q, priority: srsPriorityOf(h, q.id, NOW) };
+  });
+  scored.sort(function(a, b) { return b.priority - a.priority; });
+  return scored.map(function(s) {
+    return Object.assign({}, s.q, { options: shuffle(s.q.options) });
   });
 }
 
@@ -293,7 +321,24 @@ function onViTriChange() {
 }
 
 function onModuleChange() {
-  $('btnStart').disabled = !$('selModule').value;
+  const modId = $('selModule').value;
+  $('btnStart').disabled = !modId;
+
+  // [SRS] Badge "X câu đến hạn hôm nay" cho module vừa chọn
+  const badge = $('srsDueBadge');
+  if (badge) {
+    if (modId) {
+      const rawPool = questionBank.filter(q => q.module === modId);
+      const due = srsCountDue(rawPool);
+      badge.style.display = 'inline-flex';
+      badge.textContent = due > 0 ? `⏰ ${due} câu đến hạn ôn` : '✓ Chưa có câu nào đến hạn';
+      badge.style.color = due > 0 ? '#f59e0b' : '#34d399';
+      badge.style.borderColor = due > 0 ? 'rgba(245,158,11,0.35)' : 'rgba(52,211,153,0.3)';
+      badge.style.background = due > 0 ? 'rgba(245,158,11,0.08)' : 'rgba(52,211,153,0.06)';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
 }
 
 // ── QUIZ MODE SELECTOR ──
@@ -368,17 +413,12 @@ function startExam(moduleId) {
     return;
   }
 
-  // Trộn ngẫu nhiên (Fisher-Yates)
-  // Thi thử: bốc tối đa 50 câu | Ôn tập: lấy toàn bộ pool
-  const MAX_DRAW = 50;
-  const pool     = shuffle(rawPool);
-  const count    = quizMode === 'practice' ? pool.length : Math.min(MAX_DRAW, pool.length);
-  examQuestions  = pool.slice(0, count).map(q => ({ ...q, options: shuffle(q.options) }));
-
-  // [SRS] Exam mode: override selection bằng SRS algorithm (thay random thuần túy)
-  // Practice mode giữ nguyên logic cũ (toàn bộ pool, shuffle)
+  // [SRS] Exam mode: chọn tối đa 50 câu ưu tiên theo lịch ôn tập (due-based)
+  // [SRS] Practice mode: lấy TOÀN BỘ pool nhưng sắp câu cần ôn nhất (mới/quá hạn) lên đầu
   if (quizMode === 'exam') {
     examQuestions = srsSelectQuestions(rawPool);
+  } else {
+    examQuestions = srsOrderForPractice(rawPool);
   }
 
   userAnswers  = {};
@@ -861,6 +901,7 @@ function renderReview(filter) {
         <div>
           <div style="font-size:11px;color:${mc.color};font-weight:800;margin-bottom:4px">
             ${mc.label} — Câu ${i+1}
+            ${(!ok && typeof srsIsLeech === 'function' && srsIsLeech(q.id)) ? '<span style="margin-left:6px;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:800;color:#fbbf24;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.3)">⚠ Sai nhiều lần — cần xem lại</span>' : ''}
           </div>
           <p style="font-size:13px;font-weight:600;color:rgba(255,255,255,0.92);line-height:1.5;margin:0">${q.question}</p>
         </div>
@@ -1380,9 +1421,12 @@ const StudyHeatmap = (function() {
   }
 
   function clearData() {
-    if (!confirm('Xóa toàn bộ nhật ký ôn tập? Hành động này không thể hoàn tác.')) return;
-    localStorage.removeItem(STORAGE_KEY);
+    if (!confirm('Xóa toàn bộ dữ liệu ôn tập cục bộ (nhật ký heatmap + lịch sử SRS từng câu)? Hành động này không thể hoàn tác.')) return;
+    localStorage.removeItem(STORAGE_KEY);   // cns_heatmap_v1 — nhật ký theo ngày
+    localStorage.removeItem(HISTORY_KEY);   // cns_history_v1 — seen/wrong/srs theo từng câu
     render();
+    // [SRS] Cập nhật lại badge "đến hạn" nếu đang hiện (module đang chọn coi như reset về 0 due)
+    if (typeof onModuleChange === 'function') onModuleChange();
   }
 
   function init() { /* no-op */ }
