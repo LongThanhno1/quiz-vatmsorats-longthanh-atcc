@@ -13,6 +13,9 @@ function toggleTheme() {
 // ── State ──
 let selectedModule = null;
 let quizMode       = 'exam';
+// 'exam' = thi thử (timed, 50 câu, SRS due-priority) | 'practice' = ôn tập toàn bộ pool
+// (untimed, SRS-ordered) | 'quickreview' = ôn nhanh CHỈ câu đến hạn (untimed, cap 50)
+function isUntimedMode() { return quizMode === 'practice' || quizMode === 'quickreview'; }
 let examQuestions  = [];
 let userAnswers    = {};
 let currentIdx     = 0;
@@ -249,6 +252,39 @@ function srsOrderForPractice(rawPool) {
   });
 }
 
+// ── SRS QUICK REVIEW (chỉ câu CẦN ÔN — mới + quá hạn, không pha câu chưa đến hạn) ──
+// Dùng cho nút "Ôn nhanh câu đến hạn": tập trung đúng các câu cần ôn, cap 50 để giữ
+// đúng tinh thần "nhanh" (khác Practice mode lấy toàn bộ pool).
+function srsSelectDueOnly(rawPool) {
+  const h        = loadHistory();
+  const NOW      = Date.now();
+  const MAX_DRAW = 50;
+
+  const due = shuffle(rawPool)
+    .map(function(q) { return { q: q, priority: srsPriorityOf(h, q.id, NOW) }; })
+    .filter(function(s) { return s.priority >= SRS_DUE_BASE; })
+    .sort(function(a, b) { return b.priority - a.priority; })
+    .map(function(s) { return s.q; });
+
+  return due.slice(0, MAX_DRAW).map(function(q) {
+    return Object.assign({}, q, { options: shuffle(q.options) });
+  });
+}
+
+// [MASTERY] % câu đã "thành thạo" trong pool. Định nghĩa: reps >= 3 — tức đã vượt qua
+// giai đoạn bootstrap (1 ngày → 6 ngày) và đang giãn interval theo ease factor, chứng tỏ
+// ghi nhớ ổn định qua nhiều lần ôn, không phải may mắn đoán đúng 1-2 lần.
+const MASTERY_REPS_THRESHOLD = 3;
+function srsMasteryPct(rawPool) {
+  if (!rawPool.length) return 0;
+  const h = loadHistory();
+  const mastered = rawPool.filter(function(q) {
+    const s = h.srs[String(q.id)];
+    return s && s.reps >= MASTERY_REPS_THRESHOLD;
+  }).length;
+  return Math.round(mastered / rawPool.length * 100);
+}
+
 // ── CASCADE DROPDOWN LOGIC ──
 function onChucDanhChange() {
   const cd = $('selChucDanh').value;
@@ -324,21 +360,54 @@ function onModuleChange() {
   const modId = $('selModule').value;
   $('btnStart').disabled = !modId;
 
-  // [SRS] Badge "X câu đến hạn hôm nay" cho module vừa chọn
-  const badge = $('srsDueBadge');
-  if (badge) {
-    if (modId) {
-      const rawPool = questionBank.filter(q => q.module === modId);
-      const due = srsCountDue(rawPool);
-      badge.style.display = 'inline-flex';
-      badge.textContent = due > 0 ? `⏰ ${due} câu đến hạn ôn` : '✓ Chưa có câu nào đến hạn';
-      badge.style.color = due > 0 ? '#f59e0b' : '#34d399';
-      badge.style.borderColor = due > 0 ? 'rgba(245,158,11,0.35)' : 'rgba(52,211,153,0.3)';
-      badge.style.background = due > 0 ? 'rgba(245,158,11,0.08)' : 'rgba(52,211,153,0.06)';
-    } else {
-      badge.style.display = 'none';
+  const dueBadge     = $('srsDueBadge');
+  const masteryBadge = $('srsMasteryBadge');
+  const quickBtn     = $('btnQuickReview');
+
+  if (modId) {
+    const rawPool = questionBank.filter(q => q.module === modId);
+    const due     = srsCountDue(rawPool);
+    const mastery = srsMasteryPct(rawPool);
+
+    // [SRS] Badge "X câu đến hạn hôm nay"
+    if (dueBadge) {
+      dueBadge.style.display = 'inline-flex';
+      dueBadge.textContent = due > 0 ? `⏰ ${due} câu đến hạn ôn` : '✓ Chưa có câu nào đến hạn';
+      dueBadge.style.color = due > 0 ? '#f59e0b' : '#34d399';
+      dueBadge.style.borderColor = due > 0 ? 'rgba(245,158,11,0.35)' : 'rgba(52,211,153,0.3)';
+      dueBadge.style.background = due > 0 ? 'rgba(245,158,11,0.08)' : 'rgba(52,211,153,0.06)';
     }
+
+    // [MASTERY] Badge "X% thành thạo"
+    if (masteryBadge) {
+      masteryBadge.style.display = 'inline-flex';
+      masteryBadge.textContent = `🎯 ${mastery}% thành thạo`;
+    }
+
+    // [QUICK REVIEW] Nút "Ôn nhanh" chỉ hiện khi có câu đến hạn
+    if (quickBtn) {
+      quickBtn.style.display = due > 0 ? 'inline-flex' : 'none';
+      quickBtn.textContent = `⚡ Ôn nhanh ${due} câu đến hạn`;
+    }
+  } else {
+    if (dueBadge)     dueBadge.style.display = 'none';
+    if (masteryBadge) masteryBadge.style.display = 'none';
+    if (quickBtn)      quickBtn.style.display = 'none';
   }
+}
+
+// ── QUICK REVIEW: vào thẳng phiên ôn chỉ gồm câu đến hạn (bỏ qua dropdown mode) ──
+function startQuickReview() {
+  const mod = $('selModule').value;
+  if (!mod) return;
+  quizMode = 'quickreview';
+  const ss = $('startScreen');
+  ss.classList.add('screen-exit');
+  setTimeout(() => {
+    ss.classList.add('hidden');
+    ss.classList.remove('screen-exit');
+    startExam(mod);
+  }, TR_DUR);
 }
 
 // ── QUIZ MODE SELECTOR ──
@@ -405,18 +474,24 @@ function startExam(moduleId) {
   const rawPool  = questionBank.filter(q => q.module === moduleId);
 
   // GA4
-  if (typeof gtag === 'function') gtag('event', quizMode==='practice' ? 'practice_start' : 'quiz_start',
-    {module_id: moduleId, module_name: mc.name});
+  const _gaStart = quizMode==='practice' ? 'practice_start' : quizMode==='quickreview' ? 'quickreview_start' : 'quiz_start';
+  if (typeof gtag === 'function') gtag('event', _gaStart, {module_id: moduleId, module_name: mc.name});
 
   if (rawPool.length === 0) {
     alert(`⚠ Module "${mc.label}" chưa có câu hỏi trong ngân hàng đề.\nVui lòng bổ sung dữ liệu vào questionBank trước khi thi.`);
     return;
   }
 
-  // [SRS] Exam mode: chọn tối đa 50 câu ưu tiên theo lịch ôn tập (due-based)
-  // [SRS] Practice mode: lấy TOÀN BỘ pool nhưng sắp câu cần ôn nhất (mới/quá hạn) lên đầu
+  // [SRS] Exam: tối đa 50 câu ưu tiên due-based | Quick review: CHỈ câu due, cap 50
+  // [SRS] Practice: TOÀN BỘ pool, sắp câu cần ôn nhất lên đầu
   if (quizMode === 'exam') {
     examQuestions = srsSelectQuestions(rawPool);
+  } else if (quizMode === 'quickreview') {
+    examQuestions = srsSelectDueOnly(rawPool);
+    if (examQuestions.length === 0) {
+      alert('Không còn câu nào đến hạn ôn trong module này.');
+      return;
+    }
   } else {
     examQuestions = srsOrderForPractice(rawPool);
   }
@@ -425,9 +500,9 @@ function startExam(moduleId) {
   currentIdx   = 0;
   secondsLeft  = 50 * 60;
 
-  // Practice mode: ẩn timer, không countdown
+  // Practice/Quick review mode: ẩn timer, không countdown
   const timerDisp = $('timerDisplay');
-  if (quizMode === 'practice') {
+  if (isUntimedMode()) {
     if (timerDisp) timerDisp.style.display = 'none';
   } else {
     if (timerDisp) timerDisp.style.display = '';
@@ -449,14 +524,14 @@ function startExam(moduleId) {
   // Update submit button label theo mode
   const submitBtn = $('btnSubmit');
   if (submitBtn) {
-    submitBtn.innerHTML = quizMode === 'practice'
+    submitBtn.innerHTML = isUntimedMode()
       ? '✅ Hoàn thành'
       : '✈ Nộp Bài';
   }
 
-  // Show/hide exit button cho practice mode
+  // Show/hide exit button cho practice/quick review mode
   const exitBtn = $('btnExitPractice');
-  if (exitBtn) exitBtn.style.display = quizMode === 'practice' ? 'inline-block' : 'none';
+  if (exitBtn) exitBtn.style.display = isUntimedMode() ? 'inline-block' : 'none';
 
   renderNavGrids();
   showQ(0);
@@ -466,7 +541,7 @@ function startExam(moduleId) {
 // ── TIMER ──
 function startTimer() {
   clearInterval(timerInterval);
-  if (quizMode === 'practice') return;  // Practice: không đếm giờ
+  if (isUntimedMode()) return;  // Practice/Quick review: không đếm giờ
   updateTimerDisplay();
   timerInterval = setInterval(() => {
     secondsLeft--;
@@ -539,8 +614,8 @@ function _doRenderQ(idx) {
       : $('qAnsweredBadge').classList.add('hidden');
 
   const labels = ['A','B','C','D'];
-  // Trong practice mode: nếu câu đã trả lời → render lại với highlight
-  const alreadyAnswered = quizMode === 'practice' && userAnswers[idx] !== undefined;
+  // Trong practice/quick review mode: nếu câu đã trả lời → render lại với highlight
+  const alreadyAnswered = isUntimedMode() && userAnswers[idx] !== undefined;
 
   $('optionsContainer').innerHTML = q.options.map((opt,i) => {
     const sel = userAnswers[idx] === opt;
@@ -639,8 +714,8 @@ function selectOpt(idx, el, val) {
   $('progressBar').style.width  = (cnt/tot*100)+'%';
   renderSegBar(idx);
 
-  // Practice mode: hiện feedback ngay
-  if (quizMode === 'practice') {
+  // Practice/Quick review mode: hiện feedback ngay
+  if (isUntimedMode()) {
     const q = examQuestions[idx];
     const isCorrect = val === q.correctAnswer;
     // [SRS] Chấm điểm + cập nhật lịch ôn tập ngay (practice mode biết kết quả tức thì)
@@ -680,7 +755,7 @@ function selectOpt(idx, el, val) {
 function prevQ() { showQ(currentIdx-1); }
 function nextQ() {
   if (currentIdx >= examQuestions.length - 1) {
-    if (quizMode === 'practice') {
+    if (isUntimedMode()) {
       doSubmit(false); // Hoàn thành thẳng, không modal
     } else {
       confirmSubmit(); // Exam: hiện modal confirm
@@ -729,8 +804,8 @@ function toggleDrawer() {
 
 // ── SUBMIT ──
 function confirmSubmit() {
-  // Practice mode: không cần confirm, submit thẳng
-  if (quizMode === 'practice') {
+  // Practice/Quick review mode: không cần confirm, submit thẳng
+  if (isUntimedMode()) {
     doSubmit(false);
     return;
   }
@@ -747,12 +822,18 @@ function doSubmit(auto=false) {
   clearInterval(timerInterval);
   closeSubmitModal();
 
-  // Practice mode: về thẳng menu sau khi hoàn thành
-  if (quizMode === 'practice') {
+  // Practice/Quick review mode: về thẳng menu sau khi hoàn thành
+  if (isUntimedMode()) {
     clearInterval(timerInterval);
     clearQuizState();
     if (typeof RESULT_SAVE_KEY !== 'undefined') {
       localStorage.removeItem(RESULT_SAVE_KEY);
+    }
+    // [QUICK REVIEW] Tóm tắt nhanh vì không có result screen riêng cho mode này
+    if (quizMode === 'quickreview') {
+      var _qrCorrect = 0;
+      examQuestions.forEach(function(q, i) { if (userAnswers[i] === q.correctAnswer) _qrCorrect++; });
+      alert(`⚡ Ôn nhanh hoàn tất: ${_qrCorrect}/${examQuestions.length} câu đúng. Lịch ôn tập đã được cập nhật.`);
     }
     const es = $('examScreen');
     const ss = $('startScreen');
@@ -958,6 +1039,89 @@ function hideReview() {
     btn.textContent = '📋 Ôn lại câu sai';
     btn.style.background = 'rgba(239,68,68,0.1)';
   }
+}
+
+// ── LEECH SCREEN: câu hỏi sai dai dẳng — quét TOÀN BỘ ngân hàng đề, độc lập với
+// bất kỳ phiên thi nào (không cần làm bài mới để thấy câu mình đang yếu) ──
+function openLeechScreen() {
+  renderLeechScreen();
+  const ss = $('startScreen');
+  const ls = $('leechScreen');
+  const hp = $('heatmapPanel');
+  if (hp) hp.style.display = 'none'; // [HEATMAP] ẩn panel khi rời startScreen, giống các luồng khác
+  if (ss) {
+    ss.classList.add('screen-exit');
+    setTimeout(() => {
+      ss.classList.add('hidden');
+      ss.classList.remove('screen-exit');
+      if (ls) { ls.classList.remove('hidden'); ls.classList.add('screen-enter'); setTimeout(() => ls.classList.remove('screen-enter'), TR_DUR + 20); }
+      window.scrollTo({top: 0, behavior: 'smooth'});
+    }, TR_DUR);
+  } else if (ls) {
+    ls.classList.remove('hidden');
+  }
+}
+function closeLeechScreen() {
+  const ls = $('leechScreen');
+  const ss = $('startScreen');
+  if (ls) {
+    ls.classList.add('screen-exit');
+    setTimeout(() => {
+      ls.classList.add('hidden');
+      ls.classList.remove('screen-exit');
+      if (ss) { ss.classList.remove('hidden'); ss.classList.add('screen-enter'); setTimeout(() => ss.classList.remove('screen-enter'), TR_DUR + 20); }
+      // [HEATMAP] Hiện lại panel khi quay về startScreen
+      StudyHeatmap.render();
+      const hp = $('heatmapPanel');
+      if (hp) hp.style.display = 'block';
+    }, TR_DUR);
+  } else if (ss) {
+    ss.classList.remove('hidden');
+  }
+}
+function renderLeechScreen() {
+  const h = loadHistory();
+  const leechQuestions = questionBank
+    .filter(function(q) {
+      const s = h.srs[String(q.id)];
+      return s && s.lapses >= LEECH_THRESHOLD;
+    })
+    .map(function(q) { return Object.assign({}, q, { lapses: h.srs[String(q.id)].lapses }); })
+    .sort(function(a, b) { return b.lapses - a.lapses; });
+
+  const countEl = $('leechCount');
+  if (countEl) countEl.textContent = leechQuestions.length;
+
+  const listEl = $('leechList');
+  if (!listEl) return;
+
+  if (leechQuestions.length === 0) {
+    listEl.innerHTML = `<div style="text-align:center;padding:60px 20px;color:rgba(255,255,255,0.4)">
+      <div style="font-size:2.2rem;margin-bottom:10px">🎉</div>
+      <div style="font-size:14px">Chưa có câu nào bị đánh dấu khó dai dẳng.<br>Sai từ ${LEECH_THRESHOLD} lần trở lên (tính trên toàn bộ lịch sử) mới xuất hiện ở đây.</div>
+    </div>`;
+    return;
+  }
+
+  listEl.innerHTML = leechQuestions.map(function(q) {
+    const mc = getMC(q.module);
+    return `<div class="review-card-item wrong">
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">
+        <div style="width:24px;height:24px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;
+                    justify-content:center;font-weight:900;font-size:12px;margin-top:2px;
+                    background:rgba(251,191,36,0.18);color:#fbbf24">⚠</div>
+        <div>
+          <div style="font-size:11px;color:${mc.color};font-weight:800;margin-bottom:4px">
+            ${mc.label}
+            <span style="margin-left:6px;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:800;
+                         color:#fbbf24;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.3)">Sai ${q.lapses} lần</span>
+          </div>
+          <p style="font-size:13px;font-weight:600;color:rgba(255,255,255,0.92);line-height:1.5;margin:0">${q.question}</p>
+        </div>
+      </div>
+      <div style="padding-left:34px;font-size:12px;color:#34d399;font-weight:700">✓ ${q.correctAnswer}</div>
+    </div>`;
+  }).join('');
 }
 
 // ── NAVIGATION ──

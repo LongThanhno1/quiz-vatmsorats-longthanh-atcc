@@ -141,6 +141,8 @@
           <span class="select-chevron">&#9660;</span>
         </div>
         <span id="srsDueBadge" style="display:none;margin-top:8px;font-size:0.7rem;font-weight:700;padding:4px 10px;border-radius:20px;border:1px solid;"></span>
+        <span id="srsMasteryBadge" style="display:none;margin-top:8px;margin-left:6px;font-size:0.7rem;font-weight:700;padding:4px 10px;border-radius:20px;border:1px solid rgba(56,189,248,0.3);color:#7dd3fc;background:rgba(56,189,248,0.06);"></span>
+        <button id="btnQuickReview" onclick="startQuickReview()" style="display:none;margin-top:10px;width:100%;padding:9px 14px;border-radius:12px;border:1px solid rgba(245,158,11,0.35);background:rgba(245,158,11,0.1);color:#fbbf24;font-weight:700;font-size:12.5px;cursor:pointer;transition:all 0.2s" onmouseover="this.style.background='rgba(245,158,11,0.2)'" onmouseout="this.style.background='rgba(245,158,11,0.1)'"></button>
       </div>
 
       <!-- Mode selector -->
@@ -436,9 +438,26 @@
   </div>
   <div class="hm-footer">
     <span id="hmFooter"></span>
+    <button class="hm-btn-clear" onclick="openLeechScreen()" style="border-color:rgba(251,191,36,0.3);color:#fbbf24;margin-right:8px">⚠ Câu cần chú ý</button>
     <button class="hm-btn-clear" onclick="StudyHeatmap.clearData()">Xóa dữ liệu cục bộ</button>
   </div>
 </div><!-- /heatmapPanel -->
+
+<!-- ── LEECH SCREEN: câu hỏi sai dai dẳng, độc lập với phiên thi ── -->
+<div id="leechScreen" class="hidden result-bg">
+  <div class="review-wrap" style="padding-top:24px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:1.1rem;font-weight:800;color:#fbbf24">⚠ Câu cần chú ý</div>
+        <div style="font-size:0.72rem;color:rgba(255,255,255,0.45);margin-top:2px">
+          <span id="leechCount">0</span> câu sai liên tục — tính trên toàn bộ ngân hàng đề, không phụ thuộc phiên thi nào
+        </div>
+      </div>
+      <button class="btn-home" onclick="closeLeechScreen()">← Trang chủ</button>
+    </div>
+    <div id="leechList" style="padding-bottom:40px"></div>
+  </div>
+</div><!-- /leechScreen -->
 
 <!-- ======================================================
      JAVASCRIPT
