@@ -363,6 +363,7 @@ function openSyncModal() {
   if (code) {
     if (block) { block.style.display = 'block'; $('syncCurrentCode').textContent = code; }
     if (createBtn) createBtn.textContent = '🔁 Tạo mã mới (thiết bị này sẽ tách khỏi mã cũ)';
+    renderSyncQR(code);
   } else {
     if (block) block.style.display = 'none';
     if (createBtn) createBtn.textContent = '✨ Tạo mã đồng bộ mới cho thiết bị này';
@@ -376,6 +377,7 @@ function openSyncModal() {
 function closeSyncModal() {
   const m = $('syncModal');
   if (m) { m.style.display = 'none'; m.classList.add('hidden'); }
+  if (typeof closeQrScanner === 'function') closeQrScanner(); // phòng trường hợp camera còn đang mở
 }
 function createNewSyncCode() {
   const code = genSyncCode();
@@ -423,6 +425,83 @@ async function confirmEnterSyncCode() {
   if (typeof StudyHeatmap !== 'undefined') StudyHeatmap.render();
   if ($('selModule') && $('selModule').value && typeof onModuleChange === 'function') onModuleChange();
   setTimeout(function() { openSyncModal(); }, 800);
+}
+
+// ── QR CODE: tạo mã QR hiển thị mã đồng bộ (thư viện qrcodejs, load qua CDN) ──
+function renderSyncQR(code) {
+  const box = $('syncQRBox');
+  if (!box || typeof QRCode === 'undefined') return;
+  box.innerHTML = ''; // xóa QR cũ trước khi vẽ QR mới, tránh chồng nhiều canvas qua các lần mở modal
+  try {
+    new QRCode(box, { text: code, width: 120, height: 120, colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+  } catch(e) {}
+}
+
+// ── QR SCANNER: quét mã đồng bộ bằng camera (thư viện jsQR, load qua CDN) ──
+// Yêu cầu HTTPS (GitHub Pages đã có sẵn) vì getUserMedia chỉ chạy trên context bảo mật.
+let _qrScannerStream = null;
+let _qrScannerRAF = null;
+
+async function openQrScanner() {
+  const overlay = $('qrScannerOverlay');
+  const video = $('qrScannerVideo');
+  const status = $('qrScannerStatus');
+  if (!overlay || !video) return;
+  if (typeof jsQR === 'undefined') {
+    alert('Không tải được thư viện quét QR (có thể do mất mạng). Anh có thể nhập mã thủ công thay thế.');
+    return;
+  }
+  overlay.style.display = 'flex';
+  overlay.classList.remove('hidden');
+  if (status) status.textContent = 'Đang mở camera...';
+  try {
+    _qrScannerStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    video.srcObject = _qrScannerStream;
+    await video.play();
+    if (status) status.textContent = 'Đưa mã QR (hiện trên thiết bị khác) vào khung hình';
+    scanQrFrame();
+  } catch (e) {
+    if (status) status.textContent = '✗ Không truy cập được camera: ' + (e && e.message || e) + '. Anh có thể nhập mã thủ công thay thế.';
+  }
+}
+
+function scanQrFrame() {
+  const video = $('qrScannerVideo');
+  if (!video || video.readyState !== video.HAVE_ENOUGH_DATA) {
+    _qrScannerRAF = requestAnimationFrame(scanQrFrame);
+    return;
+  }
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const result = jsQR(imageData.data, imageData.width, imageData.height);
+  if (result && result.data) {
+    const code = result.data.trim().toUpperCase();
+    if (/^[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(code)) {
+      closeQrScanner();
+      const input = $('syncCodeInput');
+      if (input) input.value = code;
+      confirmEnterSyncCode(); // tự động tải về luôn, không bắt bấm thêm lần nữa (đúng tinh thần giảm thao tác)
+      return;
+    }
+    // Quét được QR nhưng không đúng định dạng mã đồng bộ (vd QR khác) → tiếp tục quét, không dừng
+  }
+  _qrScannerRAF = requestAnimationFrame(scanQrFrame);
+}
+
+function closeQrScanner() {
+  const overlay = $('qrScannerOverlay');
+  if (overlay) { overlay.style.display = 'none'; overlay.classList.add('hidden'); }
+  if (_qrScannerRAF) { cancelAnimationFrame(_qrScannerRAF); _qrScannerRAF = null; }
+  if (_qrScannerStream) {
+    _qrScannerStream.getTracks().forEach(function(t) { t.stop(); }); // tắt camera hẳn, không để chạy ngầm tốn pin
+    _qrScannerStream = null;
+  }
+  const video = $('qrScannerVideo');
+  if (video) video.srcObject = null;
 }
 
 // ── CASCADE DROPDOWN LOGIC ──
