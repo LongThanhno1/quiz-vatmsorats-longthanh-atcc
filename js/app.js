@@ -19,6 +19,9 @@ function isUntimedMode() { return quizMode === 'practice' || quizMode === 'quick
 let examQuestions  = [];
 let userAnswers    = {};
 let currentIdx     = 0;
+const NAV_PAGE_SIZE = 50; // [NAV PAGER] số nút câu hỏi hiện mỗi trang trong sidebar — tránh lưới quá dài khi pool nhiều câu (vd Ôn tập 349 câu)
+let navGridPage = 0;
+let _navGridManualPage = false; // true khi người dùng vừa bấm nút phân trang thủ công — giữ nguyên trang đó thay vì tự nhảy theo câu hiện tại
 let timerInterval  = null;
 let secondsLeft    = 50 * 60;
 let reviewFilter   = 'all';
@@ -685,6 +688,10 @@ function startExam(moduleId) {
   var _hpHide = $('heatmapPanel');
   if (_hpHide) _hpHide.style.display = 'none';
 
+  // [NAV PAGER] Reset về trang 1, bỏ chế độ ghi đè thủ công từ phiên trước
+  navGridPage = 0;
+  _navGridManualPage = false;
+
   selectedModule = moduleId;
   currentViTri   = ($('selViTri') && $('selViTri').value) || ''; // [WEBHOOK] Lưu vị trí thi
   const mc       = getMC(moduleId);
@@ -811,6 +818,7 @@ function showQInstant(idx) {
 // ── RENDER QUESTION CONTENT (shared by both showQ variants) ──
 function _doRenderQ(idx) {
   currentIdx = idx;
+  _navGridManualPage = false; // [NAV PAGER] mọi điều hướng câu hỏi (Trước/Tiếp/click ô) đều kéo sidebar về theo dõi đúng trang chứa câu hiện tại
     const q   = examQuestions[idx];
   const mc  = getMC(q.module);
   const ans = userAnswers[idx] !== undefined;
@@ -986,15 +994,46 @@ function nextQ() {
   showQ(currentIdx+1);
 }
 
-// ── NAV GRID ──
+// ── NAV GRID (có phân trang 50 câu/trang khi pool lớn) ──
 function renderNavGrids() {
+  const totalPages = Math.max(1, Math.ceil(examQuestions.length / NAV_PAGE_SIZE));
+  // Tự động nhảy trang theo câu hiện tại, trừ khi người dùng vừa thao tác nút phân trang thủ công
+  if (!_navGridManualPage) navGridPage = Math.floor(currentIdx / NAV_PAGE_SIZE);
+  if (navGridPage >= totalPages) navGridPage = totalPages - 1;
+  if (navGridPage < 0) navGridPage = 0;
+
+  const start = navGridPage * NAV_PAGE_SIZE;
+  const end   = Math.min(start + NAV_PAGE_SIZE, examQuestions.length);
+
+  const gridHtml = examQuestions.slice(start, end).map((_, k) => {
+    const i = start + k; // chỉ số toàn cục thật, không phải chỉ số trong trang
+    const a = userAnswers[i] !== undefined;
+    const c = i === currentIdx;
+    return `<button onclick="goToQ(${i})" class="nav-btn ${a?'answered':''} ${c?'current':''}">${i+1}</button>`;
+  }).join('');
+
+  const pagerHtml = examQuestions.length > NAV_PAGE_SIZE ? `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.08)">
+      <button onclick="navGridGoPage(${navGridPage - 1})" ${navGridPage === 0 ? 'disabled' : ''}
+              style="padding:5px 11px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:#fff;font-size:12px;font-weight:800;cursor:pointer;opacity:${navGridPage === 0 ? '0.3' : '1'}">‹‹</button>
+      <span style="font-size:10.5px;color:rgba(255,255,255,0.5);font-weight:700">Câu ${start+1}–${end} / ${examQuestions.length}</span>
+      <button onclick="navGridGoPage(${navGridPage + 1})" ${navGridPage >= totalPages - 1 ? 'disabled' : ''}
+              style="padding:5px 11px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:#fff;font-size:12px;font-weight:800;cursor:pointer;opacity:${navGridPage >= totalPages - 1 ? '0.3' : '1'}">››</button>
+    </div>` : '';
+
   ['desktopNavGrid','mobileNavGrid'].forEach(id => {
-    $(id).innerHTML = examQuestions.map((_,i) => {
-      const a = userAnswers[i] !== undefined;
-      const c = i === currentIdx;
-      return `<button onclick="goToQ(${i})" class="nav-btn ${a?'answered':''} ${c?'current':''}">${i+1}</button>`;
-    }).join('');
+    const el = $(id);
+    if (el) el.innerHTML = gridHtml;
   });
+  ['desktopNavGridPager','mobileNavGridPager'].forEach(id => {
+    const el = $(id);
+    if (el) el.innerHTML = pagerHtml;
+  });
+}
+function navGridGoPage(p) {
+  _navGridManualPage = true; // người dùng chủ động lật trang để xem trước, không phải đang trả lời câu
+  navGridPage = p;
+  renderNavGrids();
 }
 function updateNavGrids() { renderNavGrids(); }
 
