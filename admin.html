@@ -3,12 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard — CNS Quiz VATMSORATS</title>
+  <title>📊 Admin Dashboard — CNS Quiz VATMSORATS</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="logo/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="logo/favicon-16.png">
+  <link rel="apple-touch-icon" href="logo/apple-touch-icon.png">
   <!-- Admin Access Control -->
   <script>
   (function() {
-    const PASS = 'longthanhtwr';
+    // [BẢO MẬT] Mật khẩu được hash SHA-256, không còn lưu plaintext trong source.
+    // Lưu ý: site tĩnh không có backend xác thực riêng, đây là lớp che chắn cơ bản
+    // chống xem qua loa View Source, KHÔNG phải bảo mật tuyệt đối.
+    const PASS_HASH = '9b609c5197f6df1ca73770f01ada9c866b2c3335746c2cc9a5a9278d3417ec5e';
     const KEY  = 'admin_auth';
+    async function sha256(text) {
+      const buf  = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
     // Đã xác thực trong session này → vào luôn
     if (sessionStorage.getItem(KEY) === 'ok') return;
     // Tạo overlay
@@ -64,9 +74,10 @@
       </div>
     `;
     document.documentElement.appendChild(overlay);
-    function check() {
+    async function check() {
       const val = document.getElementById('auth-input').value.trim();
-      if (val === PASS) {
+      const valHash = await sha256(val);
+      if (valHash === PASS_HASH) {
         sessionStorage.setItem(KEY, 'ok');
         overlay.remove();
       } else {
@@ -317,6 +328,22 @@
       font-size: 0.68rem; color: rgba(255,255,255,0.2);
       text-align: center; letter-spacing: 0.05em;
     }
+
+    /* ── Tab toggle (Tổng quan / Cấu hình kỹ thuật) ── */
+    .admin-tabs {
+      display:flex; gap:8px; margin-bottom:24px;
+      border-bottom:1px solid rgba(255,255,255,0.07); padding-bottom:0;
+    }
+    .admin-tab-btn {
+      padding:10px 18px; border-radius:10px 10px 0 0; cursor:pointer;
+      background:transparent; border:none; border-bottom:2px solid transparent;
+      color:rgba(255,255,255,0.4); font-size:0.82rem; font-weight:700;
+      letter-spacing:.02em; transition:all .15s; font-family:inherit;
+    }
+    .admin-tab-btn:hover { color:rgba(255,255,255,0.7); background:rgba(255,255,255,0.03); }
+    .admin-tab-btn.active {
+      color:#00b9ff; border-bottom-color:#00b9ff; background:rgba(0,185,255,0.06);
+    }
   </style>
 </head>
 <body>
@@ -333,6 +360,14 @@
 
 <div class="container">
 
+  <!-- TAB TOGGLE -->
+  <div class="admin-tabs">
+    <button class="admin-tab-btn active" id="tabBtnOverview" onclick="switchAdminTab('overview')">🎯 Tổng quan đội ngũ</button>
+    <button class="admin-tab-btn" id="tabBtnConfig" onclick="switchAdminTab('config')">🛠️ Cấu hình &amp; GA4</button>
+  </div>
+
+  <!-- ═══ TAB: CẤU HÌNH KỸ THUẬT (Events reference, gợi ý biểu đồ Looker) ═══ -->
+  <div id="tabConfig" style="display:none">
 
   <!-- EVENTS REFERENCE -->
   <div class="section-label">📡 Custom Events đã tích hợp</div>
@@ -420,6 +455,11 @@
     </div>
   </div>
 
+  </div> <!-- /#tabConfig -->
+
+  <!-- ═══ TAB: TỔNG QUAN (Team Readiness + Looker Studio embed) ═══ -->
+  <div id="tabOverview">
+
   <!-- ═══════════════════════════════════════════════════
        TEAM READINESS DASHBOARD — dữ liệu từ Google Sheet
   ════════════════════════════════════════════════════ -->
@@ -444,15 +484,15 @@
     <div class="stats-row">
       <div class="stat-card">
         <div class="stat-num" id="rdTotal">—</div>
-        <div class="stat-label">Tổng lượt trả lời</div>
+        <div class="stat-label">📝 Tổng lượt trả lời</div>
       </div>
       <div class="stat-card">
         <div class="stat-num" id="rdModules">—</div>
-        <div class="stat-label">Module theo dõi</div>
+        <div class="stat-label">📚 Module theo dõi</div>
       </div>
       <div class="stat-card">
         <div class="stat-num" id="rdMastery">—</div>
-        <div class="stat-label">Thành thạo TB</div>
+        <div class="stat-label">🏆 Thành thạo TB</div>
       </div>
     </div>
 
@@ -502,6 +542,8 @@
     </iframe>
   </div>
 
+  </div> <!-- /#tabOverview -->
+
   <div class="footer">
     CNS Quiz Admin · VATMSORATS Long Thành ATCC · GA4 Property: G-1R40HNGQ7V · Không chia sẻ trang này ra ngoài
   </div>
@@ -509,6 +551,15 @@
 </div>
 
 <script>
+// ── Tab toggle: Tổng quan đội ngũ / Cấu hình & GA4 ───────
+function switchAdminTab(tab) {
+  const ov = tab === 'overview';
+  document.getElementById('tabOverview').style.display = ov ? 'block' : 'none';
+  document.getElementById('tabConfig').style.display    = ov ? 'none' : 'block';
+  document.getElementById('tabBtnOverview').classList.toggle('active', ov);
+  document.getElementById('tabBtnConfig').classList.toggle('active', !ov);
+}
+
 // ── Team Readiness Dashboard ─────────────────────────────
 const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyTHnhK8qMxpPUtaL8Ezvi3_iDcEVpb9vWFe6lV87IR5Tr68MPfjD9NruMJ77ylWQuUVg/exec';
 

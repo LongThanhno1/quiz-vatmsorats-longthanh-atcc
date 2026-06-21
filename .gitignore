@@ -2,3 +2,13 @@
 Thumbs.db
 *.log
 node_modules/
+
+# Tool-internal scaffolding — không thuộc nội dung dự án
+/.knowns/
+/Skill/
+
+# Backup files — Git history đã giữ mọi bản cũ, không cần file backup nằm trong working tree
+*backup*.js
+*backup*.css
+*backup*.html
+*.backup.*
