@@ -317,6 +317,17 @@ body {
   color:white;
 }
 
+/* Header màn hình thi/ôn tập — trong, cùng tông màu overlay nền ảnh thay vì 1 dải màu riêng đè lên,
+   để không che mất ảnh tháp TWR phía trên. Blur nhẹ vẫn giữ đủ độ rõ chữ. */
+.exam-header-glass {
+  background:rgba(3,10,40,0.20);
+  backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+}
+[data-theme="night"] .exam-header-glass {
+  background:rgba(1,4,14,0.35);
+  backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+}
+
 /* OPTIONS — card style rõ ràng, badge căn giữa */
 .option-btn {
   cursor:pointer; transition:all 0.18s cubic-bezier(.4,0,.2,1);
