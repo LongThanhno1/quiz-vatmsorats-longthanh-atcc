@@ -78,6 +78,8 @@
         <div class="sys-dot"></div>
         <span class="sys-txt">SYSTEM ONLINE</span>
         <span class="sys-time" id="sysTime">UTC+7</span>
+        <button onclick="openSyncModal()" title="Đồng bộ dữ liệu giữa các thiết bị" aria-label="Đồng bộ"
+                style="background:none;border:none;cursor:pointer;font-size:15px;padding:2px 4px;line-height:1;opacity:0.85">🔄</button>
         <button class="theme-toggle-btn" onclick="toggleTheme()" title="Chuyển chế độ sáng/tối" aria-label="Toggle theme">
           <span class="theme-icon-day">☀️</span>
           <span class="theme-icon-night">🌙</span>
@@ -458,6 +460,41 @@
     <div id="leechList" style="padding-bottom:40px"></div>
   </div>
 </div><!-- /leechScreen -->
+
+<!-- ── SYNC MODAL: đồng bộ dữ liệu cá nhân giữa các thiết bị qua mã tự sinh ── -->
+<div id="syncModal" class="hidden" style="position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#0f172a;border:1px solid rgba(255,255,255,0.12);border-radius:16px;max-width:420px;width:100%;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,0.5)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="font-size:1rem;font-weight:800;color:#7dd3fc">🔄 Đồng bộ thiết bị</div>
+      <button onclick="closeSyncModal()" style="background:none;border:none;color:#64748b;cursor:pointer;font-size:14px">✕</button>
+    </div>
+    <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);margin-bottom:16px;line-height:1.5">
+      Mã đồng bộ giúp giữ tiến độ ôn tập (lịch SRS + nhật ký) khi đổi thiết bị/trình duyệt.
+      Tự động đồng bộ ngầm sau mỗi câu trả lời nếu đã có mã.
+    </div>
+
+    <div id="syncCurrentBlock" style="display:none;margin-bottom:14px;padding:12px;border-radius:10px;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.25)">
+      <div style="font-size:0.62rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Mã của thiết bị này — lưu lại để dùng trên máy khác</div>
+      <div id="syncCurrentCode" style="font-size:1.1rem;font-weight:900;color:#34d399;letter-spacing:0.05em;font-family:monospace"></div>
+      <div id="syncLastUpdated" style="font-size:0.62rem;color:rgba(255,255,255,0.4);margin-top:4px"></div>
+    </div>
+
+    <button id="syncCreateBtn" onclick="createNewSyncCode()" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(56,189,248,0.35);background:rgba(56,189,248,0.1);color:#7dd3fc;font-weight:700;font-size:12.5px;cursor:pointer;margin-bottom:10px">
+      ✨ Tạo mã đồng bộ mới cho thiết bị này
+    </button>
+
+    <div style="height:1px;background:rgba(255,255,255,0.1);margin:14px 0"></div>
+
+    <div style="font-size:0.7rem;color:rgba(255,255,255,0.6);font-weight:700;margin-bottom:8px">Đã có mã từ thiết bị khác?</div>
+    <div style="display:flex;gap:8px">
+      <input id="syncCodeInput" type="text" placeholder="VD: 7X9K-2A4B" maxlength="9"
+             style="flex:1;padding:9px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.04);color:#fff;font-size:13px;font-family:monospace;text-transform:uppercase">
+      <button onclick="confirmEnterSyncCode()" style="padding:9px 14px;border-radius:10px;border:1px solid rgba(245,158,11,0.35);background:rgba(245,158,11,0.1);color:#fbbf24;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap">Tải về</button>
+    </div>
+
+    <div id="syncStatusMsg" style="margin-top:12px;font-size:0.72rem;text-align:center"></div>
+  </div>
+</div>
 
 <!-- ======================================================
      JAVASCRIPT

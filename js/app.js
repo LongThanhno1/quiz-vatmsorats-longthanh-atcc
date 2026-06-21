@@ -30,7 +30,7 @@ let   _qBusy = false;
 
 // ── WEBHOOK ANALYTICS (fire-and-forget, ẩn danh) ──
 const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyTHnhK8qMxpPUtaL8Ezvi3_iDcEVpb9vWFe6lV87IR5Tr68MPfjD9NruMJ77ylWQuUVg/exec';
-const TEAM_WEBHOOK_URL = "ANH_LONG_DIEN_URL_SAU_KHI_DEPLOY_APPS_SCRIPT";
+const TEAM_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzMphyUUJCxuDZ1xuDcvaB8YwO8M6S05rVelyJJMj-_ZKLkcwuHyXvnQOPdoWBU7a0VIw/exec";
 let   currentViTri = ''; // Capture từ selViTri khi startExam(), dùng trong payload
 
 // ── Helpers ──
@@ -283,6 +283,146 @@ function srsMasteryPct(rawPool) {
     return s && s.reps >= MASTERY_REPS_THRESHOLD;
   }).length;
   return Math.round(mastered / rawPool.length * 100);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// ── SYNC MODULE: đồng bộ dữ liệu cá nhân (cns_history_v1 + cns_heatmap_v1) ──
+// giữa các thiết bị qua mã tự sinh, KHÔNG cần đăng nhập/thông tin cá nhân.
+// Dùng chung endpoint TEAM_WEBHOOK_URL (Apps Script): GET = team log ẩn danh
+// (giữ nguyên cũ), POST action=push/pull = đồng bộ cá nhân (mới).
+// Tự động push (debounce 3s) sau mỗi câu trả lời nếu đã có mã đồng bộ.
+// LƯU Ý: cơ chế ghi-đè đơn giản (last-write-wins), KHÔNG merge dữ liệu giữa
+// 2 thiết bị — nếu học song song trên 2 máy không đồng bộ kịp, máy push sau
+// sẽ ghi đè máy push trước.
+// ════════════════════════════════════════════════════════════════════════════
+const SYNC_CODE_KEY = 'cns_sync_code';
+const SYNC_HEATMAP_KEY = 'cns_heatmap_v1'; // trùng STORAGE_KEY nội bộ của StudyHeatmap
+
+function getSyncCode() {
+  try { return localStorage.getItem(SYNC_CODE_KEY) || ''; } catch(e) { return ''; }
+}
+function setSyncCode(code) {
+  try { localStorage.setItem(SYNC_CODE_KEY, code); } catch(e) {}
+}
+function genSyncCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // bỏ O/0, I/1 dễ nhầm khi chép tay
+  function part() { let s=''; for (let i=0;i<4;i++) s += chars[Math.floor(Math.random()*chars.length)]; return s; }
+  return part() + '-' + part();
+}
+function syncIsConfigured() {
+  return TEAM_WEBHOOK_URL && !TEAM_WEBHOOK_URL.includes('ANH_LONG_DIEN');
+}
+
+let _syncPushTimer = null;
+// Gọi sau mỗi sự kiện chấm điểm (debounce 3s — gộp nhiều câu trả lời liên tiếp
+// thành 1 request thay vì spam server mỗi câu).
+function scheduleSyncPush() {
+  if (!getSyncCode() || !syncIsConfigured()) return;
+  clearTimeout(_syncPushTimer);
+  _syncPushTimer = setTimeout(syncPushNow, 3000);
+}
+function syncPushNow() {
+  const code = getSyncCode();
+  if (!code || !syncIsConfigured()) return;
+  try {
+    const historyRaw = localStorage.getItem(HISTORY_KEY);
+    const heatmapRaw = localStorage.getItem(SYNC_HEATMAP_KEY);
+    fetch(TEAM_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // tránh CORS preflight với Apps Script
+      body: JSON.stringify({
+        action: 'push',
+        code: code,
+        history: historyRaw ? JSON.parse(historyRaw) : null,
+        heatmap: heatmapRaw ? JSON.parse(heatmapRaw) : null
+      })
+    }).catch(function(){});
+  } catch(e) {}
+}
+async function syncPullNow(code) {
+  if (!syncIsConfigured()) return { ok: false, error: 'not_configured' };
+  try {
+    const res = await fetch(TEAM_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'pull', code: code })
+    });
+    return await res.json();
+  } catch(e) { return { ok: false, error: String(e) }; }
+}
+
+// ── MODAL CONTROL ──
+function openSyncModal() {
+  const m = $('syncModal');
+  if (!m) return;
+  m.style.display = 'flex';
+  m.classList.remove('hidden');
+  const code = getSyncCode();
+  const block = $('syncCurrentBlock');
+  const createBtn = $('syncCreateBtn');
+  if (code) {
+    if (block) { block.style.display = 'block'; $('syncCurrentCode').textContent = code; }
+    if (createBtn) createBtn.textContent = '🔁 Tạo mã mới (thiết bị này sẽ tách khỏi mã cũ)';
+  } else {
+    if (block) block.style.display = 'none';
+    if (createBtn) createBtn.textContent = '✨ Tạo mã đồng bộ mới cho thiết bị này';
+  }
+  $('syncStatusMsg').textContent = '';
+  if (!syncIsConfigured()) {
+    $('syncStatusMsg').textContent = '⚠ Tính năng đồng bộ chưa được cấu hình (TEAM_WEBHOOK_URL).';
+    $('syncStatusMsg').style.color = '#f59e0b';
+  }
+}
+function closeSyncModal() {
+  const m = $('syncModal');
+  if (m) { m.style.display = 'none'; m.classList.add('hidden'); }
+}
+function createNewSyncCode() {
+  const code = genSyncCode();
+  setSyncCode(code);
+  syncPushNow(); // đẩy ngay dữ liệu hiện tại lên dưới mã mới
+  openSyncModal(); // re-render hiển thị mã mới
+  const msg = $('syncStatusMsg');
+  if (msg) { msg.textContent = '✓ Đã tạo mã mới và đồng bộ dữ liệu hiện tại lên server.'; msg.style.color = '#34d399'; }
+}
+async function confirmEnterSyncCode() {
+  const input = $('syncCodeInput');
+  const msg = $('syncStatusMsg');
+  if (!input || !msg) return;
+  const code = input.value.trim().toUpperCase();
+  if (!/^[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(code)) {
+    msg.textContent = '✗ Mã không đúng định dạng (VD: 7X9K-2A4B).';
+    msg.style.color = '#f87171';
+    return;
+  }
+  // Cảnh báo nếu thiết bị này đã có dữ liệu cục bộ — tải về sẽ GHI ĐÈ dữ liệu hiện tại
+  const hasLocalData = !!(localStorage.getItem(HISTORY_KEY) || localStorage.getItem(SYNC_HEATMAP_KEY));
+  if (hasLocalData) {
+    const ok = confirm('Thiết bị này đang có dữ liệu ôn tập cục bộ. Tải mã đồng bộ về sẽ GHI ĐÈ toàn bộ dữ liệu hiện tại trên thiết bị này. Tiếp tục?');
+    if (!ok) return;
+  }
+  msg.textContent = 'Đang tải...';
+  msg.style.color = '#7dd3fc';
+  const res = await syncPullNow(code);
+  if (!res || !res.ok) {
+    msg.textContent = '✗ Không tải được dữ liệu (' + (res && res.error || 'lỗi không xác định') + ').';
+    msg.style.color = '#f87171';
+    return;
+  }
+  if (!res.found) {
+    msg.textContent = '✗ Không tìm thấy mã này trên server. Kiểm tra lại mã.';
+    msg.style.color = '#f87171';
+    return;
+  }
+  if (res.history) localStorage.setItem(HISTORY_KEY, JSON.stringify(res.history));
+  if (res.heatmap) localStorage.setItem(SYNC_HEATMAP_KEY, JSON.stringify(res.heatmap));
+  setSyncCode(code);
+  msg.textContent = '✓ Đã tải về thành công. Đang làm mới...';
+  msg.style.color = '#34d399';
+  // Refresh các UI phụ thuộc dữ liệu vừa tải về
+  if (typeof StudyHeatmap !== 'undefined') StudyHeatmap.render();
+  if ($('selModule') && $('selModule').value && typeof onModuleChange === 'function') onModuleChange();
+  setTimeout(function() { openSyncModal(); }, 800);
 }
 
 // ── CASCADE DROPDOWN LOGIC ──
@@ -746,6 +886,8 @@ function selectOpt(idx, el, val) {
     logToTeamDashboard(q.module, currentViTri, q.id, !isCorrect);
     // [HEATMAP] Ghi nhận câu trả lời vào nhật ký ôn tập hôm nay
     StudyHeatmap.logAnswer(!isCorrect);
+    // [SYNC] Lên lịch đồng bộ dữ liệu cá nhân (debounce, chỉ chạy nếu đã có mã đồng bộ)
+    scheduleSyncPush();
   }
 
   updateNavGrids();
@@ -888,6 +1030,8 @@ function doSubmit(auto=false) {
     if (userAnswers[i] === undefined) return; // câu chưa trả lời: không chấm, không tính vào lịch ôn
     srsGrade(q.id, userAnswers[i] === q.correctAnswer);
   });
+  // [SYNC] Lên lịch đồng bộ dữ liệu cá nhân sau khi nộp bài (1 lần, không phải mỗi câu)
+  scheduleSyncPush();
 
   // GA4
   const _pct2 = Math.round(correct/examQuestions.length*100);
@@ -1591,6 +1735,8 @@ const StudyHeatmap = (function() {
     render();
     // [SRS] Cập nhật lại badge "đến hạn" nếu đang hiện (module đang chọn coi như reset về 0 due)
     if (typeof onModuleChange === 'function') onModuleChange();
+    // [SYNC] Đồng bộ luôn trạng thái đã xóa lên server (nếu có mã đồng bộ), tránh server giữ data cũ
+    if (typeof scheduleSyncPush === 'function') scheduleSyncPush();
   }
 
   function init() { /* no-op */ }
